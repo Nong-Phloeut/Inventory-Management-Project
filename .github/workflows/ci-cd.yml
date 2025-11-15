@@ -1,0 +1,118 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_BACKEND: ${{ secrets.DOCKER_USERNAME }}/inventory-backend
+      IMAGE_FRONTEND: ${{ secrets.DOCKER_USERNAME }}/inventory-frontend
+      IMAGE_WEBSERVER: ${{ secrets.DOCKER_USERNAME }}/inventory-webserver
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # -------------------
+      # Docker login
+      # -------------------
+      - name: Docker login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # -------------------
+      # Build & Push Backend
+      # -------------------
+      - name: Build & push backend image
+        run: |
+          docker build -t $IMAGE_BACKEND:latest -t $IMAGE_BACKEND:$IMAGE_TAG ./backend
+          docker push $IMAGE_BACKEND:latest
+          docker push $IMAGE_BACKEND:$IMAGE_TAG
+
+      # -------------------
+      # Build & Push Frontend
+      # -------------------
+      - name: Build & push frontend image
+        run: |
+          docker build -t $IMAGE_FRONTEND:latest -t $IMAGE_FRONTEND:$IMAGE_TAG ./frontend
+          docker push $IMAGE_FRONTEND:latest
+          docker push $IMAGE_FRONTEND:$IMAGE_TAG
+
+      # -------------------
+      # Build & Push Webserver (nginx)
+      # -------------------
+      - name: Build & push webserver image
+        run: |
+          docker build -t $IMAGE_WEBSERVER:latest -t $IMAGE_WEBSERVER:$IMAGE_TAG ./backend/nginx
+          docker push $IMAGE_WEBSERVER:latest
+          docker push $IMAGE_WEBSERVER:$IMAGE_TAG
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-push
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Clean old docker stuff on VM
+      - name: Cleanup old Docker
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            echo ">>> Removing old containers & images but KEEPING volumes..."
+            cd ~/inventory || true
+            docker-compose down --remove-orphans || true
+            docker image prune -af || true   # only images, not volumes
+            docker container prune -f || true
+            docker network prune -f || true
+
+            rm -rf ~/inventory/docker-compose.yml
+            mkdir -p ~/inventory
+
+      # Copy docker-compose.yml
+      - name: Copy docker-compose.yml to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "docker-compose.yml"
+          target: "~/inventory"
+
+      # Deploy
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/inventory
+
+            # Pull latest images
+            docker pull ${{ secrets.DOCKER_USERNAME }}/inventory-backend:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/inventory-frontend:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/inventory-webserver:latest
+
+            # Stop containers but KEEP volumes (no -v)
+            docker-compose down --remove-orphans || true
+
+            # Start containers with existing volumes
+            docker-compose up -d --remove-orphans
+
+            # Wait for DB before migrations (20s)
+            sleep 20
+
+            # Run migrations
+            docker-compose exec backend php artisan migrate --force
+            # docker-compose exec backend php artisan db:seed --force

@@ -1,0 +1,92 @@
+services:
+  #PHP Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: nongdev/inventory-backend:latest
+    container_name: inventory_backend
+    restart: unless-stopped
+    tty: true
+    environment:
+      # Explicitly pass the database connection variables
+      DB_CONNECTION: mysql
+      DB_HOST: db 
+      DB_PORT: 3306
+      DB_DATABASE: inventory_management_db
+      DB_USERNAME: root
+      DB_PASSWORD: root
+    working_dir: /var/www/html/
+    volumes:
+        # - ./backend:/var/www/html
+        # - backend_vendor:/var/www/html/vendor
+        # - ./backend/storage:/var/www/html/storage
+        # - ./backend/bootstrap/cache:/var/www/html/bootstrap/cache
+        # - backend_vendor:/var/www/html/vendor
+        - backend_vendor:/var/www/html/vendor
+        - backend_storage:/var/www/html/storage
+    networks:
+      - app-network
+    command: >
+      sh -c "chown -R www-data:www-data storage bootstrap/cache &&
+           chmod -R 775 storage bootstrap/cache &&
+           php-fpm"
+    depends_on:
+      # Ensure the database service starts before the backend
+      - db
+
+  frontend:
+    stdin_open: true
+    container_name: inventory_frontend
+    image: nongdev/inventory-frontend:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - /app/node_modules
+      - ./frontend:/var/www/html/
+    # ports:
+    #   - "5174:80"
+    networks:
+      - app-network
+
+  #Nginx Service
+  webserver:
+    depends_on:
+      - backend
+      - frontend
+    build:
+      context: ./backend/nginx
+      dockerfile: Dockerfile
+    image: nongdev/inventory-webserver:latest
+    container_name: inventory_webserver
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "82:82"
+    networks:
+      - app-network
+  db:
+    image: mysql:8.0
+    container_name: inventory_mysql_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: inventory_management_db
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
+
+#Docker Volumes
+volumes:
+    backend_vendor:
+    backend_storage:
+    mysql_data:
