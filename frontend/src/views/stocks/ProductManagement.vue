@@ -9,6 +9,9 @@
   </custom-title>
 
   <v-data-table :headers="headers" :items="productStore.products">
+    <template #item.created_at="{item}">
+      {{ formatDate(item.created_at) }}
+    </template>
     <template #item.actions="{ item }">
       <v-btn
         icon="mdi-pencil"
@@ -40,6 +43,9 @@
   import { ref, onMounted } from 'vue'
   import { useProductStore } from '@/stores/productStore'
   import ProductDialog from '@/components/ProductDialog.vue'
+  import { useDate } from "@/composables/useDate";
+
+  const { formatDate, formatDateTime, addDays } = useDate();
 
   const productStore = useProductStore()
 
