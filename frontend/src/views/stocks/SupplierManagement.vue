@@ -83,13 +83,13 @@
   const handleSave = async supplier => {
     if (supplier.id) {
       await supplierStore.updateSupplier(supplier)
-      notif(t('messages.update_success'), {
+      notif(t('messages.updated_success'), {
         type: 'success',
         color: 'primary'
       })
     } else {
       await supplierStore.addSupplier(supplier)
-      notif(t('messages.create_success'), {
+      notif(t('messages.saved_success'), {
         type: 'success',
         color: 'primary'
       })

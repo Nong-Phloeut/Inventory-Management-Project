@@ -8,7 +8,7 @@
         <v-card class="card pa-6" :elevation="4">
           <v-row align="center">
             <v-col cols="8">
-              <div class="text-subtitle-1">{{ card.title }}</div>
+              <div>{{ card.title }}</div>
               <div class="text-h4 font-weight-bold mt-1">{{ card.value }}</div>
             </v-col>
             <v-col cols="4" class="text-right">

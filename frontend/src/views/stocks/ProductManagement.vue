@@ -80,13 +80,13 @@
   const saveProduct = async p => {
     if (p.id) {
       await productStore.updateProduct(p)
-      notif(t('messages.update_success'), {
+      notif(t('messages.updated_success'), {
         type: 'success',
         color: 'primary'
       })
     } else {
       await productStore.addProduct(p)
-      notif(t('messages.save_success'), {
+      notif(t('messages.saved_success'), {
         type: 'success',
         color: 'primary'
       })
