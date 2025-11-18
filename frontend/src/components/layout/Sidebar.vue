@@ -1,13 +1,21 @@
 <template>
-  <v-navigation-drawer v-model="drawer">
-    <template v-slot:prepend>
-      <v-list>
-        <v-list-item>
-          <h1>Logo</h1>
-          <v-img class="image" rounded></v-img>
-        </v-list-item>
-      </v-list>
-    </template>
+  <v-navigation-drawer
+    :rail="rail"
+    :model-value="drawer"
+    permanent
+    @click="$emit('update:rail', false)"
+    @update:model-value="$emit('update:drawer', $event)"
+  >
+    <v-list>
+      <v-list-item>
+        <v-img
+          src="https://cdn-icons-png.flaticon.com/512/7527/7527289.png"
+          width="90"
+          contain
+          class="mx-auto"
+        />
+      </v-list-item>
+    </v-list>
 
     <v-list dense>
       <v-list-item
@@ -77,19 +85,19 @@
         },
         {
           path: '/list-users',
-          title: 'Employees',
+          title: 'User Management',
           icon: 'mdi-account'
         },
         {
           path: '/reports',
           title: 'Report',
           icon: 'mdi-chart-line'
-        },
-        {
-          path: '/sales',
-          title: 'Sales',
-          icon: 'mdi-chart-line'
         }
+        // {
+        //   path: '/sales',
+        //   title: 'Sales',
+        //   icon: 'mdi-chart-line'
+        // }
       ]
     })
   }

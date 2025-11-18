@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="dialog" :max-width="options.width" @keydown.esc="cancel">
-    <v-card width="470">
+    <v-card width="470" rounded="lg">
       <v-card-title class="bg-red d-flex">
         <strong>Confirm Deletion</strong>
       </v-card-title>

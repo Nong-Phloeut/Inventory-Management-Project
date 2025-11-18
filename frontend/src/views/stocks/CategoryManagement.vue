@@ -12,22 +12,21 @@
     :items="categoryStore.categories"
     :loading="categoryStore.loading"
     :headers="headers"
+    hover
   >
     <template #item.actions="{ item }">
       <v-btn
-        size="small"
         class="me-2"
         color="primary"
         icon="mdi-pencil"
-        variant="tonal"
+        variant="text"
         @click="openEditDialog(item)"
       ></v-btn>
       <v-btn
-        size="small"
         icon="mdi-delete"
         color="error"
-        variant="tonal"
-        @click="openDeleteDialog(item)"
+        variant="text"
+        @click="handleDelete(item.id)"
       ></v-btn>
     </template>
   </v-data-table>
@@ -38,34 +37,21 @@
     :category="selectedCategory"
     @save="handleSave"
   />
-
-  <!-- Delete Confirmation -->
-  <v-dialog v-model="isDeleteDialogOpen" max-width="400">
-    <v-card>
-      <v-card-title>Confirm Delete</v-card-title>
-      <v-card-text>
-        Are you sure you want to delete
-        <strong>{{ selectedCategory?.name }}</strong>
-        ?
-      </v-card-text>
-      <v-card-actions>
-        <v-btn text @click="isDeleteDialogOpen = false">Cancel</v-btn>
-        <v-btn color="error" @click="handleDelete">Delete</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
 </template>
 
 <script setup>
   import { ref, onMounted } from 'vue'
   import { useCategoryStore } from '@/stores/categoryStore'
   import CategoryDialog from '@/components/CategoryDialog.vue'
+  import { useAppUtils } from '@/composables/useAppUtils'
+  import { useI18n } from 'vue-i18n'
 
+  const { confirm, notif } = useAppUtils()
   const categoryStore = useCategoryStore()
+  const { t } = useI18n()
   const isDialogOpen = ref(false)
   const isDeleteDialogOpen = ref(false)
   const selectedCategory = ref(null)
-
   const headers = [
     { title: 'Name', key: 'name' },
     { title: 'Description', key: 'description' },
@@ -93,17 +79,37 @@
 
   const handleSave = async category => {
     if (category.id) {
-      await categoryStore.updateCategory(category.id,category)
+      await categoryStore.updateCategory(category.id, category)
+      notif(t('messages.updated_success'), {
+        type: 'success',
+        color: 'primary'
+      })
     } else {
       await categoryStore.addCategory(category)
+      notif(t('messages.saved_success'), {
+        type: 'success',
+        color: 'primary'
+      })
     }
     isDialogOpen.value = false
   }
 
-  const handleDelete = async () => {
-    if (selectedCategory.value?.id) {
-      await categoryStore.deleteCategory(selectedCategory.value.id)
-      isDeleteDialogOpen.value = false
-    }
+  const handleDelete = async id => {
+    confirm({
+      title: 'Are you sure?',
+      message: 'Are you sure you want to delete this class?',
+      options: {
+        type: 'error',
+        color: 'error',
+        width: 400
+      },
+      agree: async () => {
+        await categoryStore.deleteCategory(id)
+        notif(t('messages.deleted_success'), {
+          type: 'success',
+          color: 'primary'
+        })
+      }
+    })
   }
 </script>

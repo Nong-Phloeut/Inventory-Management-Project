@@ -1,7 +1,7 @@
 import '@mdi/font/css/materialdesignicons.css'
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
-import { fr, en } from 'vuetify/locale'
+import { km, en } from 'vuetify/locale'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import * as labs from 'vuetify/labs/components'
@@ -14,17 +14,54 @@ const vuetify = createVuetify({
     ...labs
   },
   directives,
+  // 👉 DEFAULT PROPS
+  defaults: {
+    VDateInput: {
+      density: 'comfortable',
+      variant: 'outlined',
+      color: 'primary',
+    },
+
+    VSelect: {
+      density: 'comfortable',
+      variant: 'outlined',
+      color: 'primary',
+    },
+
+    // Text field defaults
+    VTextField: {
+      variant: 'outlined',
+      density: 'comfortable',
+      color: 'primary',
+    },
+
+    // Textarea defaults
+    VTextarea: {
+      variant: 'outlined',
+      density: 'comfortable',
+      color: 'primary',
+      autoGrow: true,
+      rows: 3,
+    },
+
+    // Autocomplete defaults
+    VAutocomplete: {
+      variant: 'outlined',
+      density: 'comfortable',
+      color: 'primary',
+    },
+  },
   theme: {
     themes: {
       light: {
         dark: false,
         colors: {
-          primary: '#89474b',
-          secondary: "#c17290", 
-          textField: "#2f9dab", 
-          icon: "#653748", 
-          btnEdit: "#a0627f", 
-          background: "#f8f7f8", 
+          primary: '#00838F',
+          secondary: "#c17290",
+          textField: "#2f9dab",
+          icon: "#653748",
+          btnEdit: "#a0627f",
+          background: "#f8f7f8",
           warning: '#FB8C00',
           error: '#B00020',
         }
@@ -32,7 +69,7 @@ const vuetify = createVuetify({
     },
   },
   locale: {
-    messages: { fr, en },
+    messages: { km, en },
     locale: 'en'
   },
   icons: {

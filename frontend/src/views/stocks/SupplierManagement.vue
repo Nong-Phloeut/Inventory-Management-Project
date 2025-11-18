@@ -16,18 +16,16 @@
     <template #item.actions="{ item }">
       <v-btn
         icon="mdi-pencil"
-        size="small"
         color="primary"
         class="me-2"
-        variant="tonal"
+        variant="text"
         @click="openEditDialog(item)"
       />
       <v-btn
         icon="mdi-delete"
-        size="small"
         color="error"
-        variant="tonal"
-        @click="openDeleteDialog(item)"
+        variant="text"
+        @click="handleDelete(item.id)"
       />
     </template>
   </v-data-table>
@@ -38,37 +36,21 @@
     :supplier="selectedSupplier"
     @save="handleSave"
   />
-
-  <!-- Delete Confirmation Dialog -->
-  <v-dialog v-model="isDeleteDialogOpen" max-width="400">
-    <v-card>
-      <v-card-title>Confirm Delete</v-card-title>
-      <v-card-text>
-        Are you sure you want to delete
-        <strong>{{ selectedSupplier?.name }}</strong>
-        ?
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn text @click="isDeleteDialogOpen = false">Cancel</v-btn>
-        <v-btn color="error" @click="handleDelete(selectedSupplier?.id)">
-          Delete
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
 </template>
 
 <script setup>
   import { ref, onMounted } from 'vue'
   import { useSupplierStore } from '@/stores/supplierStore'
   import SupplierDialog from '@/components/SupplierDialog.vue'
+  import { useAppUtils } from '@/composables/useAppUtils'
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
+  const { confirm, notif } = useAppUtils()
   const supplierStore = useSupplierStore()
 
   // State
   const isDialogOpen = ref(false)
-  const isDeleteDialogOpen = ref(false)
   const selectedSupplier = ref(null)
 
   // Table headers
@@ -97,25 +79,41 @@
     isDialogOpen.value = true
   }
 
-  // Open delete dialog
-  const openDeleteDialog = supplier => {
-    selectedSupplier.value = supplier
-    isDeleteDialogOpen.value = true
-  }
-
   // Save (add or update)
   const handleSave = async supplier => {
     if (supplier.id) {
       await supplierStore.updateSupplier(supplier)
+      notif(t('messages.update_success'), {
+        type: 'success',
+        color: 'primary'
+      })
     } else {
       await supplierStore.addSupplier(supplier)
+      notif(t('messages.create_success'), {
+        type: 'success',
+        color: 'primary'
+      })
     }
     isDialogOpen.value = false
   }
 
   // Delete
   const handleDelete = async id => {
-    await supplierStore.removeSupplier(id) // 🔹 use removeSupplier (store)
-    isDeleteDialogOpen.value = false
+    confirm({
+      title: 'Are you sure?',
+      message: 'Are you sure you want to delete this supplier?',
+      options: {
+        type: 'error',
+        color: 'error',
+        width: 400
+      },
+      agree: async () => {
+        await supplierStore.removeSupplier(id)
+        notif(t('messages.deleted_success'), {
+          type: 'success',
+          color: 'primary'
+        })
+      }
+    })
   }
 </script>

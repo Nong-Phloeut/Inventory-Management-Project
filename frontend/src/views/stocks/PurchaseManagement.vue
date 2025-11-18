@@ -42,7 +42,11 @@
   import { ref, onMounted } from 'vue'
   import { usePurchaseStore } from '@/stores/purchaseStore'
   import PurchaseDialog from '@/components/PurchaseDialog.vue'
+  import { useAppUtils } from '@/composables/useAppUtils'
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
+  const { confirm, notif } = useAppUtils()
   const purchaseStore = usePurchaseStore()
   const isDialogOpen = ref(false)
   const selectedPurchase = ref(null)

@@ -25,7 +25,11 @@
             <v-text-field v-model="form.email" label="Email" type="email" />
           </v-col>
         </v-row>
-        <v-text-field v-model="form.address" label="Address" />
+        <v-row>
+          <v-col>
+            <v-text-field v-model="form.address" label="Address" />
+          </v-col>
+        </v-row>
       </v-card-text>
       <v-card-actions>
         <v-spacer />

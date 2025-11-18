@@ -73,6 +73,5 @@ body {
 thead tr th {
   font-size: 15px;
   font-weight: bold;
-  /* text-transform: uppercase; */
 }
 </style>

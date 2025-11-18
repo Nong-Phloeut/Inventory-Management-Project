@@ -1,6 +1,11 @@
 <template>
-  <sidebar v-model="drawer"/>
-  <app-bar @toggle="toggleNav"/>
+  <sidebar
+    :drawer="drawer"
+    @update:drawer="drawer = $event"
+    :rail="rail"
+    @update:rail="rail = $event"
+  />
+  <app-bar @toggle="toggleRail" />
   <v-main>
     <v-container class="px-4" fluid>
       <router-view />
@@ -18,12 +23,16 @@
       Sidebar
     },
     data: () => ({
-      drawer: true
+      drawer: true,
+       rail: false,
     }),
 
     methods: {
       toggleNav() {
         this.drawer = !this.drawer
+      },
+      toggleRail() {
+        this.rail = !this.rail
       }
     }
   }

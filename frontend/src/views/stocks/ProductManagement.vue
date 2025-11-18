@@ -9,23 +9,21 @@
   </custom-title>
 
   <v-data-table :headers="headers" :items="productStore.products">
-    <template #item.created_at="{item}">
+    <template #item.created_at="{ item }">
       {{ formatDate(item.created_at) }}
     </template>
     <template #item.actions="{ item }">
       <v-btn
         icon="mdi-pencil"
-        size="small"
         class="me-2"
         color="primary"
-        variant="tonal"
+        variant="text"
         @click="openEditDialog(item)"
       />
       <v-btn
         icon="mdi-delete"
-        size="small"
         color="error"
-        variant="tonal"
+        variant="text"
         @click="deleteProduct(item)"
       />
     </template>
@@ -43,9 +41,13 @@
   import { ref, onMounted } from 'vue'
   import { useProductStore } from '@/stores/productStore'
   import ProductDialog from '@/components/ProductDialog.vue'
-  import { useDate } from "@/composables/useDate";
+  import { useDate } from '@/composables/useDate'
+  import { useAppUtils } from '@/composables/useAppUtils'
+  import { useI18n } from 'vue-i18n'
 
-  const { formatDate, formatDateTime, addDays } = useDate();
+  const { confirm, notif } = useAppUtils()
+  const { formatDate, formatDateTime, addDays } = useDate()
+  const { t } = useI18n()
 
   const productStore = useProductStore()
 
@@ -78,15 +80,36 @@
   const saveProduct = async p => {
     if (p.id) {
       await productStore.updateProduct(p)
+      notif(t('messages.update_success'), {
+        type: 'success',
+        color: 'primary'
+      })
     } else {
       await productStore.addProduct(p)
+      notif(t('messages.save_success'), {
+        type: 'success',
+        color: 'primary'
+      })
     }
     isDialogOpen.value = false
   }
 
   const deleteProduct = async p => {
-    if (confirm(`Delete "${p.name}"?`)) {
-      await productStore.deleteProduct(p.id)
-    }
+    confirm({
+      title: 'Are you sure?',
+      message: 'Are you sure you want to delete this product?',
+      options: {
+        type: 'error',
+        color: 'error',
+        width: 400
+      },
+      agree: async () => {
+        await productStore.deleteProduct(p.id)
+        notif(t('messages.deleted_success'), {
+          type: 'success',
+          color: 'primary'
+        })
+      }
+    })
   }
 </script>
