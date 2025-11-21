@@ -112,7 +112,9 @@ jobs:
 
             # Wait for DB before migrations (20s)
             sleep 20
-
+            # Clear Laravel config cache (important!)
+            docker-compose run --rm backend php artisan config:clear
             # Run migrations
-            docker-compose exec backend php artisan migrate --force
+            docker-compose run --rm backend php artisan migrate --force
+            # docker-compose exec backend php artisan migrate --force
             # docker-compose exec backend php artisan db:seed --force
