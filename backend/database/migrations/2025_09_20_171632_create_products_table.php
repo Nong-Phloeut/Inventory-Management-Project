@@ -17,6 +17,11 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
             $table->string('sku')->unique();
+            $table->string('barcode', 100)->nullable()->unique();
+            $table->enum('status', ['active', 'inactive'])
+                ->default('active');
+            $table->integer('low_stock_threshold')
+                ->default(5);
             $table->unsignedBigInteger('category_id')->nullable();
             $table->timestamps();
         });
