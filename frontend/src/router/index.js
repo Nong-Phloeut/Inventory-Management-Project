@@ -38,6 +38,12 @@ const routes = [
         meta: { requiresAuth: true }
       },
       {
+        path: '/units',
+        name: 'Units',
+        component: () => import('@/views/UnitManagement.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
         path: '/suppliers',
         name: 'Suppliers',
         component: () => import('@/views/stocks/SupplierManagement.vue'),
@@ -55,6 +61,28 @@ const routes = [
         component: () => import('@/views/stocks/PurchaseManagement.vue'),
         meta: { requiresAuth: true }
       },
+      {
+        path: '/purchase/create',
+        name: 'PurchaseCreate',
+        component: () => import('@/components/PurchaseForm.vue')
+      },
+      {
+        path: '/purchase/:id/edit',
+        name: 'PurchaseEdit',
+        component: () => import('@/components/PurchaseForm.vue')
+      },
+      {
+        path: '/purchases/:id/details',
+        name: 'purchase-details',
+        component: () => import('@/views/purchases/PurchaseDetails.vue'),
+        props: true
+      },
+      // {
+      //   path: '/purchases/:id/invoice',
+      //   name: 'purchase-invoice',
+      //   component: () => import('@/pages/PurchaseInvoice.vue'),
+      //   props: true
+      // },
       {
         path: '/reports',
         name: 'Reports',

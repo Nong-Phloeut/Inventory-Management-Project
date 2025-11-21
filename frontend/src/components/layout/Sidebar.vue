@@ -52,6 +52,7 @@
   export default {
     data: () => ({
       drawer: true,
+      rail :false,
       menu: [
         {
           path: '/dashboard',
@@ -62,6 +63,11 @@
           path: '/categories',
           title: 'Categories',
           icon: 'mdi-shape-outline'
+        },
+        {
+          path: '/units',
+          title: 'Units',
+          icon: 'mdi-counter'
         },
         {
           path: '/products',

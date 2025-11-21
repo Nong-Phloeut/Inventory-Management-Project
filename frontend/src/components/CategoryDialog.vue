@@ -16,6 +16,7 @@
             label="Category Name"
             :rules="[rules.required]"
             required
+            mandatory
           />
           <v-textarea v-model="form.description" label="Description" rows="3" />
         </v-form>
