@@ -20,15 +20,19 @@
     <v-card-title>Purchase Information</v-card-title>
     <v-card-text>
       <v-row>
-        <v-col cols="12" md="4">
+        <v-col cols="12" md="3">
           <strong>Invoice No:</strong>
           {{ purchase.invoice_number }}
         </v-col>
-        <v-col cols="12" md="4">
-          <strong>Purchase Date:</strong>
-          {{ purchase.purchase_date }}
+        <v-col cols="12" md="3">
+          <strong>Po No:</strong>
+          {{ purchase.purchase_number }}
         </v-col>
-        <v-col cols="12" md="4">
+        <v-col cols="12" md="3">
+          <strong>Purchase Date:</strong>
+          {{ formatDate(purchase.purchase_date) }}
+        </v-col>
+        <v-col cols="12" md="3">
           <strong>Status:</strong>
           <v-chip color="primary" size="small">{{ purchase.status }}</v-chip>
         </v-col>
@@ -57,7 +61,6 @@
     </v-card-text>
   </v-card>
 
-
   <v-card class="mt-4">
     <v-card-title>Purchased Items</v-card-title>
     <v-data-table
@@ -67,7 +70,7 @@
       density="compact"
     >
       <template #item.total="{ item }">
-        {{ formatCurrency(item.quantity * item.price) }}
+        {{ formatCurrency(item.quantity * item.cost_price) }}
       </template>
     </v-data-table>
   </v-card>
@@ -118,7 +121,9 @@
   import { ref, onMounted } from 'vue'
   import { useRoute } from 'vue-router'
   import { usePurchaseStore } from '@/stores/purchaseStore'
+  import { useDate } from '@/composables/useDate'
 
+  const { formatDate, formatDateTime, addDays } = useDate()
   const route = useRoute()
   const purchaseStore = usePurchaseStore()
 
@@ -126,7 +131,7 @@
 
   const itemHeaders = [
     { title: 'Item', key: 'product.name' },
-    { title: 'Cost Price', key: 'price' },
+    { title: 'Cost Price', key: 'cost_price' },
     { title: 'Qty', key: 'quantity' },
     { title: 'Total', key: 'total' }
   ]

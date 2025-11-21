@@ -14,6 +14,9 @@ class Product extends Model
         'description',
         'price',
         'sku',
+        'barcode',
+        'status',
+        'low_stock_threshold',
         'category_id',
     ];
 
@@ -25,5 +28,9 @@ class Product extends Model
     public function stock()
     {
         return $this->hasOne(Stock::class);
+    }
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class);
     }
 }

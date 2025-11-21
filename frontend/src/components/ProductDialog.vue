@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="internalOpen" max-width="600">
     <v-card>
-       <v-toolbar
+      <v-toolbar
         :title="form.id ? 'Edit Product' : 'Add Product'"
         class="bg-primary"
       >
@@ -26,6 +26,14 @@
           />
           <v-text-field v-model="form.sku" label="SKU" />
           <v-text-field v-model="form.price" label="Price" type="number" />
+          <v-select
+            v-model="form.status"
+            :items="statusOptions"
+            item-title="name"
+            item-value="id"
+            label="Status"
+            :rules="[rules.required]"
+          />
         </v-form>
       </v-card-text>
 
@@ -57,8 +65,14 @@
     id: null,
     name: '',
     sku: '',
+    status: '',
     price: 0
   })
+
+  const statusOptions = ref([
+    { id: 'active', name: 'Active' },
+    { id: 'inactive', name: 'Inactive' }
+  ])
 
   const rules = {
     required: v => !!v || 'This field is required'

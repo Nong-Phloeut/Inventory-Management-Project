@@ -8,9 +8,18 @@
     </template>
   </custom-title>
 
-  <v-data-table :headers="headers" :items="productStore.products">
+  <v-data-table :headers="headers" :items="productStore.products.data">
     <template #item.created_at="{ item }">
       {{ formatDate(item.created_at) }}
+    </template>
+    <template #item.status="{ item }">
+      <v-chip size="small" :color="item.status == 'active' ? 'green' : 'red'">
+        <v-icon
+          :icon="item.status == 'active' ? 'mdi-check-circle' : 'mdi-cancel'"
+          start
+        ></v-icon>
+        {{ item.status.charAt(0).toUpperCase() + item.status.slice(1) }}
+      </v-chip>
     </template>
     <template #item.actions="{ item }">
       <v-btn
@@ -53,8 +62,11 @@
 
   const headers = [
     { title: 'Name', key: 'name' },
+    { title: 'Unit', key: 'unit' },
+    { title: 'Category', key: 'category.name' },
     { title: 'SKU', key: 'sku' },
     { title: 'Price', key: 'price' },
+    { title: 'Status', key: 'status' },
     { title: 'Created At', key: 'created_at' },
     { title: 'Actions', key: 'actions', sortable: false }
   ]

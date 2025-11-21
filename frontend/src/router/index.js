@@ -74,8 +74,7 @@ const routes = [
       {
         path: '/purchases/:id/details',
         name: 'purchase-details',
-        component: () => import('@/views/purchases/PurchaseDetails.vue'),
-        props: true
+        component: () => import('@/views/purchases/PurchaseDetails.vue')
       },
       // {
       //   path: '/purchases/:id/invoice',

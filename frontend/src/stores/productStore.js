@@ -22,8 +22,8 @@ export const useProductStore = defineStore('product', {
 
     async addProduct(product) {
       try {
-        const newProduct = await productService.create(product)
-        this.products.push(newProduct)
+        await productService.create(product)
+        this.fetchProducts()
       } catch (err) {
         this.error = err.response?.data?.message || err.message
         throw err
@@ -32,9 +32,8 @@ export const useProductStore = defineStore('product', {
 
     async updateProduct(product) {
       try {
-        const updated = await productService.update(product.id, product)
-        const idx = this.products.findIndex(p => p.id === product.id)
-        if (idx !== -1) this.products[idx] = updated
+        await productService.update(product.id, product)
+        this.fetchProducts()
       } catch (err) {
         this.error = err.response?.data?.message || err.message
         throw err
@@ -44,7 +43,7 @@ export const useProductStore = defineStore('product', {
     async deleteProduct(id) {
       try {
         await productService.remove(id)
-        this.products = this.products.filter(p => p.id !== id)
+        this.fetchProducts()
       } catch (err) {
         this.error = err.response?.data?.message || err.message
         throw err

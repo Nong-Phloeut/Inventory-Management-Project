@@ -6,7 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Purchase extends Model
 {
-    protected $fillable = ['supplier_id', 'purchase_date', 'total_amount'];
+    protected $fillable = [
+        'supplier_id',
+        'purchase_date',
+        'total_amount',
+        'purchase_number',
+        'invoice_number',
+        'status',
+        'payment_status',
+        'subtotal',
+        'tax',
+        'discount'
+    ];
 
     public function items()
     {

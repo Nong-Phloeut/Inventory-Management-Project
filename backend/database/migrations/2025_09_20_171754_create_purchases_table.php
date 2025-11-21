@@ -14,9 +14,20 @@ return new class extends Migration
         Schema::create('purchases', function (Blueprint $table) {
             $table->id();
             $table->string('invoice_number')->unique()->nullable();
+            // Auto-generated internal purchase number (recommended)
+            $table->string('purchase_number')->unique();
             $table->foreignId('supplier_id')->constrained()->onDelete('cascade');
+            // Status: draft, received, cancelled
+            $table->enum('status', ['draft', "ordered", 'received', 'cancelled'])->default('draft');
+            // Payment status
+            $table->enum('payment_status', ['unpaid', 'partial', 'paid'])->default('unpaid');
+            // Purchase date
             $table->date('purchase_date');
-            $table->decimal('total_amount', 10, 2);
+            // Total
+            $table->decimal('subtotal', 12, 2)->default(0);
+            $table->decimal('tax', 12, 2)->default(0);
+            $table->decimal('discount', 12, 2)->default(0);
+            $table->decimal('total_amount', 12, 2)->default(0);
             $table->timestamps();
         });
     }
