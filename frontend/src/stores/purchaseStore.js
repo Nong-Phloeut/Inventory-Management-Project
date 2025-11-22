@@ -17,7 +17,7 @@ export const usePurchaseStore = defineStore('purchase', {
     },
     async addPurchase(purchase) {
       await purchaseService.create(purchase);
-      // await this.fetchPurchases();
+      await this.fetchPurchases();
     },
     async updatePurchase(id, purchase) {
       await purchaseService.update(id, purchase);

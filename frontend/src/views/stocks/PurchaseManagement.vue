@@ -98,9 +98,9 @@
     switch (val) {
       case 'received':
         return 'green'
-      case 'inprogress':
+      case 'ordered':
         return 'blue'
-      case 'completed':
+      case 'ordered':
         return 'green-darken-1'
       case 'cancelled':
         return 'red'
@@ -127,7 +127,7 @@
     switch (val) {
       case 'received':
         return 'mdi-check-circle'
-      case 'inprogress':
+      case 'ordered':
         return 'mdi-progress-clock'
       case 'completed':
         return 'mdi-check-circle-outline'

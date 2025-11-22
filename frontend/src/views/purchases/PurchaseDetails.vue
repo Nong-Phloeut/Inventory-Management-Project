@@ -16,7 +16,7 @@
     </template>
   </custom-title>
 
-  <v-card>
+  <v-card elevation="0" rounded="lg">
     <v-card-title>Purchase Information</v-card-title>
     <v-card-text>
       <v-row>
@@ -41,7 +41,7 @@
   </v-card>
 
   <!-- SUPPLIER INFO -->
-  <v-card class="mt-4">
+  <v-card class="mt-4" elevation="0" rounded="lg">
     <v-card-title>Supplier Information</v-card-title>
     <v-card-text>
       <v-row>
@@ -61,22 +61,24 @@
     </v-card-text>
   </v-card>
 
-  <v-card class="mt-4">
+  <v-card class="mt-4" elevation="0" rounded="lg">
     <v-card-title>Purchased Items</v-card-title>
-    <v-data-table
-      :headers="itemHeaders"
-      :items="purchase.items"
-      class="px-2"
-      density="compact"
-    >
-      <template #item.total="{ item }">
-        {{ formatCurrency(item.quantity * item.cost_price) }}
-      </template>
-    </v-data-table>
+    <v-card-text class="pa-0">
+      <v-data-table
+        :headers="itemHeaders"
+        :items="purchase.items"
+        class="px-2"
+        density="compact"
+      >
+        <template #item.total="{ item }">
+          {{ formatCurrency(item.quantity * item.cost_price) }}
+        </template>
+      </v-data-table>
+    </v-card-text>
   </v-card>
 
   <!-- TOTALS -->
-  <v-card class="mt-4">
+  <v-card class="mt-4" elevation="0" rounded="lg">
     <v-card-text>
       <div class="d-flex justify-end">
         <div style="width: 300px">
