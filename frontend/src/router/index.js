@@ -50,8 +50,8 @@ const routes = [
         meta: { requiresAuth: true }
       },
       {
-        path: '/stock-movements',
-        name: 'StockMovements',
+        path: '/stocks',
+        name: 'Stocks',
         component: () => import('@/views/stocks/StockManagement.vue'),
         meta: { requiresAuth: true }
       },

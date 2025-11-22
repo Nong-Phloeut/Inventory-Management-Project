@@ -80,8 +80,8 @@
           icon: 'mdi-truck-delivery'
         },
         {
-          path: '/stock-movements',
-          title: 'Stock Movements',
+          path: '/stocks',
+          title: 'Stocks',
           icon: 'mdi-swap-horizontal'
         },
         {

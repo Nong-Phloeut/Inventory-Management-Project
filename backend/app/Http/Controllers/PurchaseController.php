@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\Stock;
+use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -39,6 +40,8 @@ class PurchaseController extends Controller
         $data = $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
             'purchase_date' => 'required|date',
+            'subtotal' => 'required',
+            'total_amount' => 'required',
             'status' => 'required|in:draft,ordered,received,cancelled',
             'payment_status' => 'required|in:paid,unpaid,partial',
             'items' => 'required|array|min:1',
@@ -49,16 +52,13 @@ class PurchaseController extends Controller
 
         return DB::transaction(function () use ($data) {
 
-            $totalAmount = collect($data['items'])->sum(
-                fn($i) => $i['quantity'] * $i['cost_price']
-            );
-
             $purchase = Purchase::create([
                 'supplier_id' => $data['supplier_id'],
                 'purchase_date' => $data['purchase_date'],
                 'status' => $data['status'],                   // FIXED
                 'payment_status' => $data['payment_status'],   // FIXED
-                'total_amount' => $totalAmount,
+                'subtotal' => $data['subtotal'],   // FIXED
+                'total_amount' => $data['total_amount'],
                 'purchase_number' => $this->generatePurchaseNumber(),
             ]);
 
@@ -76,9 +76,17 @@ class PurchaseController extends Controller
                 ]);
 
                 // Update stock
-                DB::table('stocks')->updateOrInsert(
-                    ['product_id' => $item['product_id']],
-                    ['quantity' => DB::raw("COALESCE(quantity,0) + {$item['quantity']}")]
+                // DB::table('stocks')->updateOrInsert(
+                //     ['product_id' => $item['product_id']],
+                //     ['quantity' => DB::raw("COALESCE(quantity,0) + {$item['quantity']}")]
+                // );
+                app(\App\Services\StockService::class)->addStock(
+                    $item['product_id'],
+                    $item['quantity'],
+                    $item['cost_price'],
+                    'purchase',
+                    $purchase->id,
+                    "Purchase #{$purchase->id}"
                 );
             }
 
@@ -101,6 +109,8 @@ class PurchaseController extends Controller
         $data = $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
             'purchase_date' => 'required|date',
+            'subtotal' => 'required',
+            'total_amount' => 'required',
             'status' => 'required|in:draft,ordered,received,cancelled',
             'payment_status' => 'required|in:paid,unpaid,partial',
             'items' => 'required|array|min:1',
@@ -121,17 +131,13 @@ class PurchaseController extends Controller
             // 2. Delete old purchase items
             $purchase->items()->delete();
 
-            // 3. Recalculate purchase total
-            $totalAmount = collect($data['items'])->sum(
-                fn($i) => $i['quantity'] * $i['cost_price']
-            );
-
             $purchase->update([
                 'supplier_id' => $data['supplier_id'],
                 'purchase_date' => $data['purchase_date'],
                 'status' => $data['status'],                  // FIXED
                 'payment_status' => $data['payment_status'],  // FIXED
-                'total_amount' => $totalAmount,
+                'subtotal' => $data['subtotal'],   // FIXED
+                'total_amount' => $data['total_amount'],
             ]);
 
             // 4. Re-create items + update stock
@@ -144,9 +150,17 @@ class PurchaseController extends Controller
                     'total' => $item['quantity'] * $item['cost_price'],  // FIXED
                 ]);
 
-                DB::table('stocks')->updateOrInsert(
-                    ['product_id' => $item['product_id']],
-                    ['quantity' => DB::raw("COALESCE(quantity,0) + {$item['quantity']}")]
+                // DB::table('stocks')->updateOrInsert(
+                //     ['product_id' => $item['product_id']],
+                //     ['quantity' => DB::raw("COALESCE(quantity,0) + {$item['quantity']}")]
+                // );
+                app(\App\Services\StockService::class)->addStock(
+                    $item['product_id'],
+                    $item['quantity'],
+                    $item['cost_price'],
+                    'purchase',
+                    $purchase->id,
+                    "Purchase #{$purchase->id}"
                 );
             }
 

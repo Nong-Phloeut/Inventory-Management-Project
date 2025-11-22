@@ -1,0 +1,113 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Product;
+use App\Models\Stock;
+use App\Models\StockMovement;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+
+class StockService
+{
+
+     public const MOVEMENT_TYPES = [
+        'purchase',
+        'sale',
+        'return',
+        'adjustment',
+        'transfer_in',
+        'transfer_out',
+        'loss',
+    ];
+    /**
+     * Add stock and record movement
+     */
+    public function addStock(int $productId, float $quantity, float $cost = 0, string $movementType = 'purchase', int $relatedId = null, string $note = null)
+    {
+        DB::transaction(function () use ($productId, $quantity, $cost, $movementType, $relatedId, $note) {
+            // 1. Update or create stock
+            Stock::updateOrCreate(
+                ['product_id' => $productId],
+                ['quantity' => DB::raw("COALESCE(quantity,0) + {$quantity}")]
+            );
+
+            // 2. Record stock movement
+            StockMovement::create([
+                'product_id' => $productId,
+                'movement_type' => $movementType,
+                'qty' => $quantity,
+                'cost' => $cost,
+                'related_id' => $relatedId,
+                'note' => $note,
+                'created_by' => 1,
+            ]);
+        });
+    }
+
+    /**
+     * Reduce stock and record movement
+     */
+    public function reduceStock(int $productId, float $quantity, float $cost = 0, string $movementType = 'sale', int $relatedId = null, string $note = null)
+    {
+        DB::transaction(function () use ($productId, $quantity, $cost, $movementType, $relatedId, $note) {
+            // 1. Decrement stock
+            $stock = Stock::where('product_id', $productId)->firstOrFail();
+            $stock->decrement('quantity', $quantity);
+
+            // 2. Record stock movement
+            StockMovement::create([
+                'product_id' => $productId,
+                'movement_type' => $movementType,
+                'qty' => -abs($quantity), // negative for outflow
+                'cost' => $cost,
+                'related_id' => $relatedId,
+                'note' => $note,
+                'created_by' => 1,
+            ]);
+        });
+    }
+
+    /**
+     * Get stock movements for a product
+     */
+    public function getMovements(int $productId)
+    {
+        return StockMovement::with(['product', 'creator'])
+            ->where('product_id', $productId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+
+    public function returnStock(int $productId, float $qty, string $note = null, int|null $relatedId = null)
+    {
+        return $this->addStock(
+            productId: $productId,
+            quantity: $qty,
+            movementType: 'return',
+            relatedId: $relatedId,
+            note: $note
+        );
+    }
+
+    public function adjustStock(int $productId, float $qty, string $note = null)
+    {
+        return $this->addStock(
+            productId: $productId,
+            quantity: $qty,
+            movementType: 'adjustment',
+            note: $note
+        );
+    }
+
+    public function reportLoss(int $productId, float $qty, string $note = null)
+    {
+        return $this->addStock(
+            productId: $productId,
+            quantity: -abs($qty), // reduce stock
+            movementType: 'loss',
+            note: $note
+        );
+    }
+}

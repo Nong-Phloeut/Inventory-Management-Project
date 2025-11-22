@@ -3,7 +3,7 @@
     <template #right>
       <BaseButton icon="mdi-plus" @click="goToCreate">New Purchase</BaseButton>
     </template>
-    Purchases
+    Purchase Orders
   </custom-title>
 
   <v-data-table

@@ -1,62 +1,154 @@
 <template>
-  <custom-title icon="mdi-warehouse">
-    Stocks
-    <!-- <template #right>
-      <BaseButton icon="mdi-plus" @click="openAddDialog">Add Stock</BaseButton>
-    </template> -->
-  </custom-title>
+  <custom-title icon="mdi-warehouse">Current Stock Levels</custom-title>
 
   <v-data-table :headers="headers" :items="stockStore.stocks">
     <template #item.product="{ item }">
       {{ item.product?.name }}
     </template>
+    <template #item.actions="{ item }">
+      <v-row dense>
+        <v-tooltip location="top">
+          <template #activator="{ props }">
+            <v-btn
+              v-bind="props"
+              icon
+              color="green"
+              variant="text"
+              @click="openDialog('return', item)"
+            >
+              <v-icon>mdi-backup-restore</v-icon>
+            </v-btn>
+          </template>
+          <span>Return</span>
+        </v-tooltip>
+
+        <v-tooltip location="top">
+          <template #activator="{ props }">
+            <v-btn
+              v-bind="props"
+              icon
+              color="orange"
+              variant="text"
+              @click="openDialog('adjustment', item)"
+            >
+              <v-icon>mdi-tune</v-icon>
+            </v-btn>
+          </template>
+          <span>Adjustment</span>
+        </v-tooltip>
+
+        <v-tooltip location="top">
+          <template #activator="{ props }">
+            <v-btn
+              v-bind="props"
+              icon
+              color="red"
+              variant="text"
+              @click="openDialog('loss', item)"
+            >
+              <v-icon>mdi-alert-circle</v-icon>
+            </v-btn>
+          </template>
+          <span>Loss</span>
+        </v-tooltip>
+
+        <v-tooltip location="top">
+          <template #activator="{ props }">
+            <v-btn
+              v-bind="props"
+              icon
+              variant="text"
+              @click="openMovementDialog(item)"
+            >
+              <v-icon>mdi-history</v-icon>
+            </v-btn>
+          </template>
+          <span>Stock Movements</span>
+        </v-tooltip>
+      </v-row>
+    </template>
   </v-data-table>
 
-  <!-- <StockDialog
-    v-model:isOpen="isDialogOpen"
+  <MovementDialog v-model="isDialogOpen" :stock="selectedStock" />
+
+  <!-- Stock Action Dialog -->
+  <StockActionDialog
+    v-model="dialogVisible"
+    :actionType="dialogType"
     :stock="selectedStock"
-    :products="productStore.products"
-    @save="saveStock"
-  /> -->
+    @submitAction="handleAction"
+  />
 </template>
 
 <script setup>
   import { ref, onMounted } from 'vue'
   import { useStockStore } from '@/stores/stockStore'
-  import { useProductStore } from '@/stores/productStore'
-  import StockDialog from '@/components/StockDialog.vue'
+  import MovementDialog from '@/components/MovementDialog.vue'
+  import StockActionDialog from '@/components/stocks/StockActionDialog.vue'
+  import { useStockMovementStore } from '@/stores/stockMovementStore'
+  import { useDate } from '@/composables/useDate'
+  // import { useAppUtils } from '@/composables/useAppUtils'
 
+  // const { confirm, notif } = useAppUtils()
+  const { formatDate, formatDateTime, addDays } = useDate()
+  const stockMovementStore = useStockMovementStore()
   const stockStore = useStockStore()
-  const productStore = useProductStore()
 
   const headers = [
     { title: 'Product', key: 'product' },
     { title: 'Quantity', key: 'quantity' },
-    { title: 'Date', key: 'created_at' }
+    { title: 'Date', key: 'created_at' },
+    { title: '', key: 'actions' }
   ]
+  const form = ref({
+    quantity: 0,
+    note: ''
+  })
 
   const isDialogOpen = ref(false)
   const selectedStock = ref(null)
+  const dialogVisible = ref(false)
+  const dialogType = ref('') // return | adjustment | loss
 
   onMounted(() => {
     stockStore.fetchStocks()
-    // productStore.fetchProducts()
   })
+  function openDialog(type, stock) {
+    dialogType.value = type
+    selectedStock.value = stock
+    form.value = { quantity: 0, note: '' }
+    dialogVisible.value = true
+  }
+  const openMovementDialog = item => {
+    selectedStock.value = item
+    isDialogOpen.value = true
+  }
+  async function handleAction(payload) {
+    const { stock, ...data } = payload
 
-  const openAddDialog = () => {
-    selectedStock.value = null
-    isDialogOpen.value = true
-  }
-  const openEditDialog = s => {
-    selectedStock.value = { ...s }
-    isDialogOpen.value = true
-  }
-  const saveStock = s => {
-    s.id ? stockStore.updateStock(s) : stockStore.addStock(s)
-    stockStore.fetchStocks()
-  }
-  const deleteStock = s => {
-    if (confirm(`Delete stock of "${s.product.name}"?`))
-      stockStore.deleteStock(s.id)
+    switch (dialogType.value) {
+      case 'return':
+        await stockMovementStore.returnStock({
+          product_id: stock.product_id,
+          ...data
+        })
+        break
+      case 'adjustment':
+        await stockMovementStore.adjustStock({
+          product_id: stock.product_id,
+          ...data
+        })
+        break
+      case 'loss':
+        await stockMovementStore.reportLoss({
+          product_id: stock.product_id,
+          ...data
+        })
+        break
+    }
+
+    // Refresh stock
+    await stockStore.fetchStocks()
+    // stocks.value = stockMovementStore.stocks
   }
 </script>

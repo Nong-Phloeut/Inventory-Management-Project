@@ -1,12 +1,16 @@
 <?php
 
+use App\Http\Controllers\AdjustmentController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\LossController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\StockController;
+use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SupplierController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -30,3 +34,9 @@ Route::apiResource('purchases', PurchaseController::class);
 Route::get('/dashboard', [DashboardController::class, 'stats']);
 Route::apiResource('sales', SaleController::class);
 Route::apiResource('employees', EmployeeController::class);
+Route::apiResource('/stock-movements', StockMovementController::class);
+Route::prefix('stock')->group(function () {
+    Route::post('return', [ReturnController::class, 'returnStock']);
+    Route::post('adjust', [AdjustmentController::class, 'adjustStock']);
+    Route::post('loss', [LossController::class, 'reportLoss']);
+});
