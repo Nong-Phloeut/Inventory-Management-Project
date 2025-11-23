@@ -115,6 +115,8 @@
         return 'green'
       case 'unpaid':
         return 'red'
+      case 'partial':
+        return 'orange'
       case 'refunded':
         return 'blue'
       default:
@@ -144,6 +146,8 @@
         return 'mdi-cash-check'
       case 'unpaid':
         return 'mdi-cash-remove'
+      case 'partial':
+        return 'mdi-cash-clock'
       case 'refunded':
         return 'mdi-cash-refund'
       default:

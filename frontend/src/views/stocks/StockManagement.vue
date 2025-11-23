@@ -1,9 +1,18 @@
 <template>
   <custom-title icon="mdi-warehouse">Current Stock Levels</custom-title>
 
-  <v-data-table :headers="headers" :items="stockStore.stocks">
+  <v-data-table :headers="headers" :items="stockStore.stocks.data">
     <template #item.product="{ item }">
       {{ item.product?.name }}
+    </template>
+    <template #item.updated_at="{ item }">
+      {{ formatDate(item.product?.updated_at) }}
+    </template>
+    <template #item.stock_alert="{ item }">
+      <v-chip :color="stockAlertChip(item).color" variant="flat" size="small">
+        <v-icon :icon="stockAlertChip(item).icon" start></v-icon>
+        {{ stockAlertChip(item).text }}
+      </v-chip>
     </template>
     <template #item.actions="{ item }">
       <v-row dense>
@@ -96,8 +105,12 @@
 
   const headers = [
     { title: 'Product', key: 'product' },
+    { title: 'SKU', key: 'product.sku' },
     { title: 'Quantity', key: 'quantity' },
-    { title: 'Date', key: 'created_at' },
+    { title: 'Unit', key: 'product.unit' },
+    { title: 'Stock Alert', key: 'product.low_stock_threshold' },
+    { title: 'Status', key: 'stock_alert' },
+    { title: 'Last Updated', key: 'updated_at' },
     { title: '', key: 'actions' }
   ]
   const form = ref({
@@ -123,6 +136,21 @@
     selectedStock.value = item
     isDialogOpen.value = true
   }
+  const stockAlertChip = item => {
+    const threshold = item.product?.low_stock_threshold ?? 0
+    const qty = item.quantity
+
+    if (qty <= 0) {
+      return { text: 'Out of Stock', color: 'red', icon: 'mdi-close-circle' }
+    }
+
+    if (qty <= threshold) {
+      return { text: 'Low Stock', color: 'warning', icon: 'mdi-alert' }
+    }
+
+    return { text: 'In Stock', color: 'green', icon: 'mdi-check-circle' }
+  }
+
   async function handleAction(payload) {
     const { stock, ...data } = payload
 

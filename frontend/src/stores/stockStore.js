@@ -8,7 +8,7 @@ export const useStockStore = defineStore('stock', {
   actions: {
     async fetchStocks() {
       const res = await stockService.getAll()
-      this.stocks = res.data
+      this.stocks = res.data.data
     },
     async addStock(data) {
       const res = await stockService.create(data)

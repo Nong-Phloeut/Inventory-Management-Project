@@ -10,9 +10,21 @@ class StockController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Stock::with('product')->get();
+        $sortBy = $request->get('sortBy', 'id');        // default sort by id
+        $sortDir = $request->get('sortDir', 'desc');    // default: newest first
+        $perPage = $request->get('perPage', 10);        // default page size
+
+        // Query with product relation
+        $query = Stock::with('product')
+            ->orderBy($sortBy, $sortDir);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Units retrieved successfully',
+            'data' => $query->paginate($perPage)
+        ]);
     }
 
     /**
