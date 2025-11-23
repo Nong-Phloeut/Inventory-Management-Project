@@ -1,8 +1,8 @@
 <template>
   <v-dialog v-model="dialogVisible" max-width="900px">
-    <v-card rounded="lg">
+    <v-card rounded="lg" elevation="0" class="bg-background">
       <!-- Header -->
-      <v-card-title class="d-flex align-center">
+      <v-card-title class="d-flex align-center bg-primary">
         Stock Movement History
         <v-spacer />
         <v-btn icon variant="text" @click="close">
@@ -30,7 +30,7 @@
           :items="stockMovementStore.movements"
           :loading="stockMovementStore.loading"
           density="compact"
-          class="elevation-1"
+          class="elevation-0"
         >
           <template #item.movement_type="{ item }">
             <v-chip :color="typeColor(item.movement_type)" size="small" label>

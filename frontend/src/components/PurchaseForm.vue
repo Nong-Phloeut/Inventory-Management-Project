@@ -128,6 +128,8 @@
                 label="Cost Price"
                 density="compact"
                 min="0"
+                :readonly="true"
+                :disabled="!item.product_id"
                 :rules="[v => v >= 0 || 'Price must be ≥ 0']"
               />
             </v-col>
@@ -144,11 +146,7 @@
         </v-col>
 
         <v-col cols="3">
-          <v-sheet
-            border
-            rounded="lg"
-            class="pa-4"
-          >
+          <v-sheet border rounded="lg" class="pa-4">
             <div class="mb-2">Summary</div>
 
             <div class="d-flex justify-space-between mb-1">
@@ -196,7 +194,7 @@
 </template>
 
 <script setup>
-  import { reactive, ref, computed, onMounted } from 'vue'
+  import { reactive, ref, computed, onMounted ,watch } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import { useSupplierStore } from '@/stores/supplierStore'
   import { useProductStore } from '@/stores/productStore'
@@ -226,6 +224,23 @@
     discount: 0,
     items: []
   })
+
+  watch(
+    () => purchase.items,
+    items => {
+      items.forEach(item => {
+        if (item.product_id) {
+          const product = productStore.products.data.find(
+            p => p.id === item.product_id
+          )
+          if (product) {
+            item.cost_price = product.price // auto-fill price
+          }
+        }
+      })
+    },
+    { deep: true }
+  )
 
   const isEdit = computed(() => !!purchase.id)
 
@@ -281,8 +296,11 @@
     }
 
     if (isEdit.value) {
-      if(purchase.status === 'received') {
-        notif('Cannot edit a received purchase.', { type: 'error', color: 'error' })
+      if (purchase.status === 'received') {
+        notif('Cannot edit a received purchase.', {
+          type: 'error',
+          color: 'error'
+        })
         return
       }
       await purchaseStore.updatePurchase(purchase.id, payload)

@@ -16,7 +16,7 @@
     </template>
     <template #item.actions="{ item }">
       <v-row dense>
-        <v-tooltip location="top">
+        <!-- <v-tooltip location="top">
           <template #activator="{ props }">
             <v-btn
               v-bind="props"
@@ -29,7 +29,7 @@
             </v-btn>
           </template>
           <span>Return</span>
-        </v-tooltip>
+        </v-tooltip> -->
 
         <v-tooltip location="top">
           <template #activator="{ props }">
