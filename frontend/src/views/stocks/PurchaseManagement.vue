@@ -15,6 +15,9 @@
     <template #item.purchase_date="{ item }">
       {{ formatDate(item.purchase_date) }}
     </template>
+    <template #item.total_amount="{ item }">
+      {{ formatCurrency(item.total_amount) }}
+    </template>
     <template #item.status="{ item }">
       <v-chip
         :color="statusColor(item.status)"
@@ -72,7 +75,9 @@
   import { useRouter } from 'vue-router'
   import { useI18n } from 'vue-i18n'
   import { useDate } from '@/composables/useDate'
+  import { useCurrency } from '@/composables/useCurrency.js'
 
+  const { formatCurrency, formatKHR } = useCurrency()
   const { formatDate, formatDateTime, addDays } = useDate()
   const { t } = useI18n()
   const router = useRouter()

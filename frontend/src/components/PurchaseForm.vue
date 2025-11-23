@@ -151,17 +151,17 @@
 
             <div class="d-flex justify-space-between mb-1">
               <span>Subtotal:</span>
-              <strong>{{ subtotal }}</strong>
+              <strong>{{ formatCurrency(subtotal) }}</strong>
             </div>
 
             <div class="d-flex justify-space-between mb-1">
               <span>Tax:</span>
-              <strong>{{ purchase.tax }}</strong>
+              <strong>{{ formatCurrency(purchase.tax) }}</strong>
             </div>
 
             <div class="d-flex justify-space-between mb-1">
               <span>Discount:</span>
-              <strong>{{ purchase.discount }}</strong>
+              <strong>{{ formatCurrency(purchase.discount) }}</strong>
             </div>
 
             <v-divider class="my-2" />
@@ -169,7 +169,7 @@
             <div class="d-flex justify-space-between">
               <!-- <span>Total:</span> -->
               <h3 class="font-weight-bold">Total:</h3>
-              <h3>{{ totalAmount }}</h3>
+              <h3>{{ formatCurrency(totalAmount) }}</h3>
             </div>
           </v-sheet>
         </v-col>
@@ -201,7 +201,9 @@
   import { usePurchaseStore } from '@/stores/purchaseStore'
   import { useI18n } from 'vue-i18n'
   import { useAppUtils } from '@/composables/useAppUtils'
+  import { useCurrency } from '@/composables/useCurrency.js'
 
+  const { formatCurrency, formatKHR } = useCurrency()
   const { t } = useI18n()
   const { confirm, notif } = useAppUtils()
   const route = useRoute()

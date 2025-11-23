@@ -12,6 +12,9 @@
     <template #item.created_at="{ item }">
       {{ formatDate(item.created_at) }}
     </template>
+    <template #item.price="{ item }">
+      {{ formatCurrency(item.price) }}
+    </template>
     <template #item.status="{ item }">
       <v-chip size="small" :color="item.status == 'active' ? 'green' : 'red'">
         <v-icon
@@ -53,7 +56,9 @@
   import { useDate } from '@/composables/useDate'
   import { useAppUtils } from '@/composables/useAppUtils'
   import { useI18n } from 'vue-i18n'
+  import { useCurrency } from '@/composables/useCurrency.js'
 
+  const { formatCurrency, formatKHR } = useCurrency()
   const { confirm, notif } = useAppUtils()
   const { formatDate, formatDateTime, addDays } = useDate()
   const { t } = useI18n()

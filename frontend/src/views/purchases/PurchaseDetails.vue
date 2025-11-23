@@ -124,7 +124,9 @@
   import { useRoute } from 'vue-router'
   import { usePurchaseStore } from '@/stores/purchaseStore'
   import { useDate } from '@/composables/useDate'
+  import { useCurrency } from '@/composables/useCurrency.js'
 
+  const { formatCurrency, formatKHR } = useCurrency()
   const { formatDate, formatDateTime, addDays } = useDate()
   const route = useRoute()
   const purchaseStore = usePurchaseStore()
@@ -142,9 +144,6 @@
     purchase.value = await purchaseStore.fetchPurchaseById(route.params.id)
   })
 
-  function formatCurrency(val) {
-    return `$${Number(val).toFixed(2)}`
-  }
 
   function printInvoice() {
     window.print()
