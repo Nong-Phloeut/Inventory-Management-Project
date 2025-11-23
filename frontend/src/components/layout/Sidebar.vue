@@ -6,11 +6,11 @@
     @click="$emit('update:rail', false)"
     @update:model-value="$emit('update:drawer', $event)"
   >
-    <v-list>
+    <v-list class="pa-4 mb-4 mt-4">
       <v-list-item>
         <v-img
-          src="https://cdn-icons-png.flaticon.com/512/7527/7527289.png"
-          width="90"
+          src="logo.png"
+          width="190"
           contain
           class="mx-auto"
         />
