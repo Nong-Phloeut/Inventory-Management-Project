@@ -80,7 +80,6 @@
   const purchaseStore = usePurchaseStore()
 
   const headers = [
-    { title: 'Invoice No', key: 'invoice_number' },
     { title: 'Po No', key: 'purchase_number' },
     { title: 'Supplier', key: 'supplier.name' },
     { title: 'Total', key: 'total_amount' },

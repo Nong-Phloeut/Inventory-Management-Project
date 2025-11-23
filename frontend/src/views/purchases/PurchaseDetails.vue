@@ -33,8 +33,8 @@
           {{ formatDate(purchase.purchase_date) }}
         </v-col>
         <v-col cols="12" md="3">
-          <strong>Status:</strong>
-          <v-chip color="primary" size="small">{{ purchase.status }}</v-chip>
+          <strong>Status: </strong>
+          <span class="text-capitalize">{{ purchase.status }}</span> 
         </v-col>
       </v-row>
     </v-card-text>
