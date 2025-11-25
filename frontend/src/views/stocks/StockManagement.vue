@@ -177,6 +177,5 @@
 
     // Refresh stock
     await stockStore.fetchStocks()
-    // stocks.value = stockMovementStore.stocks
   }
 </script>

@@ -34,26 +34,25 @@
           </v-col>
 
           <v-col cols="4">
+            {{ purchase.purchase_date }}
             <v-date-input
               v-model="purchase.purchase_date"
-              format="YYYY-MM-DD"
               label="Purchase Date"
               :rules="[v => !!v || 'Date is required']"
+            />
+          </v-col>
+          <v-col cols="4">
+            <v-select
+              label="Purchase Status"
+              v-model="purchase.status"
+              :items="['draft', 'ordered', 'received', 'cancelled']"
             />
           </v-col>
         </v-row>
 
         <!-- STATUS + TAX -->
         <v-row>
-          <v-col cols="3">
-            <v-select
-              label="Status"
-              v-model="purchase.status"
-              :items="['draft', 'ordered', 'received', 'cancelled']"
-            />
-          </v-col>
-
-          <v-col cols="3">
+          <v-col cols="4">
             <v-select
               label="Payment Status"
               v-model="purchase.payment_status"
@@ -61,7 +60,7 @@
             />
           </v-col>
 
-          <v-col cols="3">
+          <v-col cols="4">
             <v-text-field
               label="Tax"
               v-model.number="purchase.tax"
@@ -70,7 +69,7 @@
             />
           </v-col>
 
-          <v-col cols="3">
+          <v-col cols="4">
             <v-text-field
               label="Discount"
               v-model.number="purchase.discount"
@@ -194,7 +193,7 @@
 </template>
 
 <script setup>
-  import { reactive, ref, computed, onMounted ,watch } from 'vue'
+  import { reactive, ref, computed, onMounted, watch } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import { useSupplierStore } from '@/stores/supplierStore'
   import { useProductStore } from '@/stores/productStore'
@@ -202,7 +201,9 @@
   import { useI18n } from 'vue-i18n'
   import { useAppUtils } from '@/composables/useAppUtils'
   import { useCurrency } from '@/composables/useCurrency.js'
+  import { useDate } from '@/composables/useDate'
 
+  const { formatDate, formatDateTime, addDays ,formatLocalDate} = useDate()
   const { formatCurrency, formatKHR } = useCurrency()
   const { t } = useI18n()
   const { confirm, notif } = useAppUtils()
@@ -219,7 +220,7 @@
   const purchase = reactive({
     id: null,
     supplier_id: null,
-    purchase_date: null,
+    purchase_date: '',
     status: 'draft',
     payment_status: 'unpaid',
     tax: 0,
@@ -251,8 +252,8 @@
     await productStore.fetchProducts()
 
     if (route.params.id) {
-      const data = await purchaseStore.fetchPurchaseById(route.params.id)
-      Object.assign(purchase, JSON.parse(JSON.stringify(data)))
+      await purchaseStore.fetchPurchaseById(route.params.id)
+      Object.assign(purchase, purchaseStore.purchase)
     } else {
       addItem()
     }
@@ -287,7 +288,7 @@
 
     const date =
       purchase.purchase_date instanceof Date
-        ? purchase.purchase_date.toISOString().slice(0, 10)
+        ? formatLocalDate(purchase.purchase_date) // NO timezone shift
         : purchase.purchase_date
 
     const payload = {

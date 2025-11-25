@@ -98,12 +98,12 @@
           path: '/reports',
           title: 'Report',
           icon: 'mdi-chart-line'
+        },
+        {
+          path: '/audit-logs',
+          title: 'Audit logs',
+          icon: 'mdi-chart-line'
         }
-        // {
-        //   path: '/sales',
-        //   title: 'Sales',
-        //   icon: 'mdi-chart-line'
-        // }
       ]
     })
   }

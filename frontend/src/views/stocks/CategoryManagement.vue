@@ -50,7 +50,6 @@
   const categoryStore = useCategoryStore()
   const { t } = useI18n()
   const isDialogOpen = ref(false)
-  const isDeleteDialogOpen = ref(false)
   const selectedCategory = ref(null)
   const headers = [
     { title: 'Name', key: 'name' },
@@ -70,11 +69,6 @@
   const openEditDialog = category => {
     selectedCategory.value = { ...category }
     isDialogOpen.value = true
-  }
-
-  const openDeleteDialog = category => {
-    selectedCategory.value = category
-    isDeleteDialogOpen.value = true
   }
 
   const handleSave = async category => {

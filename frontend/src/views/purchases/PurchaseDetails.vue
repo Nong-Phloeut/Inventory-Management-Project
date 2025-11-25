@@ -33,8 +33,16 @@
           {{ formatDate(purchase.purchase_date) }}
         </v-col>
         <v-col cols="12" md="3">
-          <strong>Status: </strong>
-          <span class="text-capitalize">{{ purchase.status }}</span> 
+          <strong>Status:</strong>
+          <v-chip
+            :color="statusColor(purchase.status)"
+            variant="tonal"
+            size="small"
+            class="font-weight-medium"
+            label
+          >
+            <span class="text-capitalize">{{ purchase.status }}</span>
+          </v-chip>
         </v-col>
       </v-row>
     </v-card-text>
@@ -144,6 +152,20 @@
     purchase.value = await purchaseStore.fetchPurchaseById(route.params.id)
   })
 
+  const statusColor = val => {
+    switch (val) {
+      case 'received':
+        return 'green'
+      case 'ordered':
+        return 'blue'
+      case 'ordered':
+        return 'green-darken-1'
+      case 'cancelled':
+        return 'red'
+      default:
+        return 'grey'
+    }
+  }
 
   function printInvoice() {
     window.print()

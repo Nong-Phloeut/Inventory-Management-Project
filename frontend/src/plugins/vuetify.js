@@ -20,19 +20,23 @@ const vuetify = createVuetify({
       density: 'comfortable',
       variant: 'outlined',
       color: 'primary',
+      prependIcon: '',
+      appendInnerIcon: '$calendar',
+      format: 'DD-MM-YYYY',
+      hideActions:true
     },
 
     VSelect: {
       density: 'comfortable',
       variant: 'outlined',
-      color: 'primary',
+      color: 'primary'
     },
 
     // Text field defaults
     VTextField: {
       variant: 'outlined',
       density: 'comfortable',
-      color: 'primary',
+      color: 'primary'
     },
 
     // Textarea defaults
@@ -41,15 +45,15 @@ const vuetify = createVuetify({
       density: 'comfortable',
       color: 'primary',
       autoGrow: true,
-      rows: 3,
+      rows: 3
     },
 
     // Autocomplete defaults
     VAutocomplete: {
       variant: 'outlined',
       density: 'comfortable',
-      color: 'primary',
-    },
+      color: 'primary'
+    }
   },
   theme: {
     themes: {
@@ -57,16 +61,16 @@ const vuetify = createVuetify({
         dark: false,
         colors: {
           primary: '#00838F',
-          secondary: "#c17290",
-          textField: "#2f9dab",
-          icon: "#653748",
-          btnEdit: "#a0627f",
-          background: "#f8f7f8",
+          secondary: '#c17290',
+          textField: '#2f9dab',
+          icon: '#653748',
+          btnEdit: '#a0627f',
+          background: '#f8f7f8',
           warning: '#FB8C00',
-          error: '#B00020',
+          error: '#B00020'
         }
-      },
-    },
+      }
+    }
   },
   locale: {
     messages: { km, en },

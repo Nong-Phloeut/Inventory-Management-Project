@@ -7,7 +7,6 @@
     <v-progress-circular
       color="primary"
       size="64"
-      width="6"
       class="my-4"
       :indeterminate="true"
     />
