@@ -46,31 +46,34 @@ class PurchaseController extends Controller
             'total_amount' => 'required',
             'status' => 'required|in:draft,ordered,received,cancelled',
             'payment_status' => 'required|in:paid,unpaid,partial',
+            'note' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.cost_price' => 'required|numeric|min:0',
+            'items.*.item_discount' => 'nullable|numeric|min:0',
+            'items.*.item_tax' => 'nullable|numeric|min:0',
         ]);
 
         return DB::transaction(function () use ($data) {
-
-            $subtotal = collect($data['items'])->sum(fn($i) => $i['quantity'] * $i['cost_price']);
-
-            $discount = $data['discount'] ?? 0;
-            $tax = $data['tax'] ?? 0;
-
-            $total_amount = $subtotal - $discount + $tax;
+            // Calculate totals
+            $totals = app(\App\Services\PurchaseService::class)->calculate(
+                $data['items'],
+                $data['discount'] ?? 0,
+                $data['tax'] ?? 0
+            );
 
             $purchase = Purchase::create([
                 'supplier_id' => $data['supplier_id'],
                 'purchase_date' => $data['purchase_date'],
                 'status' => $data['status'],
                 'payment_status' => $data['payment_status'],
-                'subtotal' => $subtotal,
-                'discount' => $discount,
-                'tax' => $tax,
-                'total_amount' => $total_amount,
+                'subtotal' => $totals['subtotal'],
+                'discount' => $totals['total_discount'],
+                'tax' => $totals['total_tax'],
+                'total_amount' => $totals['total_amount'],
                 'purchase_number' => $this->generatePurchaseNumber(),
+                'note' => $data['note'] ?? null,
             ]);
 
             // Optional invoice number
@@ -78,12 +81,17 @@ class PurchaseController extends Controller
             $purchase->save();
 
             foreach ($data['items'] as $item) {
+                $itemSubtotal = $item['quantity'] * $item['cost_price'];
+                $itemDiscountAmount = $itemSubtotal * (($item['item_discount'] ?? 0) / 100);
+                $itemTax = ($itemSubtotal - $itemDiscountAmount) * ($item['item_tax'] / 100);
 
                 $purchase->items()->create([
                     'product_id' => $item['product_id'],
                     'quantity' => $item['quantity'],
                     'cost_price' => $item['cost_price'],
-                    'total' => $item['quantity'] * $item['cost_price'],
+                    'item_discount' => $itemDiscountAmount,
+                    'item_tax' => $itemTax,
+                    'total' => $itemSubtotal - $itemDiscountAmount + $itemTax,
                 ]);
 
 
@@ -122,28 +130,30 @@ class PurchaseController extends Controller
             'total_amount' => 'required',
             'status' => 'required|in:draft,ordered,received,cancelled',
             'payment_status' => 'required|in:paid,unpaid,partial',
+            'note' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.cost_price' => 'required|numeric|min:0',
+            'items.*.cost_price' => 'required|numeric|min:0',
+            'items.*.item_discount' => 'nullable|numeric|min:0',
+            'items.*.item_tax' => 'nullable|numeric|min:0',
         ]);
 
         return DB::transaction(function () use ($purchase, $data) {
+            $totals = app(\App\Services\PurchaseService::class)->calculate(
+                $data['items'],
+                $data['discount'] ?? 0,
+                $data['tax'] ?? 0
+            );
 
-            $subtotal = collect($data['items'])->sum(fn($i) => $i['quantity'] * $i['cost_price']);
-
-            $discount = $data['discount'] ?? 0;
-            $tax = $data['tax'] ?? 0;
-
-            $total_amount = $subtotal - $discount + $tax;
-            // 1. Rollback previous stock
+            // rollback previous stock
             foreach ($purchase->items as $old) {
                 DB::table('stocks')
                     ->where('product_id', $old->product_id)
                     ->decrement('quantity', $old->quantity);
             }
 
-            // 2. Delete old purchase items
             $purchase->items()->delete();
 
             $purchase->update([
@@ -151,22 +161,27 @@ class PurchaseController extends Controller
                 'purchase_date' => $data['purchase_date'],
                 'status' => $data['status'],
                 'payment_status' => $data['payment_status'],
-                'subtotal' => $subtotal,
-                'discount' => $discount,
-                'tax' => $tax,
-                'total_amount' => $total_amount,
+                'subtotal' => $totals['subtotal'],
+                'discount' => $totals['total_discount'],
+                'tax' => $totals['total_tax'],
+                'total_amount' => $totals['total_amount'],
+                'note' => $data['note'] ?? null,
             ]);
 
-            // 4. Re-create items + update stock
             foreach ($data['items'] as $item) {
+                $itemSubtotal = $item['quantity'] * $item['cost_price'];
+                $itemDiscount = $itemSubtotal * (($item['item_discount'] ?? 0) / 100);
+                // $itemTax = $itemSubtotal * (($item['item_tax'] ?? 0) / 100);
+                $itemTax = ($itemSubtotal - $itemDiscount) * ($item['item_tax'] / 100);
 
                 $purchase->items()->create([
                     'product_id' => $item['product_id'],
                     'quantity' => $item['quantity'],
                     'cost_price' => $item['cost_price'],
-                    'total' => $item['quantity'] * $item['cost_price'],  // FIXED
+                    'item_discount' => $itemDiscount,
+                    'item_tax' => $itemTax,
+                    'total' => $itemSubtotal - $itemDiscount + $itemTax,
                 ]);
-
 
                 app(\App\Services\StockService::class)->addStock(
                     $item['product_id'],

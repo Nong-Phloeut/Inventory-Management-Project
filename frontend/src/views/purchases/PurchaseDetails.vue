@@ -145,11 +145,14 @@
     { title: 'Item', key: 'product.name' },
     { title: 'Cost Price', key: 'cost_price' },
     { title: 'Qty', key: 'quantity' },
+    { title: 'Discount', key: 'item_discount' },
+    { title: 'Tax', key: 'item_tax' },
     { title: 'Total', key: 'total' }
   ]
 
   onMounted(async () => {
-    purchase.value = await purchaseStore.fetchPurchaseById(route.params.id)
+    await purchaseStore.fetchPurchaseById(route.params.id)
+    purchase.value = purchaseStore.purchase
   })
 
   const statusColor = val => {

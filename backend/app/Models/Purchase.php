@@ -16,7 +16,8 @@ class Purchase extends Model
         'payment_status',
         'subtotal',
         'tax',
-        'discount'
+        'discount',
+        'note'
     ];
 
     public function items()

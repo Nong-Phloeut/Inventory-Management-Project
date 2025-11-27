@@ -22,7 +22,7 @@
 
       <v-form ref="formRef" v-model="isValid" class="mt-4">
         <v-row>
-          <v-col cols="4">
+          <v-col cols="3" md="3">
             <v-select
               label="Supplier"
               :items="supplierStore.suppliers"
@@ -33,48 +33,26 @@
             />
           </v-col>
 
-          <v-col cols="4">
-            {{ purchase.purchase_date }}
+          <v-col cols="3" md="3">
             <v-date-input
               v-model="purchase.purchase_date"
               label="Purchase Date"
               :rules="[v => !!v || 'Date is required']"
             />
           </v-col>
-          <v-col cols="4">
+          <v-col cols="3" md="3">
             <v-select
               label="Purchase Status"
               v-model="purchase.status"
               :items="['draft', 'ordered', 'received', 'cancelled']"
             />
           </v-col>
-        </v-row>
 
-        <!-- STATUS + TAX -->
-        <v-row>
-          <v-col cols="4">
+          <v-col cols="3" md="3">
             <v-select
               label="Payment Status"
               v-model="purchase.payment_status"
               :items="['unpaid', 'partial', 'paid']"
-            />
-          </v-col>
-
-          <v-col cols="4">
-            <v-text-field
-              label="Tax"
-              v-model.number="purchase.tax"
-              type="number"
-              min="0"
-            />
-          </v-col>
-
-          <v-col cols="4">
-            <v-text-field
-              label="Discount"
-              v-model.number="purchase.discount"
-              type="number"
-              min="0"
             />
           </v-col>
         </v-row>
@@ -90,14 +68,14 @@
       <v-divider />
 
       <v-row class="mt-3" dense>
-        <v-col cols="9">
+        <v-col cols="12">
           <v-row
             v-for="(item, index) in purchase.items"
             :key="index"
             dense
             class="mb-2"
           >
-            <v-col cols="12" md="4">
+            <v-col cols="12" md="3">
               <v-select
                 :items="productStore.products.data"
                 v-model="item.product_id"
@@ -109,7 +87,7 @@
               />
             </v-col>
 
-            <v-col cols="12" md="3">
+            <v-col cols="12" md="2">
               <v-text-field
                 v-model.number="item.quantity"
                 type="number"
@@ -120,30 +98,66 @@
               />
             </v-col>
 
-            <v-col cols="12" md="3">
+            <v-col cols="12" md="2">
               <v-text-field
                 v-model.number="item.cost_price"
                 type="number"
                 label="Cost Price"
                 density="compact"
                 min="0"
+                prefix="$"
                 :readonly="true"
                 :disabled="!item.product_id"
                 :rules="[v => v >= 0 || 'Price must be ≥ 0']"
               />
             </v-col>
+            <v-col cols="12" md="1">
+              <v-text-field
+                v-model.number="item.item_tax"
+                type="number"
+                prefix="%"
+                label="Tax"
+                density="compact"
+                min="0"
+              />
+            </v-col>
 
+            <v-col cols="12" md="1">
+              <v-text-field
+                v-model.number="item.item_discount"
+                type="number" 
+                label="Discount"
+                prefix="%"
+                density="compact"
+                min="0"
+              />
+            </v-col>
             <v-col cols="12" md="2">
+              <v-text-field
+                :model-value="getItemTotal(index)"
+                prefix="$"
+                type="text" 
+                label="Total"
+                density="compact"
+                min="0"
+                :readonly="true"
+              />
+            </v-col>
+
+            <v-col cols="12" md="1">
               <v-btn
                 icon="mdi-delete"
                 color="error"
                 variant="text"
+                size="small"
                 @click="removeItem(index)"
               />
             </v-col>
           </v-row>
         </v-col>
-
+      </v-row>
+      <v-row>
+        <v-col cols="9"></v-col>
         <v-col cols="3">
           <v-sheet border rounded="lg" class="pa-4">
             <div class="mb-2">Summary</div>
@@ -154,19 +168,18 @@
             </div>
 
             <div class="d-flex justify-space-between mb-1">
-              <span>Tax:</span>
-              <strong>{{ formatCurrency(purchase.tax) }}</strong>
+              <span>Total Discount:</span>
+              <strong>{{ formatCurrency(totalDiscount) }}</strong>
             </div>
 
             <div class="d-flex justify-space-between mb-1">
-              <span>Discount:</span>
-              <strong>{{ formatCurrency(purchase.discount) }}</strong>
+              <span>Total Tax:</span>
+              <strong>{{ formatCurrency(totalTax) }}</strong>
             </div>
 
             <v-divider class="my-2" />
 
             <div class="d-flex justify-space-between">
-              <!-- <span>Total:</span> -->
               <h3 class="font-weight-bold">Total:</h3>
               <h3>{{ formatCurrency(totalAmount) }}</h3>
             </div>
@@ -202,9 +215,10 @@
   import { useAppUtils } from '@/composables/useAppUtils'
   import { useCurrency } from '@/composables/useCurrency.js'
   import { useDate } from '@/composables/useDate'
+  import { usePurchaseCalculator } from '@/composables/usePurchaseCalculator'
 
-  const { formatDate, formatDateTime, addDays ,formatLocalDate} = useDate()
-  const { formatCurrency, formatKHR } = useCurrency()
+  const { formatDate, formatDateTime, addDays, formatLocalDate } = useDate()
+  const { formatCurrency, formatCurrencyNoSymbol } = useCurrency()
   const { t } = useI18n()
   const { confirm, notif } = useAppUtils()
   const route = useRoute()
@@ -227,6 +241,8 @@
     discount: 0,
     items: []
   })
+  const { itemTotals, subtotal, totalDiscount, totalTax, totalAmount } =
+    usePurchaseCalculator(purchase)
 
   watch(
     () => purchase.items,
@@ -244,6 +260,12 @@
     },
     { deep: true }
   )
+  function getItemTotal(index) {
+    const total = itemTotals.value[index]?.total || 0
+
+    return formatCurrencyNoSymbol(total)
+    // return total
+  }
 
   const isEdit = computed(() => !!purchase.id)
 
@@ -263,23 +285,15 @@
     purchase.items.push({
       product_id: null,
       quantity: 1,
-      cost_price: 0
+      cost_price: 0,
+      item_discount: 0,
+      item_tax: 0
     })
   }
 
   function removeItem(i) {
     purchase.items.splice(i, 1)
   }
-
-  const subtotal = computed(() =>
-    purchase.items.reduce((s, i) => s + i.quantity * i.cost_price, 0)
-  )
-
-  const totalAmount = computed(() =>
-    (subtotal.value + Number(purchase.tax) - Number(purchase.discount)).toFixed(
-      2
-    )
-  )
 
   async function save() {
     const { valid } = await formRef.value.validate()
@@ -294,6 +308,8 @@
     const payload = {
       ...purchase,
       subtotal: subtotal.value,
+      total_discount: totalDiscount.value,
+      total_tax: totalTax.value,
       total_amount: totalAmount.value,
       purchase_date: date
     }
