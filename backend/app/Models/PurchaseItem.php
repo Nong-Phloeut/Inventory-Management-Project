@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class PurchaseItem extends Model
 {
+    use Auditable;
+    
     protected $fillable = [
         'purchase_id',
         'product_id',

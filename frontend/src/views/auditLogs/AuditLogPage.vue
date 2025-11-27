@@ -62,7 +62,9 @@
           >
             Apply Filter
           </v-btn>
-          <v-btn class="ms-3" variant="outlined" @click="resetFilter">Reset</v-btn>
+          <v-btn class="ms-3" variant="outlined" @click="resetFilter">
+            Reset
+          </v-btn>
         </v-col>
       </v-row>
     </v-card>
@@ -110,28 +112,55 @@
     <!-- Audit Table -->
     <v-data-table
       :headers="headers"
-      :items="store.filteredLogs"
+      :items="store.logs.data"
       class="elevation-0"
-    ></v-data-table>
+    >
+      <template #item.actions="{ item }">
+        <v-btn
+          icon="mdi-arrow-right-circle"
+          size="small"
+          variant="text"
+          color="primary"
+          @click="goToDetails(item.id)"
+        ></v-btn>
+      </template>
+      <template #item.created_at="{ item }">
+        <td>{{ formatDateTime(item.created_at) }}</td>
+      </template>
+    </v-data-table>
   </v-container>
 </template>
 
 <script setup>
-  import { ref, reactive, computed, watch } from 'vue'
+  import { ref, reactive, computed, onMounted } from 'vue'
   import { useAuditLogStore } from '@/stores/auditLogStore'
+  import { useDate } from '@/composables/useDate'
+  import { useRouter } from 'vue-router'
+  const router = useRouter()
 
+  const { formatDateTime } = useDate()
   const store = useAuditLogStore()
 
-  // UI state
+  /* ----------------------------- UI STATE ----------------------------- */
   const showFilterForm = ref(false)
   const showExportForm = ref(false)
 
-  // Filter Form
+  const goToDetails = id => {
+    router.push(`/audit-log/${id}`)
+  }
+
   const toggleFilterForm = () => {
     showFilterForm.value = !showFilterForm.value
     showExportForm.value = false
   }
 
+  const toggleExportForm = () => {
+    showExportForm.value = !showExportForm.value
+    showFilterForm.value = false
+    clearExportErrors()
+  }
+
+  /* ----------------------------- FILTER FORM ----------------------------- */
   const formFilters = reactive({
     keyword: null,
     startDate: null,
@@ -139,19 +168,26 @@
   })
 
   const applyFilter = () => {
-    // todo call api end point from store
+    store.getAllAuditLogs({
+      keyword: formFilters.keyword,
+      date_from: formFilters.startDate,
+      date_to: formFilters.endDate
+    })
   }
 
   const resetFilter = () => {
-    formFilters.keyword = ''
+    formFilters.keyword = null
     formFilters.startDate = null
     formFilters.endDate = null
+
+    // reload default list
+    store.getAllAuditLogs()
   }
 
-  // Export Form
+  /* ----------------------------- EXPORT FORM ----------------------------- */
   const exportDates = reactive({
-    startDate: store.filters.startDate || null,
-    endDate: store.filters.endDate || null
+    startDate: null,
+    endDate: null
   })
 
   const exportErrors = reactive({
@@ -159,34 +195,23 @@
     end: ''
   })
 
-  // Show/hide export form
-  const toggleExportForm = () => {
-    showExportForm.value = !showExportForm.value
-    showFilterForm.value = false
-    clearExportErrors()
-  }
-
-  // Close export form
-  const closeExportForm = () => {
-    showExportForm.value = false
-    clearExportErrors()
-  }
-
-  // Clear errors
   const clearExportErrors = () => {
     exportErrors.start = ''
     exportErrors.end = ''
   }
 
-  // Computed: check date range validity live
+  const closeExportForm = () => {
+    showExportForm.value = false
+    clearExportErrors()
+  }
+
+  /* ----------------------------- EXPORT VALIDATION ----------------------------- */
   const isDateRangeValid = computed(() => {
     clearExportErrors()
-    const start = exportDates.startDate
-    const end = exportDates.endDate
 
-    if (!start || !end) return false
+    if (!exportDates.startDate || !exportDates.endDate) return false
 
-    if (new Date(start) > new Date(end)) {
+    if (new Date(exportDates.startDate) > new Date(exportDates.endDate)) {
       exportErrors.end = 'End Date cannot be earlier than Start Date'
       return false
     }
@@ -194,35 +219,31 @@
     return true
   })
 
-  // Handle export
+  /* ----------------------------- EXPORT HANDLER ----------------------------- */
   const handleExport = () => {
     if (!isDateRangeValid.value) return
 
-    // Optionally update store.filters to export dates
-    const prevStart = store.filters.startDate
-    const prevEnd = store.filters.endDate
-
-    store.filters.startDate = exportDates.startDate
-    store.filters.endDate = exportDates.endDate
-
     store.exportCSV({
-      startDate: exportDates.startDate,
-      endDate: exportDates.endDate
+      date_from: exportDates.startDate,
+      date_to: exportDates.endDate
     })
-
-    // Restore previous filter state
-    store.filters.startDate = prevStart
-    store.filters.endDate = prevEnd
 
     closeExportForm()
   }
 
-  // Table headers
+  /* ----------------------------- TABLE HEADERS ----------------------------- */
   const headers = ref([
     { title: 'ID', key: 'id' },
-    { title: 'Username', key: 'username' },
-    { title: 'Action', key: 'action' },
+    { title: 'Username', key: 'user' },
+    { title: 'Action', key: 'action_type' },
     { title: 'Description', key: 'description' },
-    { title: 'Date', key: 'created_at' }
+    { title: 'Ip address', key: 'ip_address' },
+    { title: 'Date', key: 'created_at' },
+    { title: '', key: 'actions' }
   ])
+
+  /* ----------------------------- INITIAL LOAD ----------------------------- */
+  onMounted(() => {
+    store.getAllAuditLogs()
+  })
 </script>

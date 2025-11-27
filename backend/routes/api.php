@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AdjustmentController;
+use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
@@ -39,4 +41,14 @@ Route::prefix('stock')->group(function () {
     Route::post('return', [ReturnController::class, 'returnStock']);
     Route::post('adjust', [AdjustmentController::class, 'adjustStock']);
     Route::post('loss', [LossController::class, 'reportLoss']);
+});
+
+Route::get('audit-logs', [AuditLogController::class, 'index']);
+Route::get('audit-logs/{id}', [AuditLogController::class, 'show']);
+
+Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('auth:api')->group(function () {
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/refresh', [AuthController::class, 'refresh']);
 });

@@ -8,11 +8,15 @@ import http from './api'
  * @returns
  * @api import http from './api' URL path http://127.0.0.1:8000/api/
  */
+export default {
+  userLogin(email, password) {
+    return http.post('/login', {
+      email: email, // must match Laravel field
+      password: password // must match Laravel field
+    })
+  },
 
-export function userLogin(email, password) {
-  const user = {
-    email,
-    password
+  userLogout() {
+    return http.post('/logout') // call your backend logout endpoint
   }
-  return http.post('/v1/auth/login', user)
 }

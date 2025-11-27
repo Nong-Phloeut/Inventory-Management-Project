@@ -5,6 +5,7 @@
     </v-app-bar-nav-icon>
     <strong class="font-weight-bold d-none d-lg-block d-print-block">
       Inventory Management
+                 {{ authStore.user }}
     </strong>
     <template v-slot:append>
       <v-menu min-width="200px" rounded>
@@ -25,10 +26,11 @@
               <p class="text-caption mt-1">
                 {{ user.email }}
               </p>
+   
               <v-divider class="my-3"></v-divider>
               <v-btn variant="text" rounded>Edit Account</v-btn>
               <v-divider class="my-3"></v-divider>
-              <v-btn variant="text" rounded>Disconnect</v-btn>
+              <v-btn variant="text" rounded @click="handleLogout">Disconnect</v-btn>
             </div>
           </v-card-text>
         </v-card>
@@ -53,5 +55,18 @@
         this.$emit('toggle')
       }
     }
+  }
+</script>
+
+<script setup>
+  import { useAuthStore } from '@/stores/auth'
+  import { useRouter } from 'vue-router'
+
+  const authStore = useAuthStore()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await authStore.logout()
+    router.push({ name: 'Login' })
   }
 </script>

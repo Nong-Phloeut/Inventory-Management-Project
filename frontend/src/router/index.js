@@ -91,8 +91,14 @@ const routes = [
       {
         path: '/audit-logs',
         name: 'AuditLogs',
-        component: () => import('@/views/AuditLogPage.vue'),
+        component: () => import('@/views/auditLogs/AuditLogPage.vue'),
         meta: { requiresAuth: true }
+      },
+      {
+        path: '/audit-log/:id',
+        name: 'audit-log-details',
+        component: () => import('@/views/auditLogs/AuditLogDetails.vue'),
+        props: true
       },
       {
         path: '/sales',
@@ -107,6 +113,23 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+// Global navigation guard
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
+
+  // Redirect logged-in users away from Login page
+  if (to.name === 'Login' && token) {
+    return next({ name: 'Dashboard' }) // or any protected route
+  }
+
+  // Redirect unauthenticated users from protected pages
+  if (to.meta.requiresAuth && !token) {
+    return next({ name: 'Login' })
+  }
+
+  next()
 })
 
 export default router

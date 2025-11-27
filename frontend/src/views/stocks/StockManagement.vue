@@ -98,8 +98,8 @@
   import { useDate } from '@/composables/useDate'
   // import { useAppUtils } from '@/composables/useAppUtils'
 
-  // const { confirm, notif } = useAppUtils()
   const { formatDate, formatDateTime, addDays } = useDate()
+  // const { confirm, notif } = useAppUtils()
   const stockMovementStore = useStockMovementStore()
   const stockStore = useStockStore()
 

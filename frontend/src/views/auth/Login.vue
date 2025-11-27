@@ -1,65 +1,78 @@
 <template>
-  <v-container fluid class="pa-0 fill-height">
+  <v-container fluid class="login-container">
     <v-row no-gutters class="fill-height">
-      <!-- Left: Image -->
-      <v-col cols="12" md="6" class="d-flex align-center justify-center">
+      <!-- LEFT SIDE -->
+      <v-col cols="12" md="6" class="left-side">
         <v-img
           src="https://www.kindpng.com/picc/m/567-5674919_inventory-management-inventory-management-system-png-transparent-png.png"
           alt="Login Illustration"
           cover
-          class="h-100 w-100"
+          class="h-100 w-100 login-image"
         />
       </v-col>
 
-      <!-- Right: Form -->
+      <!-- RIGHT SIDE -->
       <v-col
         cols="12"
         md="6"
-        class="d-flex align-center justify-center pa-8"
+        class="right-side d-flex align-center justify-center pa-8"
       >
-        <v-card max-width="400" class="w-100 pa-6" elevation="6" rounded="xl">
-          <div class="text-center mb-6">
-            <v-icon size="48" color="primary">mdi-account-circle</v-icon>
-            <h2 class="mt-2">Welcome Back {test}</h2>
-            <p class="text-subtitle-2">Please login to continue</p>
+        <v-card class="login-card" elevation="0" rounded="xl">
+          <div class="text-start mb-6 fade-in">
+            <h1 class="title">Welcome Back 👋</h1>
+            <p class="subtitle">Please sign in to continue</p>
           </div>
 
-          <v-form @submit.prevent="login">
+          <v-form @submit.prevent="login" class="fade-in">
             <v-text-field
               v-model="email"
               label="Email"
+              variant="outlined"
+              rounded="lg"
               prepend-inner-icon="mdi-email-outline"
-              type="email"
+              class="mb-4"
+              density="comfortable"
+              :error="!!errors.email"
+              :error-messages="errors.email"
               required
             />
 
             <v-text-field
               v-model="password"
               label="Password"
-              prepend-inner-icon="mdi-lock-outline"
+              variant="outlined"
+              rounded="lg"
               type="password"
+              prepend-inner-icon="mdi-lock-outline"
+              density="comfortable"
+              :error="!!errors.password"
+              :error-messages="errors.password"
               required
             />
+            <v-alert type="warning" v-if="errors.general" class="text-red mt-2">
+              {{ errors.general }}
+            </v-alert>
 
             <v-btn
               type="submit"
               color="primary"
               block
-              class="mt-4"
+              class="mt-6"
               size="large"
+              rounded="lg"
             >
               Login
             </v-btn>
 
-            <v-btn
-              variant="text"
-              color="secondary"
-              block
-              class="mt-2"
-              size="small"
-            >
-              Forgot password?
-            </v-btn>
+            <!-- <div class="text-center mt-4 fade-in">
+              <v-btn
+                variant="text"
+                size="small"
+                @click="onForgotPassword"
+              >
+                Forgot password?
+              </v-btn>
+            </div> -->
           </v-form>
         </v-card>
       </v-col>
@@ -68,20 +81,100 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
+  import { ref, reactive } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { useAuthStore } from '@/stores/auth'
 
-const email = ref("")
-const password = ref("")
+  const email = ref('')
+  const password = ref('')
+  const store = useAuthStore()
+  const router = useRouter()
+  const errors = reactive({
+    email: '',
+    password: '',
+    general: ''
+  })
 
-function login() {
-  console.log("Email:", email.value)
-  console.log("Password:", password.value)
-  // 👉 Replace with API call
-}
+  const login = async () => {
+    // clear previous errors
+    errors.email = ''
+    errors.password = ''
+    errors.general = ''
+
+    try {
+      const success = await store.login({
+        email: email.value,
+        password: password.value
+      })
+
+      if (success) {
+        router.push('/dashboard')
+      }
+    } catch (err) {
+      const res = err.response?.data
+      if (res?.status === 'validation_error') {
+        errors.email = res.errors.email?.join(', ')
+        errors.password = res.errors.password?.join(', ')
+      }
+      if (res?.status == 'invalid_credentials') {
+        // console.log(res.status == 'invalid_credentials')
+        errors.general = res.message
+      }
+    }
+  }
+  function onForgotPassword() {
+    console.log('Reset password clicked')
+  }
 </script>
 
 <style scoped>
-.fill-height {
-  height: 100vh;
-}
+  .login-container {
+    /* background: linear-gradient(135deg, #e3f2fd, #fce4ec); */
+    height: 100vh;
+  }
+
+  .left-side {
+    display: none;
+  }
+
+  .login-card {
+    max-width: 420px;
+    width: 100%;
+    padding: 40px;
+    backdrop-filter: blur(14px);
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .title {
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .subtitle {
+    font-size: 15px;
+    opacity: 0.7;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.7s ease-in-out;
+  }
+
+  /* Smooth fade animation */
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (min-width: 960px) {
+    .left-side {
+      display: block;
+    }
+  }
 </style>
