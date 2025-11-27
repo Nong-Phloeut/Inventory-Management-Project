@@ -102,7 +102,7 @@
         {
           path: '/audit-logs',
           title: 'Audit logs',
-          icon: 'mdi-chart-line'
+          icon: 'mdi-timeline-clock-outline'
         }
       ]
     })

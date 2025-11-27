@@ -89,6 +89,12 @@ const routes = [
         meta: { requiresAuth: true }
       },
       {
+        path: '/audit-logs',
+        name: 'AuditLogs',
+        component: () => import('@/views/AuditLogPage.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
         path: '/sales',
         name: 'Sales',
         component: () => import('@/views/stocks/SalesManagement.vue'),
