@@ -234,12 +234,12 @@
   /* ----------------------------- TABLE HEADERS ----------------------------- */
   const headers = ref([
     { title: 'ID', key: 'id' },
-    { title: 'Username', key: 'user' },
+    { title: 'Username', key: 'user.name' },
     { title: 'Action', key: 'action_type' },
     { title: 'Description', key: 'description' },
     { title: 'Ip address', key: 'ip_address' },
     { title: 'Date', key: 'created_at' },
-    { title: '', key: 'actions' }
+    { title: '', key: 'actions', sortable: false }
   ])
 
   /* ----------------------------- INITIAL LOAD ----------------------------- */

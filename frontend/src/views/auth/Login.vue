@@ -49,7 +49,7 @@
               :error-messages="errors.password"
               required
             />
-            <v-alert type="warning" v-if="errors.general" class="text-red mt-2">
+            <v-alert type="error" density="compact" v-if="errors.general" class="text-red mt-2">
               {{ errors.general }}
             </v-alert>
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
@@ -34,12 +35,26 @@ class AuthController extends Controller
                 'message' => 'Email or password is incorrect'
             ], 401);
         }
-
+        // Get the logged-in user
+        $user = Auth::user();
+        // Create audit log manually
+        AuditLog::create([
+            'user_id' => $user->id,
+            'action_type' => 'login',
+            'module' => 'Auth',
+            'description' => 'User logged in',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'url' => $request->fullUrl(),
+            'method' => $request->method(),
+            'old_values' => null,
+            'new_values' => null,
+        ]);
         // Step 3: Success
         return response()->json([
             'status' => 'success',
             'token' => $token,
-            'user' => Auth::user()
+            'user' => $user,
         ]);
     }
 

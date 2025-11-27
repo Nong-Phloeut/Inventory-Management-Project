@@ -18,5 +18,9 @@ export default {
 
   userLogout() {
     return http.post('/logout') // call your backend logout endpoint
+  },
+
+  me() {
+    return http.get('/me') // call your backend logout endpoint
   }
 }

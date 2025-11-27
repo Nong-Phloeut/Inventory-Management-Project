@@ -4,6 +4,7 @@ import authService from '../api/auth'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
+    me: {},
     token: localStorage.getItem('token') || null
   }),
   actions: {
@@ -25,6 +26,12 @@ export const useAuthStore = defineStore('auth', {
       this.token = null
       this.user = null
       localStorage.removeItem('token')
+    },
+    async me() {
+      // optional: call API to invalidate JWT on backend
+      const res = await authService.me().catch(() => {})
+      this.me = res.data
+      console.log(res)
     }
   }
 })

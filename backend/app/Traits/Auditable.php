@@ -4,7 +4,7 @@ namespace App\Traits;
 
 use App\Models\AuditLog;
 use Illuminate\Support\Str;
-
+use Illuminate\Support\Facades\Auth;
 trait Auditable
 {
     public static function bootAuditable()
@@ -18,8 +18,7 @@ trait Auditable
     {
         if (static::class === AuditLog::class) return;
 
-        $user = null;
-        // auth()->user();
+        $user = Auth::user();
 
         $old = $this->maskSensitive($this->getOriginal());
         $new = $this->maskSensitive($this->getAttributes());
