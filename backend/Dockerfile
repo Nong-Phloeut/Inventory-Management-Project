@@ -28,12 +28,12 @@ RUN sed -i 's/listen = .*/listen = 9002/' /usr/local/etc/php-fpm.d/zz-docker.con
 # Copy composer files first (leverage cache)
 COPY composer.json composer.lock ./
 
+# Copy the rest of the application **before running composer install**
+COPY . .
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Copy the rest of the application **before running composer install**
-COPY . .
 # Fix Laravel storage and cache permissions
 RUN chown -R www-data:www-data storage bootstrap/cache \
  && chmod -R 775 storage bootstrap/cache
