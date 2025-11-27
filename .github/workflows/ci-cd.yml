@@ -114,5 +114,6 @@ jobs:
             sleep 20
 
             # Run migrations
+            docker-compose exec backend php artisan jwt:secret
             docker-compose exec backend php artisan migrate --force
-            # docker-compose exec backend php artisan db:seed --force
+            docker-compose exec backend php artisan db:seed --force
