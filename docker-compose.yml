@@ -9,7 +9,7 @@ services:
     restart: unless-stopped
     tty: true
     env_file:
-      - ./backend/.env.production
+      - ./backend/.env
     # environment:
     #   # Explicitly pass the database connection variables
     #   DB_CONNECTION: mysql
