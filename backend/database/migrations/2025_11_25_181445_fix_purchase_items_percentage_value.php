@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::table('purchase_items', function (Blueprint $table) {
             // Change columns to store percentages instead of amounts
-            $table->decimal('item_discount', 5, 2)->default(0)->change();
-            $table->decimal('item_tax', 5, 2)->default(0)->change();
+            $table->decimal('item_discount')->default(0)->change();
+            $table->decimal('item_tax')->default(0)->change();
         });
     }
 
@@ -25,8 +25,8 @@ return new class extends Migration
     {
         Schema::table('purchase_items', function (Blueprint $table) {
             // Revert to previous decimal(10,2)
-            $table->decimal('item_discount', 10, 2)->default(0)->change();
-            $table->decimal('item_tax', 10, 2)->default(0)->change();
+            $table->decimal('item_discount')->default(0)->change();
+            $table->decimal('item_tax')->default(0)->change();
         });
     }
 };
