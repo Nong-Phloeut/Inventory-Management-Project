@@ -64,6 +64,8 @@ services:
     tty: true
     ports:
       - "82:82"
+    volumes:
+      - ./backend/public:/var/www/html:ro 
     networks:
       - app-network
   db:
@@ -87,6 +89,6 @@ networks:
 
 #Docker Volumes
 volumes:
-    backend_vendor:
+    # backend_vendor:
     backend_storage:
     mysql_data:
