@@ -5,7 +5,7 @@ namespace App\Services;
 class PurchaseService
 {
     /**
-     * Calculate subtotal, total discount, total tax, and final total
+     * Calculate totals for purchase items
      *
      * @param array $items
      * @param float $globalDiscountPercent
@@ -14,34 +14,56 @@ class PurchaseService
      */
     public static function calculate(array $items, float $globalDiscountPercent = 0, float $globalTaxPercent = 0)
     {
-        $subtotal = 0;
+        $itemTotals = [];
         $totalItemDiscount = 0;
         $totalItemTax = 0;
 
         foreach ($items as $item) {
-            $itemSubtotal = $item['quantity'] * $item['cost_price'];
-            $itemDiscount = $itemSubtotal * (($item['item_discount'] ?? 0) / 100);
-            $itemTax = ($itemSubtotal - $itemDiscount) * (($item['item_tax'] ?? 0) / 100);
 
-            $subtotal += $itemSubtotal;
-            $totalItemDiscount += $itemDiscount;
-            $totalItemTax += $itemTax;
+            $itemDiscountPercent = $item['item_discount'] ?? 0;
+            $itemTaxPercent = $item['item_tax'] ?? 0;
+
+            $itemSubtotal = $item['quantity'] * floatval($item['cost_price']);
+
+            $itemDiscountAmount = $itemSubtotal * ($itemDiscountPercent / 100);
+            $itemTaxAmount = ($itemSubtotal - $itemDiscountAmount) * ($itemTaxPercent / 100);
+
+            // accumulate
+            $totalItemDiscount += $itemDiscountAmount;
+            $totalItemTax += $itemTaxAmount;
+
+            $itemTotals[] = [
+                'product_id'        => $item['product_id'] ?? null,
+                'quantity'          => $item['quantity'],
+                'cost_price'        => $item['cost_price'],
+                'subtotal'          => $itemSubtotal,
+                'discount_percent'  => $itemDiscountPercent,
+                'discount_amount'   => $itemDiscountAmount,
+                'tax_percent'       => $itemTaxPercent,
+                'tax_amount'        => $itemTaxAmount,
+                'total'             => $itemSubtotal - $itemDiscountAmount + $itemTaxAmount,
+            ];
         }
 
-        // Apply global discount & tax percentages on subtotal
-        $globalDiscount = $subtotal * ($globalDiscountPercent / 100);
-        $globalTax = $subtotal * ($globalTaxPercent / 100);
+        // --- Global Discount ---
+        $purchaseSubtotal = array_sum(array_column($itemTotals, 'subtotal'));
+        $globalDiscountAmount = $purchaseSubtotal * ($globalDiscountPercent / 100);
 
-        $totalDiscount = $totalItemDiscount + $globalDiscount;
-        $totalTax = $totalItemTax + $globalTax;
+        // --- Global Tax ---
+        $purchaseAfterDiscount = $purchaseSubtotal - $globalDiscountAmount;
+        $globalTaxAmount = $purchaseAfterDiscount * ($globalTaxPercent / 100);
 
-        $totalAmount = $subtotal - $totalDiscount + $totalTax;
+        // Final total
+        $finalTotal = $purchaseAfterDiscount + $globalTaxAmount;
 
         return [
-            'subtotal' => $subtotal,
-            'total_discount' => $totalDiscount,
-            'total_tax' => $totalTax,
-            'total_amount' => $totalAmount,
+            'items'                 => $itemTotals,
+            'purchase_subtotal'     => $purchaseSubtotal,
+            'total_item_discount'   => $totalItemDiscount,
+            'total_item_tax'        => $totalItemTax,
+            'global_discount'       => $globalDiscountAmount,
+            'global_tax'            => $globalTaxAmount,
+            'final_total'           => $finalTotal,
         ];
     }
 }

@@ -22,7 +22,7 @@
 
       <v-form ref="formRef" v-model="isValid" class="mt-4">
         <v-row>
-          <v-col cols="3" md="3">
+          <v-col cols="12" sm="6" md="3">
             <v-select
               label="Supplier"
               :items="supplierStore.suppliers"
@@ -33,14 +33,14 @@
             />
           </v-col>
 
-          <v-col cols="3" md="3">
+          <v-col cols="12" sm="6" md="3">
             <v-date-input
               v-model="purchase.purchase_date"
               label="Purchase Date"
               :rules="[v => !!v || 'Date is required']"
             />
           </v-col>
-          <v-col cols="3" md="3">
+          <v-col cols="12" sm="6" md="3">
             <v-select
               label="Purchase Status"
               v-model="purchase.status"
@@ -48,7 +48,7 @@
             />
           </v-col>
 
-          <v-col cols="3" md="3">
+          <v-col cols="12" sm="6" md="3">
             <v-select
               label="Payment Status"
               v-model="purchase.payment_status"
@@ -75,7 +75,7 @@
             dense
             class="mb-2"
           >
-            <v-col cols="12" md="3">
+            <v-col cols="12" md="2">
               <v-select
                 :items="productStore.products.data"
                 v-model="item.product_id"
@@ -87,7 +87,7 @@
               />
             </v-col>
 
-            <v-col cols="12" md="2">
+            <v-col cols="12" md="1">
               <v-text-field
                 v-model.number="item.quantity"
                 type="number"
@@ -111,23 +111,23 @@
                 :rules="[v => v >= 0 || 'Price must be ≥ 0']"
               />
             </v-col>
-            <v-col cols="12" md="1">
+            <v-col cols="12" md="2">
               <v-text-field
                 v-model.number="item.item_tax"
                 type="number"
-                prefix="%"
+                suffix="%"
                 label="Tax"
                 density="compact"
                 min="0"
               />
             </v-col>
 
-            <v-col cols="12" md="1">
+            <v-col cols="12" md="2">
               <v-text-field
                 v-model.number="item.item_discount"
                 type="number" 
                 label="Discount"
-                prefix="%"
+                suffix="%"
                 density="compact"
                 min="0"
               />
@@ -157,8 +157,8 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col cols="9"></v-col>
-        <v-col cols="3">
+        <v-col cols="12" sm="6" md="8"></v-col>
+        <v-col cols="12" sm="8" md="4">
           <v-sheet border rounded="lg" class="pa-4">
             <div class="mb-2">Summary</div>
 
@@ -168,19 +168,19 @@
             </div>
 
             <div class="d-flex justify-space-between mb-1">
-              <span>Total Discount:</span>
+              <span>Total Discount Amount:</span>
               <strong>{{ formatCurrency(totalDiscount) }}</strong>
             </div>
 
             <div class="d-flex justify-space-between mb-1">
-              <span>Total Tax:</span>
+              <span>Total Tax Amount:</span>
               <strong>{{ formatCurrency(totalTax) }}</strong>
             </div>
 
             <v-divider class="my-2" />
 
             <div class="d-flex justify-space-between">
-              <h3 class="font-weight-bold">Total:</h3>
+              <h3 class="font-weight-bold">Total Amount:</h3>
               <h3>{{ formatCurrency(totalAmount) }}</h3>
             </div>
           </v-sheet>

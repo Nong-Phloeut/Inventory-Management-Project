@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class StockService
 {
 
-     public const MOVEMENT_TYPES = [
+    public const MOVEMENT_TYPES = [
         'purchase',
         'sale',
         'return',
@@ -23,7 +23,7 @@ class StockService
     /**
      * Add stock and record movement
      */
-    public function addStock(int $productId, float $quantity, float $cost = 0, string $movementType = 'purchase', int $relatedId = null, string $note = null)
+    public static function addStock(int $productId, float $quantity, float $cost = 0, string $movementType = 'purchase', int $relatedId = null, string $note = null)
     {
         DB::transaction(function () use ($productId, $quantity, $cost, $movementType, $relatedId, $note) {
             // 1. Update or create stock
@@ -31,7 +31,7 @@ class StockService
                 ['product_id' => $productId],
                 ['quantity' => DB::raw("COALESCE(quantity,0) + {$quantity}")]
             );
-
+            $user = Auth::user();
             // 2. Record stock movement
             StockMovement::create([
                 'product_id' => $productId,
@@ -40,7 +40,7 @@ class StockService
                 'cost' => $cost,
                 'related_id' => $relatedId,
                 'note' => $note,
-                'created_by' => 1,
+                'created_by' => $user->id,
             ]);
         });
     }
@@ -48,13 +48,14 @@ class StockService
     /**
      * Reduce stock and record movement
      */
-    public function reduceStock(int $productId, float $quantity, float $cost = 0, string $movementType = 'sale', int $relatedId = null, string $note = null)
+    public static function reduceStock(int $productId, float $quantity, float $cost = 0, string $movementType = 'sale', int $relatedId = null, string $note = null)
     {
         DB::transaction(function () use ($productId, $quantity, $cost, $movementType, $relatedId, $note) {
             // 1. Decrement stock
             $stock = Stock::where('product_id', $productId)->firstOrFail();
             $stock->decrement('quantity', $quantity);
 
+            $user = Auth::user();
             // 2. Record stock movement
             StockMovement::create([
                 'product_id' => $productId,
@@ -63,7 +64,7 @@ class StockService
                 'cost' => $cost,
                 'related_id' => $relatedId,
                 'note' => $note,
-                'created_by' => 1,
+                'created_by' => $user->id,
             ]);
         });
     }

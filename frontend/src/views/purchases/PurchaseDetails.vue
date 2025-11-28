@@ -78,6 +78,15 @@
         class="px-2"
         density="compact"
       >
+        <template #item.cost_price="{ item }">
+          {{ formatCurrency(item.cost_price) }}
+        </template>
+        <template #item.item_discount="{ item }">
+          {{ item.item_discount }} %
+        </template>
+        <template #item.item_tax="{ item }">
+          {{item.item_tax }} %
+        </template>
         <template #item.total="{ item }">
           {{ formatCurrency(item.quantity * item.cost_price) }}
         </template>
