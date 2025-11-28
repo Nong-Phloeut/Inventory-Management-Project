@@ -8,14 +8,16 @@ services:
     container_name: inventory_backend
     restart: unless-stopped
     tty: true
-    environment:
-      # Explicitly pass the database connection variables
-      DB_CONNECTION: mysql
-      DB_HOST: db 
-      DB_PORT: 3306
-      DB_DATABASE: inventory_management_db
-      DB_USERNAME: root
-      DB_PASSWORD: root
+    env_file:
+      - ./backend/.env.production
+    # environment:
+    #   # Explicitly pass the database connection variables
+    #   DB_CONNECTION: mysql
+    #   DB_HOST: db 
+    #   DB_PORT: 3306
+    #   DB_DATABASE: inventory_management_db
+    #   DB_USERNAME: root
+    #   DB_PASSWORD: root
     working_dir: /var/www/html/
     volumes:
         # - ./backend:/var/www/html
