@@ -120,4 +120,4 @@ jobs:
             docker-compose exec backend php artisan migrate --force
 
             # Run seeders
-            docker-compose exec backend php artisan db:seed --force
+            # docker-compose exec backend php artisan db:seed --force
