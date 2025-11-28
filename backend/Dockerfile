@@ -1,5 +1,6 @@
 FROM php:8.3-fpm
 
+# Set working directory
 WORKDIR /var/www/html
 
 # Install system dependencies
@@ -18,24 +19,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && docker-php-ext-install pdo_mysql gd zip \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Composer
+# Install Composer globally
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Configure PHP-FPM port
+# Change PHP-FPM listen port (default is 9002)
 RUN sed -i 's/listen = .*/listen = 9002/' /usr/local/etc/php-fpm.d/zz-docker.conf
 
-# Copy composer files first
+# Copy composer files first (leverage cache)
 COPY composer.json composer.lock ./
 
-# Install dependencies FIRST (vendor folder)
-RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-# Now copy the full project
+# Copy the rest of the application **before running composer install**
 COPY . .
 
-# Fix permissions
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Fix Laravel storage and cache permissions
 RUN chown -R www-data:www-data storage bootstrap/cache \
  && chmod -R 775 storage bootstrap/cache
 
+
+# Expose PHP-FPM port
 EXPOSE 9002
+
+# Run PHP-FPM
 CMD ["php-fpm"]
