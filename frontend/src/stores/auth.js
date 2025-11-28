@@ -27,11 +27,9 @@ export const useAuthStore = defineStore('auth', {
       this.user = null
       localStorage.removeItem('token')
     },
-    async me() {
-      // optional: call API to invalidate JWT on backend
+    async fetchMe() {
       const res = await authService.me().catch(() => {})
       this.me = res.data
-      console.log(res)
     }
   }
 })

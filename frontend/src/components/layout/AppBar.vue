@@ -23,7 +23,7 @@
                 <span class="text-h5">{{ initials }}</span>
               </v-avatar> -->
               <h3>{{ me.name }}</h3>
-              <p class="text-caption mt-1">
+              <p class="mt-1">
                 {{ me.email }}
               </p>
               <!-- {{ me }} -->
@@ -41,7 +41,6 @@
   </v-app-bar>
 </template>
 
-
 <script setup>
   import { ref, onMounted, computed } from 'vue'
   import { useAuthStore } from '@/stores/auth'
@@ -50,7 +49,8 @@
   const authStore = useAuthStore()
   const router = useRouter()
   const me = ref({})
-
+  // define emits
+  const emit = defineEmits(['toggle'])
   // Drawer toggle event
   const togglerDrawer = () => {
     // emits event to parent
@@ -67,7 +67,7 @@
 
   onMounted(async () => {
     try {
-      await authStore.me() // Make sure fetchUser() exists in your store
+      await authStore.fetchMe() // Make sure fetchUser() exists in your store
       me.value = authStore.me
     } catch (err) {
       await authStore.logout()
