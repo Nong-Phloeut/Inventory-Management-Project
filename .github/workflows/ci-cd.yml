@@ -113,7 +113,11 @@ jobs:
             # Wait for DB before migrations (20s)
             sleep 20
 
+            # Run JWT secret (must run AFTER config exists)
+            docker-compose exec backend php artisan jwt:secret --force
+
             # Run migrations
-            docker-compose exec backend php artisan jwt:secret
             docker-compose exec backend php artisan migrate --force
+
+            # Run seeders
             docker-compose exec backend php artisan db:seed --force
