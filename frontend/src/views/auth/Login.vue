@@ -42,14 +42,21 @@
               label="Password"
               variant="outlined"
               rounded="lg"
-              type="password"
+              :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
+              :type="visible ? 'text' : 'password'"
               prepend-inner-icon="mdi-lock-outline"
               density="comfortable"
               :error="!!errors.password"
               :error-messages="errors.password"
               required
+              @click:append-inner="visible = !visible"
             />
-            <v-alert type="error" density="compact" v-if="errors.general" class="text-red mt-2">
+            <v-alert
+              type="error"
+              density="compact"
+              v-if="errors.general"
+              class="text-red mt-2"
+            >
               {{ errors.general }}
             </v-alert>
 
@@ -84,7 +91,10 @@
   import { ref, reactive } from 'vue'
   import { useRouter } from 'vue-router'
   import { useAuthStore } from '@/stores/auth'
-
+  import { useAppUtils } from '@/composables/useAppUtils'
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
+  const { confirm, notif } = useAppUtils()
   const email = ref('')
   const password = ref('')
   const store = useAuthStore()
@@ -94,7 +104,7 @@
     password: '',
     general: ''
   })
-
+  const visible = ref(false)
   const login = async () => {
     // clear previous errors
     errors.email = ''
@@ -109,6 +119,10 @@
 
       if (success) {
         router.push('/dashboard')
+        notif(t('messages.login_sucess'), {
+          type: 'success',
+          color: 'primary'
+        })
       }
     } catch (err) {
       const res = err.response?.data

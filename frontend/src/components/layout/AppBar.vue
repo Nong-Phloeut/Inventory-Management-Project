@@ -45,6 +45,10 @@
   import { ref, onMounted, computed } from 'vue'
   import { useAuthStore } from '@/stores/auth'
   import { useRouter } from 'vue-router'
+  import { useAppUtils } from '@/composables/useAppUtils'
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
+  const { confirm, notif } = useAppUtils()
 
   const authStore = useAuthStore()
   const router = useRouter()
@@ -76,6 +80,10 @@
   })
   const handleLogout = async () => {
     await authStore.logout()
+    notif(t('messages.logout_sucess'), {
+      type: 'success',
+      color: 'primary'
+    })
     router.push({ name: 'Login' })
   }
 </script>

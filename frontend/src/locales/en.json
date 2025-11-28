@@ -74,6 +74,8 @@
     "saved_success": "Saved successfully",
     "updated_success": "Updated successfully",
     "deleted_success": "Deleted successfully",
-    "error_occurred": "An error occurred"
+    "error_occurred": "An error occurred",
+    "login_sucess":"Login successfully",
+    "logout_sucess":"Logout successfully"
   }
 }
