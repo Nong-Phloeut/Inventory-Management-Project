@@ -9,10 +9,10 @@ export const useProductStore = defineStore('product', {
   }),
 
   actions: {
-    async fetchProducts() {
+    async fetchProducts(status) {
       this.loading = true
       try {
-        this.products = await productService.getAll()
+        this.products = await productService.getAll(status)
       } catch (err) {
         this.error = err.response?.data?.message || err.message
       } finally {

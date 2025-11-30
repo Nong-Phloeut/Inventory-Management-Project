@@ -29,6 +29,15 @@
           <v-col>
             <v-text-field v-model="form.address" label="Address" />
           </v-col>
+          <v-col>
+            <v-select
+              v-model="form.status"
+              :items="statusOptions"
+              item-title="name"
+              item-value="id"
+              label="Status"
+            />
+          </v-col>
         </v-row>
       </v-card-text>
       <v-card-actions>
@@ -56,11 +65,23 @@
     name: '',
     contact_name: '',
     phone: '',
-    email: ''
+    email: '',
+    status: 1
   })
+  const statusOptions = ref([
+    { id: 1, name: 'Active' },
+    { id: 0, name: 'Inactive' }
+  ])
 
   const resetForm = () => {
-    form.value = { id: null, name: '', contact_name: '', phone: '', email: '' }
+    form.value = {
+      id: null,
+      name: '',
+      contact_name: '',
+      phone: '',
+      email: '',
+      status: ''
+    }
   }
 
   watch(

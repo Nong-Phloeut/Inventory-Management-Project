@@ -41,12 +41,18 @@ class DashboardController extends Controller
             ->groupBy('categories.name')
             ->get();
 
+        $inventoryValue = DB::table('stocks')
+            ->join('products', 'products.id', '=', 'stocks.product_id')
+            ->select(DB::raw('SUM(stocks.quantity * products.price) as total_value'))
+            ->value('total_value');
+            
         // 6. Return aggregated data as JSON
         return response()->json([
             'totalProducts' => $totalProducts,
             'inStock' => $inStock,
             'lowStock' => $lowStock,
             'suppliers' => $suppliers,
+            'inventoryValue'  => $inventoryValue,
             'lowStockItems' => $lowStockProducts->map(fn($p) => [
                 'name' => $p->name,
                 'stock' => $p->current_stock,

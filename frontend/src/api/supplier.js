@@ -1,8 +1,8 @@
 import http from './api'
 
 // Get all suppliers
-export function getSuppliers() {
-  return http.get('suppliers')
+export function getSuppliers(params = {}) {
+  return http.get('suppliers', { params })
 }
 
 // Get a single supplier by ID

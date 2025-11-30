@@ -121,11 +121,19 @@
         width: 400
       },
       agree: async () => {
-        await productStore.deleteProduct(p.id)
-        notif(t('messages.deleted_success'), {
-          type: 'success',
-          color: 'primary'
-        })
+        try {
+          await productStore.deleteProduct(p.id)
+
+          notif(t('messages.deleted_success'), {
+            type: 'success',
+            color: 'primary'
+          })
+        } catch (err) {
+          notif(err.response.data.message, {
+            type: 'error',
+            color: 'error'
+          })
+        }
       }
     })
   }

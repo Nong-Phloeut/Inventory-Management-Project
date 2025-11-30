@@ -10,10 +10,25 @@ class SupplierController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Supplier::all(), 200);
+        $query = Supplier::query();
+
+        // Filter by status if provided (?status=1 or ?status=0)
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Pagination (default 10 per page)
+        $suppliers = $query->orderBy('id', 'desc')->paginate(10);
+
+        return response()->json([
+            'success'   => true,
+            'message'   => 'Suppliers retrieved successfully.',
+            'data'      => $suppliers,
+        ], 200);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -31,6 +46,7 @@ class SupplierController extends Controller
             'phone'        => 'nullable|string|max:50',
             'email'        => 'nullable|email|max:255',
             'address'      => 'nullable|string',
+            'status'      => 'required',
         ]);
 
         $supplier = Supplier::create($validated);
@@ -65,6 +81,7 @@ class SupplierController extends Controller
             'phone'        => 'nullable|string|max:50',
             'email'        => 'nullable|email|max:255',
             'address'      => 'nullable|string',
+            'status'      => 'required',
         ]);
 
         $supplier->update($validated);

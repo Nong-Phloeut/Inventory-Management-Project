@@ -7,9 +7,8 @@
       </BaseButton>
     </template>
   </custom-title>
-
   <v-data-table
-    :items="supplierStore.suppliers"
+    :items="supplierStore.suppliers.data"
     :loading="supplierStore.loading"
     :headers="headers"
   >
@@ -27,6 +26,15 @@
         variant="text"
         @click="handleDelete(item.id)"
       />
+    </template>
+    <template #item.status="{ item }">
+      <v-chip size="small" :color="item.status == '1' ? 'green' : 'red'">
+        <v-icon
+          :icon="item.status == '1' ? 'mdi-check-circle' : 'mdi-cancel'"
+          start
+        ></v-icon>
+        {{ item.status == '1' ? 'Active' : 'Inactiv' }}
+      </v-chip>
     </template>
   </v-data-table>
 
@@ -59,6 +67,7 @@
     { title: 'Contact', key: 'contact_name' },
     { title: 'Phone', key: 'phone' },
     { title: 'Email', key: 'email' },
+    { title: 'Status', key: 'status' },
     { title: 'Actions', key: 'actions', sortable: false }
   ]
 

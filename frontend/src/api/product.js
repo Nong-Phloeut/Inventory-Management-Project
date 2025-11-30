@@ -1,8 +1,8 @@
 import http from './api'
 
 export const productService = {
-  async getAll() {
-    const res = await http.get('/products')
+  async getAll(params = {}) {
+    const res = await http.get('/products', { params })
     return res.data
   },
   async getById(id) {
@@ -19,5 +19,5 @@ export const productService = {
   },
   async remove(id) {
     await http.delete(`/products/${id}`)
-  },
+  }
 }

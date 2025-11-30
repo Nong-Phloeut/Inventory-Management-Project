@@ -11,14 +11,22 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with([
+        $query = Product::with([
             'category:id,name',
             'unit:id,name,abbreviation'
-        ])
-            ->orderBy('id', 'desc')
-            ->paginate(10); // change 10 to your preferred page size
+        ]);
+
+        if ($request->has('is_active')) {
+            $query->where('is_active', $request->is_active);
+        }
+
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $products = $query->orderBy('id', 'desc')->paginate(10);
 
         return response()->json($products);
     }
@@ -111,12 +119,31 @@ class ProductController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+    // public function destroy(Product $product)
+    // {
+    //     $product->delete();
+
+    //     return response()->json([
+    //         'message' => 'Product deleted successfully.'
+    //     ], 200);
+    // }
+
     public function destroy(Product $product)
     {
+        // Check stock in related table
+        if ($product->stock && $product->stock->quantity > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot delete this product because stock is available.',
+            ], 400);
+        }
+
+        // Safe to delete
         $product->delete();
 
         return response()->json([
-            'message' => 'Product deleted successfully.'
+            'success' => true,
+            'message' => 'Product deleted successfully.',
         ], 200);
     }
 }
