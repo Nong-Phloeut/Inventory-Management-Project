@@ -125,7 +125,7 @@
             <v-col cols="12" md="2">
               <v-text-field
                 v-model.number="item.item_discount"
-                type="number" 
+                type="number"
                 label="Discount"
                 suffix="%"
                 density="compact"
@@ -136,7 +136,7 @@
               <v-text-field
                 :model-value="getItemTotal(index)"
                 prefix="$"
-                type="text" 
+                type="text"
                 label="Total"
                 density="compact"
                 min="0"
@@ -157,7 +157,9 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col cols="12" sm="6" md="8"></v-col>
+        <v-col cols="12" sm="6" md="8">
+          <v-textarea label="Note" v-model="purchase.note"></v-textarea>
+        </v-col>
         <v-col cols="12" sm="8" md="4">
           <v-sheet border rounded="lg" class="pa-4">
             <div class="mb-2">Summary</div>
@@ -237,6 +239,7 @@
     purchase_date: '',
     status: 'draft',
     payment_status: 'unpaid',
+    note: '',
     tax: 0,
     discount: 0,
     items: []
