@@ -5,16 +5,44 @@
     <!-- Top Cards -->
     <v-row class="mb-6" dense>
       <v-col v-for="card in cards" :key="card.title" cols="12" sm="6" md="3">
-        <v-card class="card pa-6" :elevation="4" @click="handleCardClick(card)">
-          <v-row align="center">
-            <v-col cols="8">
-              <div>{{ card.title }}</div>
-              <div class="text-h4 font-weight-bold mt-1">{{ card.value }}</div>
-            </v-col>
-            <v-col cols="4" class="text-right">
-              <v-icon size="48" :color="card.color">{{ card.icon }}</v-icon>
-            </v-col>
-          </v-row>
+        <v-card class="card pa-0" :elevation="4" @click="handleCardClick(card)">
+          <template v-slot:title>
+            <div>{{ card.title }}</div>
+          </template>
+          <v-card-text class="d-flex justify-space-between align-center">
+            <h1 class="font-weight-bold">{{ card.value }}</h1>
+
+            <v-chip
+              size="small"
+              :color="card.trend > 0 ? 'green' : 'red'"
+              text-color="white"
+              class="mt-1"
+              label
+            >
+              <v-icon
+                size="14"
+                class="mr-1"
+                :color="
+                  card.trend > 0 ? 'green' : card.trend < 0 ? 'red' : 'grey'
+                "
+              >
+                {{
+                  card.trend > 0
+                    ? 'mdi-arrow-up'
+                    : card.trend < 0
+                      ? 'mdi-arrow-down'
+                      : 'mdi-minus'
+                }}
+              </v-icon>
+
+              {{ card.trend }}%
+            </v-chip>
+          </v-card-text>
+          <template v-slot:append>
+            <v-btn icon="" size="small" variant="tonal" :color="card.color">
+              <v-icon :color="card.color" :icon="card.icon"></v-icon>
+            </v-btn>
+          </template>
         </v-card>
       </v-col>
     </v-row>
@@ -177,7 +205,8 @@
         title: 'Total Products',
         value: dashboardStore.stats.totalProducts,
         icon: 'mdi-cube-outline',
-        color: 'blue-grey'
+        color: 'blue-grey',
+        trend: 12
       },
       {
         title: 'In Stock',
@@ -189,7 +218,8 @@
         title: 'Low Stock',
         value: dashboardStore.stats.lowStock,
         icon: 'mdi-alert-circle-outline',
-        color: 'warning'
+        color: 'warning',
+        trend: -20
       },
       {
         title: 'Out-of-Stock',
@@ -203,12 +233,12 @@
         icon: 'mdi-truck',
         color: 'purple'
       },
-      // {
-      //   title: 'Inventory Value',
-      //   value: formatCurrency(dashboardStore.stats.inventoryValue),
-      //   icon: 'mdi-currency-usd',
-      //   color: 'blue'
-      // }
+      {
+        title: 'Inventory Value',
+        value: formatCurrency(dashboardStore.stats.inventoryValue),
+        icon: 'mdi-currency-usd',
+        color: 'blue'
+      }
     ]
   })
 </script>
