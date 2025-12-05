@@ -95,6 +95,11 @@
           icon: 'mdi-account'
         },
         {
+          path: '/roles-management',
+          title: 'Roles Management',
+          icon: 'mdi-shield-account'
+        },
+        {
           path: '/reports',
           title: 'Report',
           icon: 'mdi-chart-line'

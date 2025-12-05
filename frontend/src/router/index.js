@@ -23,6 +23,12 @@ const routes = [
         component: () => import('@/views/users/UserManagement.vue'),
         meta: { requiresAuth: true }
       },
+      {
+        path: '/roles-management',
+        name: 'RolesManagement',
+        component: () => import('@/views/users/RolesManagement.vue'),
+        meta: { requiresAuth: true }
+      },
 
       // Stock Management Pages
       {

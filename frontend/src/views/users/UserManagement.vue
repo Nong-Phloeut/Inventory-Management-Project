@@ -33,7 +33,6 @@
       </template>
     </v-data-table>
 
-    <!-- Dialog for create/edit -->
     <employee-dialog
       v-model="dialog"
       :employee="selectedEmployee"
