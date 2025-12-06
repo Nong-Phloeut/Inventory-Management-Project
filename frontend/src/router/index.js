@@ -44,6 +44,24 @@ const routes = [
         meta: { requiresAuth: true }
       },
       {
+        path: '/units/create',
+        name: 'UnitsCreate',
+        component: () => import('@/components/UnitForm.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: '/units/:id/edit',
+        name: 'UnitsEdit',
+        component: () => import('@/components/UnitForm.vue'),
+        props: true, // Pass route param `id` as prop to component
+        meta: { requiresAuth: true }
+      },
+      // {
+      //   path: '/Unit/:id/details',
+      //   name: 'purchase-details',
+      //   component: () => import('@/views/purchases/UnitDetails.vue')
+      // },
+      {
         path: '/suppliers',
         name: 'Suppliers',
         component: () => import('@/views/stocks/SupplierManagement.vue'),

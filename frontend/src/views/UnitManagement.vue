@@ -7,8 +7,25 @@
   </custom-title>
 
   <v-data-table :items="units" :headers="headers" class="mt-3">
+
+    <!-- No -->
+    <template #item.no="{ index }">
+      {{ index + 1 }}
+    </template>
+
+    <!-- Created At datetime -->
+    <template #item.created_at="{ item }">
+      {{ formatDateTime(item.created_at) }}
+    </template>
+
+    <!-- Updated At datetime -->
+    <template #item.updated_at="{ item }">
+      {{ formatDateTime(item.updated_at) }}
+    </template>
+
+    <!-- Actions -->
     <template #item.actions="{ item }">
-      <v-btn icon variant="text" color='primary' @click="openDialog(item)">
+      <v-btn icon variant="text" color="primary" @click="openDialog(item)">
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
 
@@ -16,65 +33,93 @@
         <v-icon color="red">mdi-delete</v-icon>
       </v-btn>
     </template>
+
   </v-data-table>
 
   <UnitDialog v-model="dialog" :editItem="selectedItem" @saved="loadUnits" />
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue'
-  import UnitDialog from '@/components/UnitDialog.vue'
-  import { useAppUtils } from '@/composables/useAppUtils'
-  import { useI18n } from 'vue-i18n'
-  const { t } = useI18n()
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+import UnitDialog from '@/components/UnitForm.vue'
+import { useAppUtils } from '@/composables/useAppUtils'
+import { useI18n } from 'vue-i18n'
 
-  const { confirm, notif } = useAppUtils()
-  const units = ref([])
+const { t } = useI18n()
+const { confirm, notif } = useAppUtils()
 
-  const headers = [
-    { title: 'ID', key: 'id' },
-    { title: 'Unit Name', key: 'name' },
-    { title: 'Abbreviation', key: 'abbreviation' },
-    { title: 'Actions', key: 'actions', sortable: false }
-  ]
+const units = ref([])
 
-  const dialog = ref(false)
-  const selectedItem = ref(null)
+/* Updated headers */
+const headers = [
+  { title: 'No.', key: 'no', sortable: false },
+  { title: 'ID', key: 'id' },
+  { title: 'Unit Name', key: 'name' },
+  { title: 'Abbreviation', key: 'abbreviation' },
+  { title: 'Created At', key: 'created_at' },
+  { title: 'Updated At', key: 'updated_at' },
+  { title: 'Actions', key: 'actions', sortable: false }
+]
 
-  const loadUnits = () => {
-    // Replace with your API
-    units.value = [
-      { id: 1, name: 'Kilogram', abbreviation: 'Lg' },
-      { id: 2, name: 'Litre', abbreviation: 'Box' }
-    ]
-  }
+const dialog = ref(false)
+const selectedItem = ref(null)
+const apiUrl = 'http://localhost:8000/api/units'
 
-  const openDialog = (item = null) => {
-    selectedItem.value = item
-    dialog.value = true
-  }
 
-  const deleteUnit = item => {
-     confirm({
-      title: 'Are you sure?',
-      message: 'Are you sure you want to delete this supplier?',
-      options: {
-        type: 'error',
-        color: 'error',
-        width: 400
-      },
-      agree: async () => {
-        // await supplierStore.removeSupplier(id)
-        notif(t('messages.deleted_success'), {
-          type: 'success',
-          color: 'primary'
-        })
-      }
-    })
-    console.log('Delete:', item)
-  }
-
-  onMounted(() => {
-    loadUnits()
+/* Format full timestamp */
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return '-'
+  return new Date(dateStr).toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
   })
+}
+
+/* Load units */
+const loadUnits = async () => {
+  try {
+    const res = await axios.get(apiUrl)
+    units.value = res.data
+  } catch (err) {
+    console.error('Failed to load units:', err)
+    notif(t('messages.load_failed'), { type: 'error', color: 'error' })
+  }
+}
+
+const openDialog = (item = null) => {
+  selectedItem.value = item
+  dialog.value = true
+}
+
+/* Delete unit */
+const deleteUnit = (item) => {
+  confirm({
+    title: 'Are you sure?',
+    message: `Are you sure you want to delete unit "${item.name}"?`,
+    options: { type: 'error', color: 'error', width: 400 },
+    agree: async () => {
+      try {
+        await axios.delete(`${apiUrl}/${item.id}`)
+        notif(t('messages.deleted_success'), { type: 'success', color: 'primary' })
+        loadUnits()
+      } catch (err) {
+        console.error('Delete failed:', err)
+        notif(
+          err.response?.data?.error || t('messages.delete_failed'),
+          { type: 'error', color: 'error' }
+        )
+      }
+    }
+  })
+}
+
+onMounted(() => {
+  loadUnits()
+})
 </script>
