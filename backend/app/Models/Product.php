@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use App\Traits\Auditable;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,6 +21,7 @@ class Product extends Model
         'status',
         'low_stock_threshold',
         'category_id',
+        'unit_id'
     ];
 
     public function category()

@@ -1,9 +1,12 @@
 <template>
   <v-dialog v-model="modelValue" max-width="550">
     <v-card>
-      <v-toolbar :title="editItem ? 'Edit Unit' : 'Create Unit'" class="bg-primary">
+      <v-toolbar
+        :title="editItem ? 'Edit Unit' : 'Create Unit'"
+        class="bg-primary"
+      >
         <v-spacer />
-        <v-btn icon="mdi-close" @click="close"></v-btn>
+        <v-btn icon="mdi-close" @click="close" />
       </v-toolbar>
 
       <v-card-text>
@@ -21,6 +24,7 @@
               v-model="localItem.abbreviation"
               label="Abbreviation"
               :error-messages="errors.abbreviation"
+              counter="10"
             />
           </v-col>
         </v-row>
@@ -35,11 +39,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
-import axios from 'axios'
-import { useAppUtils } from '@/composables/useAppUtils'
-
-const { notif } = useAppUtils()
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -54,19 +54,17 @@ const errors = ref({})
 /* RESET FORM ON OPEN */
 watch(
   () => props.editItem,
-  (val) => {
+  val => {
     localItem.value = val ? { ...val } : { name: '', abbreviation: '' }
     errors.value = {}
   },
   { immediate: true }
 )
 
-/* RESET ANY MESSAGE WHEN OPEN */
+/* RESET ERRORS WHEN OPEN */
 watch(
   () => props.modelValue,
-  (v) => {
-    if (v) errors.value = {}
-  }
+  v => v && (errors.value = {})
 )
 
 const modelValue = computed({
@@ -79,29 +77,29 @@ const close = () => {
   errors.value = {}
 }
 
-const save = async () => {
-  errors.value = {}
-  const apiUrl = 'http://localhost:8000/api/units'
+/* VALIDATION FUNCTION */
+const validate = () => {
+  const newErrors = {}
 
-  try {
-    if (props.editItem?.id) {
-      await axios.put(`${apiUrl}/${props.editItem.id}`, localItem.value)
-      notif('Unit updated successfully!', { type: 'success', color: 'primary' })
-    } else {
-      await axios.post(apiUrl, localItem.value)
-      notif('Unit created successfully!', { type: 'success', color: 'primary' })
-    }
-
-    emit('saved')
-    close()
-
-  } catch (err) {
-    if (err.response?.status === 422) {
-      errors.value = err.response.data.errors
-    } else {
-      notif('Failed to save unit', { type: 'error', color: 'error' })
-      console.error(err)
-    }
+  if (!localItem.value.name) {
+    newErrors.name = ['Unit name is required']
   }
+
+  if (!localItem.value.abbreviation) {
+    newErrors.abbreviation = ['Abbreviation is required']
+  } else if (localItem.value.abbreviation.length > 10) {
+    newErrors.abbreviation = ['Abbreviation must not exceed 10 characters']
+  }
+
+  errors.value = newErrors
+  return Object.keys(newErrors).length === 0
+}
+
+/* SAVE */
+const save = () => {
+  if (!validate()) return
+
+  emit('saved', { ...localItem.value })
+  close()
 }
 </script>
