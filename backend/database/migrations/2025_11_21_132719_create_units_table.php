@@ -4,24 +4,17 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     */
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('units', function (Blueprint $table) {
             $table->id();
-             $table->string('name', 50); // VARCHAR(50) NOT NULL
-            $table->string('abbreviation', 10); // VARCHAR(10) NOT NULL
+            $table->string('name')->unique();
+            $table->string('abbreviation')->unique();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('units');
