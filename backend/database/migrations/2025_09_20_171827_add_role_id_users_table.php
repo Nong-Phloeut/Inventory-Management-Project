@@ -12,8 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->unsignedBigInteger('role_id')->nullable()->after('id'); // Add after 'id' or wherever you want
-            $table->foreign('role_id')->references('id')->on('roles')->onDelete('set null');
+            $table->unsignedBigInteger('role_id')->nullable();
+
+            // Add foreign key constraint
+            $table->foreign('role_id')
+                  ->references('id')
+                  ->on('roles')
+                  ->onDelete('set null');
         });
     }
 
