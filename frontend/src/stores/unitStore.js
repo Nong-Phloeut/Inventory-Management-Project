@@ -12,16 +12,14 @@ export const useUnitStore = defineStore('unit', {
     },
     async addUnit(data) {
       const res = await unitService.create(data)
-      this.units.push(res.data)
+      return res
     },
     async updateUnit(unit) {
       const res = await unitService.update(unit.id, unit)
-      const idx = this.units.findIndex(s => s.id === unit.id)
-      if (idx !== -1) this.units[idx] = res.data
+      return res
     },
     async deleteUnit(id) {
       await unitService.delete(id)
-      this.units = this.units.filter(s => s.id !== id)
     }
   }
 })

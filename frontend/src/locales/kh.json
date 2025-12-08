@@ -75,6 +75,7 @@
     "deleted_success": "លុបបានជោគជ័យ",
     "error_occurred": "មានបញ្ហាកើតឡើង",
     "login_sucess":"ចូលប្រព័ន្ធបានជោគជ័យ",
-    "logout_sucess":"ចាកចេញពីប្រព័ន្ធបានជោគជ័យ"
+    "logout_sucess":"ចាកចេញពីប្រព័ន្ធបានជោគជ័យ",
+    "existName":"The name has already been taken."
   }
 }

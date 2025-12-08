@@ -20,6 +20,7 @@ class StoreUnitRequest extends FormRequest
         return [
             'name' => 'required|string|unique:units,name',
             'abbreviation' => 'required|string|unique:units,abbreviation',
+            'description' => 'string',
         ];
     }
 
@@ -28,8 +29,8 @@ class StoreUnitRequest extends FormRequest
     {
         throw new HttpResponseException(response()->json([
             'success' => false,
-            'message' => 'Validation errors',
+            'message' => 'The name has already been taken.',
             'errors' => $validator->errors()
-        ], 422));
+        ], 200));
     }
 }

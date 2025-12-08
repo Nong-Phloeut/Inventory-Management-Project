@@ -76,6 +76,7 @@
     "deleted_success": "Deleted successfully",
     "error_occurred": "An error occurred",
     "login_sucess":"Login successfully",
-    "logout_sucess":"Logout successfully"
+    "logout_sucess":"Logout successfully",
+    "existName":"The name has already been taken."
   }
 }

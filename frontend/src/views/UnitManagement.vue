@@ -51,21 +51,27 @@
 
   // Save (add or update)
   const handleSave = async unit => {
-    if (unit.id) {
-      await unitStore.updateUnit(unit)
-      notif(t('messages.updated_success'), {
-        type: 'success',
-        color: 'primary'
-      })
-    } else {
-      await unitStore.addUnit(unit)
-      notif(t('messages.saved_success'), {
-        type: 'success',
-        color: 'primary'
-      })
+    try {
+      const res = unit.id
+        ? await unitStore.updateUnit(unit)
+        : await unitStore.addUnit(unit)
+      console.log(res)
+
+      if (res.status == 200 || res.status == 201) {
+        notif(
+          unit.id ? t('messages.updated_success') : t('messages.saved_success'),
+          { type: 'success', color: 'primary' }
+        )
+      } else {
+        notif(res.message, { type: 'error', color: 'primary' })
+      }
+      unitStore.fetchUnits()
+      dialog.value = false
+    } catch (error) {
+      notif(t('messages.existName'), { type: 'error', color: 'primary' })
     }
-    dialog.value = false
   }
+
   /* Delete unit */
   const deleteUnit = item => {
     confirm({
