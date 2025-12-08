@@ -9,6 +9,9 @@
   </custom-title>
 
   <v-data-table :headers="headers" :items="productStore.products.data">
+    <template #item.no="{ index }">
+      {{ index + 1 }}
+    </template>
     <template #item.created_at="{ item }">
       {{ formatDate(item.created_at) }}
     </template>
@@ -66,8 +69,9 @@
   const productStore = useProductStore()
 
   const headers = [
+    { title: 'No', key: 'no' },
     { title: 'Name', key: 'name' },
-    { title: 'Unit', key: 'unit' },
+    { title: 'Unit', key: 'unit.abbreviation' },
     { title: 'Category', key: 'category.name' },
     { title: 'SKU', key: 'sku' },
     { title: 'Price', key: 'price' },

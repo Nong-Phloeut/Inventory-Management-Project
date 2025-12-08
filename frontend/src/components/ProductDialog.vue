@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="internalOpen" max-width="600">
+  <v-dialog v-model="internalOpen" max-width="800">
     <v-card>
       <v-toolbar
         :title="form.id ? 'Edit Product' : 'Add Product'"
@@ -8,35 +8,60 @@
         <v-spacer />
         <v-btn icon="mdi-close" @click="close"></v-btn>
       </v-toolbar>
-      <v-card-text>
+      <v-card-text class="mt-4">
         <v-form ref="formRef" v-model="isValid">
-          <v-text-field
-            v-model="form.name"
-            label="Name"
-            :rules="[rules.required]"
-            required
-          />
-          <v-select
-            v-model="form.category_id"
-            :items="categoryStore.categories"
-            item-title="name"
-            item-value="id"
-            label="Category"
-            :rules="[rules.required]"
-          />
-          <v-text-field v-model="form.sku" label="SKU" />
-          <v-text-field v-model="form.price" label="Price" type="number" />
-          <v-select
-            v-model="form.status"
-            :items="statusOptions"
-            item-title="name"
-            item-value="id"
-            label="Status"
-            :rules="[rules.required]"
-          />
+          <v-row>
+            <v-col cols="12" sm="6">
+              <v-text-field
+                v-model="form.name"
+                label="Name"
+                :rules="[rules.required]"
+                required
+              />
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-select
+                v-model="form.category_id"
+                :items="categoryStore.categories"
+                item-title="name"
+                item-value="id"
+                label="Category"
+                :rules="[rules.required]"
+              />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" sm="6">
+              <v-select
+                v-model="form.unit_id"
+                :items="unitStore.units"
+                item-title="name"
+                item-value="id"
+                label="Unit"
+                :rules="[rules.required]"
+              />
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-text-field v-model="form.sku" label="SKU" />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" sm="6">
+              <v-text-field v-model="form.price" label="Price" type="number" />
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-select
+                v-model="form.status"
+                :items="statusOptions"
+                item-title="name"
+                item-value="id"
+                label="Status"
+                :rules="[rules.required]"
+              />
+            </v-col>
+          </v-row>
         </v-form>
       </v-card-text>
-
       <v-card-actions>
         <v-spacer />
         <v-btn text @click="close">Cancel</v-btn>
@@ -49,6 +74,9 @@
 <script setup>
   import { ref, watch, onMounted } from 'vue'
   import { useCategoryStore } from '@/stores/categoryStore'
+  import { useUnitStore } from '@/stores/unitStore'
+  const unitStore = useUnitStore()
+
   const categoryStore = useCategoryStore()
 
   const props = defineProps({
@@ -66,6 +94,8 @@
     name: '',
     sku: '',
     status: '',
+    unit_id: null,
+    // category_id: null,
     price: 0
   })
 
@@ -115,6 +145,9 @@
       close() // close & reset after successful save
     }
   }
-
-  onMounted(() => categoryStore.fetchCategories())
+  const loadData = () => {
+    categoryStore.fetchCategories()
+    unitStore.fetchUnits()
+  }
+  onMounted(() => loadData())
 </script>

@@ -14,23 +14,11 @@
         {{ stockAlertChip(item).text }}
       </v-chip>
     </template>
+    <template #item.no="{ index }">
+      {{ index + 1 }}
+    </template>
     <template #item.actions="{ item }">
       <v-row dense>
-        <!-- <v-tooltip location="top">
-          <template #activator="{ props }">
-            <v-btn
-              v-bind="props"
-              icon
-              color="green"
-              variant="text"
-              @click="openDialog('return', item)"
-            >
-              <v-icon>mdi-backup-restore</v-icon>
-            </v-btn>
-          </template>
-          <span>Return</span>
-        </v-tooltip> -->
-
         <v-tooltip location="top">
           <template #activator="{ props }">
             <v-btn
@@ -104,11 +92,13 @@
   const stockStore = useStockStore()
 
   const headers = [
+    { title: 'No', key: 'no' },
     { title: 'Product', key: 'product' },
     { title: 'SKU', key: 'product.sku' },
+    { title: 'Category', key: 'product.category.name' },
     { title: 'Quantity', key: 'quantity' },
-    { title: 'Unit', key: 'product.unit' },
-    { title: 'Stock Alert', key: 'product.low_stock_threshold' },
+    { title: 'Unit', key: 'product.unit.abbreviation' },
+    // { title: 'Stock Alert', key: 'product.low_stock_threshold' },
     { title: 'Status', key: 'stock_alert' },
     { title: 'Last Updated', key: 'updated_at' },
     { title: '', key: 'actions' }

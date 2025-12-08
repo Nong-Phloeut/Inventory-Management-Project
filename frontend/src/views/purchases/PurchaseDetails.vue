@@ -131,7 +131,7 @@
   <v-card class="mt-4 mb-6">
     <v-card-title>Notes</v-card-title>
     <v-card-text>
-      <p>{{ purchase.notes || 'No notes provided.' }}</p>
+      <p>{{ purchase.note || 'No notes provided.' }}</p>
     </v-card-text>
   </v-card>
 </template>

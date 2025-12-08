@@ -14,6 +14,7 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\UnitController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -52,3 +53,10 @@ Route::middleware('jwt.auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
 });
+
+Route::get('/units', [UnitController::class, 'index']);
+Route::post('/units', [UnitController::class, 'store']);
+Route::put('/units/{id}', [UnitController::class, 'update']);
+Route::delete('/units/{id}', [UnitController::class, 'destroy']);
+
+

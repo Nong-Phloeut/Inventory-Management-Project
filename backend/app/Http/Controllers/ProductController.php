@@ -45,22 +45,23 @@ class ProductController extends Controller
             'low_stock_threshold' => 'nullable|integer|min:0',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'category_id' => 'nullable|exists:categories,id',
+            'sku' => 'required',
+            'category_id' => 'nullable|exists:categories,id'
         ]);
 
         // Get category code
         // Get category
-        $category = Category::find($request->category_id);
-        $categoryCode = $category ? strtoupper(substr($category->name, 0, 3)) : 'GEN';
+        // $category = Category::find($request->category_id);
+        // $categoryCode = $category ? strtoupper(substr($category->name, 0, 3)) : 'GEN';
 
-        // Generate product short code from name
-        $productCode = strtoupper(substr($request->name, 0, 3));
+        // // Generate product short code from name
+        // $productCode = strtoupper(substr($request->name, 0, 3));
 
-        // Generate SKU
-        $sku = $this->generateSku($categoryCode, $productCode);
+        // // Generate SKU
+        // $sku = $this->generateSku($categoryCode, $productCode);
 
-        // Add SKU to data
-        $validated['sku'] = $sku;
+        // // Add SKU to data
+        // $validated['sku'] = $sku;
 
 
         $product = Product::create($validated);

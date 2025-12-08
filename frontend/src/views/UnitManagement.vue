@@ -5,10 +5,10 @@
       <BaseButton icon="mdi-plus" @click="openDialog">Add Unit</BaseButton>
     </template>
   </custom-title>
-
-  <v-data-table :items="units" :headers="headers" class="mt-3">
+  <v-data-table :items="unitStore.units" :headers="headers" class="mt-3">
+    <!-- Actions -->
     <template #item.actions="{ item }">
-      <v-btn icon variant="text" color='primary' @click="openDialog(item)">
+      <v-btn icon variant="text" color="primary" @click="openDialog(item)">
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
 
@@ -18,19 +18,21 @@
     </template>
   </v-data-table>
 
-  <UnitDialog v-model="dialog" :editItem="selectedItem" @saved="loadUnits" />
+  <UnitDialog v-model="dialog" :editItem="selectedItem" @saved="handleSave" />
 </template>
 
 <script setup>
   import { ref, onMounted } from 'vue'
-  import UnitDialog from '@/components/UnitDialog.vue'
+  import UnitDialog from '@/components/UnitForm.vue'
   import { useAppUtils } from '@/composables/useAppUtils'
   import { useI18n } from 'vue-i18n'
+  import { useUnitStore } from '@/stores/unitStore'
+
   const { t } = useI18n()
-
   const { confirm, notif } = useAppUtils()
-  const units = ref([])
+  const unitStore = useUnitStore()
 
+  /* Updated headers */
   const headers = [
     { title: 'ID', key: 'id' },
     { title: 'Unit Name', key: 'name' },
@@ -41,40 +43,54 @@
   const dialog = ref(false)
   const selectedItem = ref(null)
 
-  const loadUnits = () => {
-    // Replace with your API
-    units.value = [
-      { id: 1, name: 'Kilogram', abbreviation: 'Lg' },
-      { id: 2, name: 'Litre', abbreviation: 'Box' }
-    ]
-  }
-
   const openDialog = (item = null) => {
     selectedItem.value = item
     dialog.value = true
   }
 
+  // Save (add or update)
+  const handleSave = async unit => {
+    if (unit.id) {
+      await unitStore.updateUnit(unit)
+      notif(t('messages.updated_success'), {
+        type: 'success',
+        color: 'primary'
+      })
+    } else {
+      await unitStore.addUnit(unit)
+      notif(t('messages.saved_success'), {
+        type: 'success',
+        color: 'primary'
+      })
+    }
+    dialog.value = false
+  }
+  /* Delete unit */
   const deleteUnit = item => {
-     confirm({
+    confirm({
       title: 'Are you sure?',
-      message: 'Are you sure you want to delete this supplier?',
-      options: {
-        type: 'error',
-        color: 'error',
-        width: 400
-      },
+      message: `Are you sure you want to delete unit "${item.name}"?`,
+      options: { type: 'error', color: 'error', width: 400 },
       agree: async () => {
-        // await supplierStore.removeSupplier(id)
-        notif(t('messages.deleted_success'), {
-          type: 'success',
-          color: 'primary'
-        })
+        try {
+          await unitStore.deleteUnit(item.id)
+          notif(t('messages.deleted_success'), {
+            type: 'success',
+            color: 'primary'
+          })
+          unitStore.fetchUnits()
+        } catch (err) {
+          console.error('Delete failed:', err)
+          notif(err.response?.data?.error || t('messages.delete_failed'), {
+            type: 'error',
+            color: 'error'
+          })
+        }
       }
     })
-    console.log('Delete:', item)
   }
 
   onMounted(() => {
-    loadUnits()
+    unitStore.fetchUnits()
   })
 </script>

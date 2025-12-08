@@ -16,9 +16,12 @@ class StockController extends Controller
         $sortDir = $request->get('sortDir', 'desc');    // default: newest first
         $perPage = $request->get('perPage', 10);        // default page size
 
-        // Query with product relation
-        $query = Stock::with('product')
-            ->orderBy($sortBy, $sortDir);
+        $query = Stock::with([
+            'product',
+            'product.category',
+            'product.unit'
+        ])->orderBy($sortBy, $sortDir);
+
 
         return response()->json([
             'status' => 'success',
