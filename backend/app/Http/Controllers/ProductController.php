@@ -25,8 +25,9 @@ class ProductController extends Controller
         if ($request->has('status')) {
             $query->where('status', $request->status);
         }
+        $perPage = $request->query('per_page', 10);
 
-        $products = $query->orderBy('id', 'desc')->paginate(10);
+        $products = $query->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($products);
     }

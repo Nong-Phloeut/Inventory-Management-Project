@@ -18,9 +18,9 @@ class SupplierController extends Controller
         if ($request->has('status')) {
             $query->where('status', $request->status);
         }
-
+        $perPage = $request->query('per_page', 10);
         // Pagination (default 10 per page)
-        $suppliers = $query->orderBy('id', 'desc')->paginate(10);
+        $suppliers = $query->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json([
             'success'   => true,

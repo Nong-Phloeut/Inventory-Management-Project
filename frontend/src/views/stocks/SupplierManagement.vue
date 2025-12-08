@@ -7,9 +7,12 @@
       </BaseButton>
     </template>
   </custom-title>
-  <v-data-table
+  <v-data-table-server
+    v-model:items-per-page="itemsPerPage"
+    :items-length="supplierStore.suppliers.total || 0"
     :items="supplierStore.suppliers.data"
     :loading="supplierStore.loading"
+    @update:options="loadItems"
     :headers="headers"
   >
     <template #item.actions="{ item }">
@@ -36,7 +39,7 @@
         {{ item.status == '1' ? 'Active' : 'Inactiv' }}
       </v-chip>
     </template>
-  </v-data-table>
+  </v-data-table-server>
 
   <!-- Add / Edit Dialog -->
   <SupplierDialog
@@ -60,7 +63,7 @@
   // State
   const isDialogOpen = ref(false)
   const selectedSupplier = ref(null)
-
+  const itemsPerPage = ref(10)
   // Table headers
   const headers = [
     { title: 'Name', key: 'name' },
@@ -87,7 +90,12 @@
     selectedSupplier.value = { ...supplier }
     isDialogOpen.value = true
   }
-
+  const loadItems = ({ page, itemsPerPage }) => {
+    supplierStore.fetchSuppliers({
+      page,
+      per_page: itemsPerPage
+    })
+  }
   // Save (add or update)
   const handleSave = async supplier => {
     if (supplier.id) {

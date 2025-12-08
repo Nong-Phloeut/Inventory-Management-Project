@@ -14,7 +14,8 @@ class CategoryController extends Controller
     {
         // Get keyword from query params
         $keyword = $request->query('keyword');
-
+        // Get items per page (default = 10)
+        $perPage = $request->query('per_page', 10);
         // Query builder
         $query = Category::query();
 
@@ -24,7 +25,9 @@ class CategoryController extends Controller
         }
 
         // Paginate results (default 10 per page)
-        $categories = $query->orderBy('id', 'desc')->paginate(10);
+        $categories = $query
+            ->orderBy('id', 'desc')
+            ->paginate($perPage);
 
         return response()->json($categories);
     }

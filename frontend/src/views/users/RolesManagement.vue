@@ -11,8 +11,8 @@
         v-for="(role, index) in rolesStore.roles.data"
         :key="index"
         cols="12"
-        sm="3"
-        md="3"
+        sm="4"
+        md="4"
       >
         <v-card class="pa-0 rounded-lg" elevation="0">
           <v-card-text>

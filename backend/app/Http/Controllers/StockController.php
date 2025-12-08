@@ -14,7 +14,7 @@ class StockController extends Controller
     {
         $sortBy = $request->get('sortBy', 'id');        // default sort by id
         $sortDir = $request->get('sortDir', 'desc');    // default: newest first
-        $perPage = $request->get('perPage', 10);        // default page size
+        $perPage = $request->query('per_page', 10);        // default page size
 
         $query = Stock::with([
             'product',

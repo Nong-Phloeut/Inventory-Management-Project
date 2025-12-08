@@ -47,9 +47,10 @@
 
   <v-data-table-server
     v-model:items-per-page="itemsPerPage"
-    :items="categoryStore.categories"
+    :items="categoryStore.categories.data"
     :loading="categoryStore.loading"
     :headers="headers"
+    :items-length="categoryStore.categories.total || 0"
     @update:options="loadItems"
     hover
   >
@@ -119,6 +120,12 @@
   const openEditDialog = category => {
     selectedCategory.value = { ...category }
     isDialogOpen.value = true
+  }
+  const loadItems = ({ page, itemsPerPage }) => {
+    categoryStore.fetchCategories({
+      page,
+      per_page: itemsPerPage
+    })
   }
   const applyFilter = () => {
     categoryStore.fetchCategories({

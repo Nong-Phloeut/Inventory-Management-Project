@@ -8,7 +8,13 @@
     </template>
   </custom-title>
 
-  <v-data-table :headers="headers" :items="productStore.products.data">
+  <v-data-table-server
+    :headers="headers"
+    :items="productStore.products.data"
+    v-model:items-per-page="itemsPerPage"
+    :items-length="productStore.products.total || 0"
+    @update:options="loadItems"
+  >
     <template #item.no="{ index }">
       {{ index + 1 }}
     </template>
@@ -42,7 +48,7 @@
         @click="deleteProduct(item)"
       />
     </template>
-  </v-data-table>
+  </v-data-table-server>
 
   <ProductDialog
     v-if="isDialogOpen"
@@ -67,7 +73,7 @@
   const { t } = useI18n()
 
   const productStore = useProductStore()
-
+  const itemsPerPage = ref(10)
   const headers = [
     { title: 'No', key: 'no' },
     { title: 'Name', key: 'name' },
@@ -87,7 +93,12 @@
   onMounted(() => {
     productStore.fetchProducts()
   })
-
+  const loadItems = ({ page, itemsPerPage }) => {
+    productStore.fetchProducts({
+      page,
+      per_page: itemsPerPage
+    })
+  }
   const openAddDialog = () => {
     selectedProduct.value = null
     isDialogOpen.value = true

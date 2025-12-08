@@ -22,7 +22,7 @@
             <v-col cols="12" sm="6">
               <v-select
                 v-model="form.category_id"
-                :items="categoryStore.categories"
+                :items="categoryStore.categories.data"
                 item-title="name"
                 item-value="id"
                 label="Category"
