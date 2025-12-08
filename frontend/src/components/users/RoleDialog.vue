@@ -8,30 +8,44 @@
         <v-spacer />
         <v-btn icon="mdi-close" @click="closeDialog"></v-btn>
       </v-toolbar>
+
       <v-card-text>
         <v-form ref="formRef" v-model="valid">
+          <!-- Name -->
           <v-text-field
-            v-model="role.title"
-            label="Role Title"
+            v-model="role.name"
+            label="Role Name"
             :rules="[rules.required]"
             variant="outlined"
             density="comfortable"
           />
 
+          <!-- Slug -->
+          <v-text-field
+            v-model="role.slug"
+            label="Slug"
+            :rules="[rules.required]"
+            variant="outlined"
+            density="comfortable"
+          />
+
+          <!-- Status -->
           <v-select
-            v-model="role.scope"
-            label="Scope"
-            :items="['Organization', 'Team']"
+            v-model="role.status"
+            label="Status"
+            :items="statusOptions"
+            item-title="name"
+            item-value="id"
             :rules="[rules.required]"
             variant="outlined"
             density="comfortable"
           />
 
+          <!-- Description -->
           <v-textarea
             v-model="role.description"
             label="Description"
             auto-grow
-            :rules="[rules.required]"
             rows="3"
             variant="outlined"
             density="comfortable"
@@ -68,17 +82,24 @@
 
   const isEdit = computed(() => !!props.editedRole?.id)
 
+  const statusOptions = [
+    { id: 1, name: 'Active' },
+    { id: 2, name: 'Inactive' }
+  ]
+
   const role = ref({
     id: null,
-    title: '',
+    name: '',
+    slug: '',
     scope: '',
+    status: 1,
     description: ''
   })
 
   watch(
     () => props.editedRole,
     val => {
-      role.value = { ...val } // Fill form for edit mode
+      role.value = { ...val, status: val.status || 1 } // Fill form for edit mode
     },
     { immediate: true }
   )

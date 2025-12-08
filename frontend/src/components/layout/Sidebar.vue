@@ -8,16 +8,11 @@
   >
     <v-list class="pa-4 mb-4 mt-4">
       <v-list-item>
-        <v-img
-          src="logo.png"
-          width="190"
-          contain
-          class="mx-auto"
-        />
+        <v-img src="logo.png" width="190" contain class="mx-auto" />
       </v-list-item>
     </v-list>
 
-    <v-list dense>
+    <!-- <v-list dense>
       <v-list-item
         v-for="(item, index) in menu"
         :key="index"
@@ -31,6 +26,55 @@
         </template>
         <v-list-item-title>{{ item.title }}</v-list-item-title>
       </v-list-item>
+    </v-list> -->
+    <v-list
+      v-model:opened="open"
+      v-for="(link, i) in menu"
+      :key="link.title"
+      dense
+      class="pa-0"
+    >
+      <v-list-item
+        v-if="!link.subLinks"
+        :key="i"
+        :to="link.path"
+        class="v-list-item"
+        exact
+      >
+        <template v-slot:prepend>
+          <v-icon :icon="link.icon"></v-icon>
+        </template>
+        <v-list-item-title>
+          {{ link.title }}
+        </v-list-item-title>
+      </v-list-item>
+
+      <v-list-group v-else :key="link.title" no-action class="pa-0">
+        <template v-slot:activator="{ props }">
+          <v-list-item v-bind="props">
+            <template v-slot:prepend>
+              <v-icon :icon="link.icon"></v-icon>
+            </template>
+            <v-list-item-title class="back-title">
+              {{ link.title }}
+            </v-list-item-title>
+          </v-list-item>
+        </template>
+
+        <v-list-item
+          v-for="sublink in link.subLinks"
+          :to="sublink.path"
+          :key="sublink.title"
+          exact
+        >
+          <template v-slot:prepend>
+            <v-icon :icon="sublink.icon"></v-icon>
+          </template>
+          <v-list-item-title>
+            {{ sublink.title }}
+          </v-list-item-title>
+        </v-list-item>
+      </v-list-group>
     </v-list>
 
     <template v-slot:append>
@@ -52,7 +96,8 @@
   export default {
     data: () => ({
       drawer: true,
-      rail :false,
+      rail: false,
+      open: ['dashboard'],
       menu: [
         {
           path: '/dashboard',
@@ -90,14 +135,20 @@
           icon: 'mdi-cart-arrow-down'
         },
         {
-          path: '/list-users',
-          title: 'User Management',
-          icon: 'mdi-account'
-        },
-        {
-          path: '/roles-management',
-          title: 'Roles Management',
-          icon: 'mdi-shield-account'
+          title: 'Administration',
+          icon: 'mdi-account-cog',
+          subLinks: [
+            {
+              path: '/roles-management',
+              title: 'Roles',
+              icon: 'mdi-shield-account'
+            },
+            {
+              path: '/list-users',
+              title: 'Users',
+              icon: 'mdi-account'
+            }
+          ]
         },
         {
           path: '/reports',
@@ -113,3 +164,30 @@
     })
   }
 </script>
+<style>
+  .v-list-group__items {
+    margin-left: -35px;
+  }
+  .v-navigation-drawer__content {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  /* Hide scrollbar for Webkit browsers */
+  .v-navigation-drawer__content::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for Firefox */
+  .v-navigation-drawer__content {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .v-list-item-title .back-title {
+    font-size: 15px !important;
+  }
+  .v-list-item__append {
+    display: initial !important;
+    align-items: unset !important;
+  }
+</style>
