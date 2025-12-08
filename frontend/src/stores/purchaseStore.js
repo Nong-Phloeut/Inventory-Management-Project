@@ -8,10 +8,10 @@ export const usePurchaseStore = defineStore('purchase', {
     loading: false
   }),
   actions: {
-    async fetchPurchases() {
+    async fetchPurchases(ilterParams = {}) {
       this.loading = true
       try {
-        this.purchases = await purchaseService.getAll()
+        this.purchases = await purchaseService.getAll(ilterParams)
       } finally {
         this.loading = false
       }

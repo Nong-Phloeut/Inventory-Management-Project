@@ -9,15 +9,8 @@ export const useProductStore = defineStore('product', {
   }),
 
   actions: {
-    async fetchProducts(status) {
-      this.loading = true
-      try {
-        this.products = await productService.getAll(status)
-      } catch (err) {
-        this.error = err.response?.data?.message || err.message
-      } finally {
-        this.loading = false
-      }
+    async fetchProducts(filterParams = {}) {
+      this.products = await productService.getAll(filterParams)
     },
 
     async addProduct(product) {

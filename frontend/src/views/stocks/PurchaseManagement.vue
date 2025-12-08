@@ -1,14 +1,85 @@
 <template>
   <custom-title icon="mdi-cart-arrow-down">
     <template #right>
+      <v-btn color="primary" class="me-4" @click="toggleFilter">
+        <v-icon start>mdi-filter</v-icon>
+        Filter
+      </v-btn>
       <BaseButton icon="mdi-plus" @click="goToCreate">New Purchase</BaseButton>
     </template>
     Purchase Orders
   </custom-title>
+  <v-card v-show="showFilter" elevation="0" class="mb-4 rounded-lg">
+    <v-card-text class="py-0 mt-4">
+      <v-row dense>
+        <!-- Keyword -->
+        <v-col cols="12" md="3">
+          <v-text-field
+            v-model="filters.keyword"
+            label="Search (Invoice / Purchase)"
+            clearable
+          />
+        </v-col>
+
+        <!-- Status -->
+        <v-col cols="12" md="3">
+          <v-select
+            v-model="filters.status"
+            label="Status"
+            :items="['draft', 'ordered', 'received', 'cancelled']"
+            clearable
+          />
+        </v-col>
+
+        <!-- Payment Status -->
+        <v-col cols="12" md="3">
+          <v-select
+            v-model="filters.payment_status"
+            label="Payment Status"
+            :items="['unpaid', 'partial', 'paid']"
+            clearable
+          />
+        </v-col>
+
+        <!-- Supplier -->
+        <v-col cols="12" md="3">
+          <v-select
+            v-model="filters.supplier_id"
+            label="Supplier"
+            :items="supplierStore.suppliers.data"
+            item-title="name"
+            item-value="id"
+            clearable
+          />
+        </v-col>
+
+        <!-- Date From -->
+        <v-col cols="12" md="3">
+          <v-text-field
+            v-model="filters.date_from"
+            type="date"
+            label="From Date"
+          />
+        </v-col>
+
+        <!-- Date To -->
+        <v-col cols="12" md="3">
+          <v-text-field v-model="filters.date_to" type="date" label="To Date" />
+        </v-col>
+      </v-row>
+    </v-card-text>
+
+    <!-- Buttons -->
+    <v-card-actions class="py-0">
+      <v-spacer></v-spacer>
+      <v-btn variant="outlined" class="mr-2" @click="resetFilter">Reset</v-btn>
+      <v-btn class="bg-primary" elevation="1" @click="applyFilter">Apply</v-btn>
+    </v-card-actions>
+  </v-card>
 
   <v-data-table
     :headers="headers"
-    :items="purchaseStore.purchases"
+    :items="purchaseStore.purchases.data"
     item-key="id"
     hover
   >
@@ -72,6 +143,8 @@
   import { ref, onMounted } from 'vue'
   import { usePurchaseStore } from '@/stores/purchaseStore'
   import { useAppUtils } from '@/composables/useAppUtils'
+  import { useSupplierStore } from '@/stores/supplierStore'
+
   import { useRouter } from 'vue-router'
   import { useI18n } from 'vue-i18n'
   import { useDate } from '@/composables/useDate'
@@ -83,6 +156,7 @@
   const router = useRouter()
   const { confirm, notif } = useAppUtils()
   const purchaseStore = usePurchaseStore()
+  const supplierStore = useSupplierStore()
 
   const headers = [
     { title: 'Po No', key: 'purchase_number' },
@@ -94,9 +168,49 @@
     { title: 'Actions', key: 'actions' }
   ]
 
+  const showFilter = ref(false)
+
+  const filters = ref({
+    keyword: '',
+    status: null,
+    payment_status: null,
+    supplier_id: null,
+    date_from: null,
+    date_to: null
+  })
+
   onMounted(() => {
+    supplierStore.fetchSuppliers()
     purchaseStore.fetchPurchases()
   })
+
+  const toggleFilter = () => {
+    showFilter.value = !showFilter.value
+  }
+
+  const applyFilter = () => {
+    purchaseStore.fetchPurchases({
+      keyword: filters.value.keyword,
+      status: filters.value.status,
+      payment_status: filters.value.payment_status,
+      supplier_id: filters.value.supplier_id,
+      date_from: filters.value.date_from,
+      date_to: filters.value.date_to
+    })
+  }
+
+  const resetFilter = () => {
+    filters.value = {
+      keyword: '',
+      status: null,
+      payment_status: null,
+      supplier_id: null,
+      date_from: null,
+      date_to: null
+    }
+    purchaseStore.fetchPurchases()
+  }
+
   /* ---- COLOR HELPERS ---- */
   const statusColor = val => {
     switch (val) {

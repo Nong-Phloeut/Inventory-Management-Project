@@ -17,12 +17,12 @@
   </custom-title>
   <!-- FILTER FORM -->
   <v-card class="mb-4" elevation="0" v-show="showFilterForm">
-    <v-card-text>
-      <v-row>
-        <v-col cols="12" md="3">
+    <v-card-text class="py-0 mt-4">
+      <v-row dense >
+        <v-col cols="12" md="4">
           <v-text-field
             v-model="filters.keyword"
-            label="Search (Name / Barcode)"
+            label="Search (Name / SUK)"
             prepend-inner-icon="mdi-magnify"
             density="comfortable"
             clearable
@@ -31,7 +31,7 @@
         </v-col>
 
         <!-- Category -->
-        <v-col cols="12" md="3">
+        <v-col cols="12" md="4">
           <v-select
             v-model="filters.category_id"
             :items="categoryStore.categories.data"
@@ -87,8 +87,9 @@
       </v-row>
     </v-card-text>
 
-    <v-card-actions>
+    <v-card-actions class="py-0">
       <v-spacer></v-spacer>
+      <v-btn class="ms-3" variant="outlined" @click="resetFilter">Reset</v-btn>
       <v-btn
         class="bg-primary"
         elevation="1"
@@ -97,7 +98,6 @@
       >
         Apply Filter
       </v-btn>
-      <v-btn class="ms-3" variant="outlined" @click="resetFilter">Reset</v-btn>
     </v-card-actions>
   </v-card>
   <v-data-table-server
@@ -185,9 +185,10 @@
   const selectedProduct = ref(null)
   const showFilterForm = ref(false)
   const showExportForm = ref(false)
+
   const filters = ref({
     keyword: '',
-    category_id: null,
+    category_id: [],
     min_price: null,
     max_price: null
   })
@@ -202,9 +203,16 @@
     productStore.fetchProducts()
     categoryStore.fetchCategories()
   })
-  const applyFilter = () => {
-    productStore.fetchProducts()
-  }
+
+const applyFilter = () => {
+  productStore.fetchProducts({
+    keyword: filters.value.keyword,
+    category_id: filters.value.category_id.join(','),
+    min_price: filters.value.min_price,
+    max_price: filters.value.max_price
+  })
+}
+
 
   const resetFilter = () => {
     filters.value = {

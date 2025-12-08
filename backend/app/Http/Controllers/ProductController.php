@@ -18,6 +18,12 @@ class ProductController extends Controller
             'unit:id,name,abbreviation'
         ]);
 
+
+
+        $keyword   = $request->query('keyword');
+        $minPrice  = $request->query('min_price');
+        $maxPrice  = $request->query('max_price');
+
         if ($request->has('is_active')) {
             $query->where('is_active', $request->is_active);
         }
@@ -25,6 +31,29 @@ class ProductController extends Controller
         if ($request->has('status')) {
             $query->where('status', $request->status);
         }
+
+        if ($request->filled('category_id')) {
+            $categories = explode(',', $request->category_id);
+            $query->whereIn('category_id', $categories);
+        }
+
+        if ($request->filled('keyword')) {
+            $keyword = $request->keyword;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'like', "%{$keyword}%")
+                    ->orWhere('sku', 'like', "%{$keyword}%")
+                    ->orWhere('barcode', 'like', "%{$keyword}%");
+            });
+        }
+
+        if ($minPrice !== null) {
+            $query->where('price', '>=', $minPrice);
+        }
+
+        if ($maxPrice !== null) {
+            $query->where('price', '<=', $maxPrice);
+        }
+
         $perPage = $request->query('per_page', 10);
 
         $products = $query->orderBy('id', 'desc')->paginate($perPage);

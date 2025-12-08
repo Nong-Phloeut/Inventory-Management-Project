@@ -4,8 +4,8 @@ const API_URL = '/purchases'
 
 export default {
   // Get all purchases
-  async getAll() {
-    const response = await http.get(API_URL)
+  async getAll(params) {
+    const response = await http.get(API_URL, { params })
     return response.data
   },
 

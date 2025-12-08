@@ -15,10 +15,60 @@ class PurchaseController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Purchase::with('items.product', 'supplier')->get();
+        $query = Purchase::with([
+            'items.product:id,name',
+            'supplier:id,name'
+        ]);
+
+        // 🔍 Search by important names:
+        // purchase_number, invoice_number, supplier name
+        if ($request->filled('keyword')) {
+            $keyword = $request->keyword;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('purchase_number', 'like', "%{$keyword}%")
+                    ->orWhere('invoice_number', 'like', "%{$keyword}%")
+                    ->orWhereHas('supplier', function ($sq) use ($keyword) {
+                        $sq->where('name', 'like', "%{$keyword}%");
+                    });
+            });
+        }
+
+        // 🔍 Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // 🔍 Filter by payment status
+        if ($request->filled('payment_status')) {
+            $query->where('payment_status', $request->payment_status);
+        }
+
+        // 🔍 Filter by date range
+        if ($request->filled('date_from')) {
+            $query->whereDate('purchase_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('purchase_date', '<=', $request->date_to);
+        }
+
+        // 🔍 Filter by supplier_id
+        if ($request->filled('supplier_id')) {
+            $query->where('supplier_id', $request->supplier_id);
+        }
+
+        // Pagination
+        $perPage = $request->query('per_page', 10);
+
+        $purchases = $query
+            ->orderBy('id', 'desc')
+            ->paginate($perPage);
+
+        return response()->json($purchases);
     }
+
 
     private function generatePurchaseNumber()
     {

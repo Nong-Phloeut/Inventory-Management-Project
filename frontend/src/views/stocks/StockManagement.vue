@@ -34,7 +34,7 @@
           <span>Adjustment</span>
         </v-tooltip>
 
-        <v-tooltip location="top">
+        <!-- <v-tooltip location="top">
           <template #activator="{ props }">
             <v-btn
               v-bind="props"
@@ -47,7 +47,7 @@
             </v-btn>
           </template>
           <span>Loss</span>
-        </v-tooltip>
+        </v-tooltip> -->
 
         <v-tooltip location="top">
           <template #activator="{ props }">
