@@ -2,12 +2,104 @@
   <custom-title icon="mdi-package-variant-closed">
     Products
     <template #right>
+      <v-btn
+        color="primary"
+        prepend-icon="mdi-filter-outline"
+        class="me-4"
+        @click="toggleFilterForm"
+      >
+        Filter
+      </v-btn>
       <BaseButton icon="mdi-plus" @click="openAddDialog">
         Add Product
       </BaseButton>
     </template>
   </custom-title>
+  <!-- FILTER FORM -->
+  <v-card class="mb-4" elevation="0" v-show="showFilterForm">
+    <v-card-text>
+      <v-row>
+        <v-col cols="12" md="3">
+          <v-text-field
+            v-model="filters.keyword"
+            label="Search (Name / Barcode)"
+            prepend-inner-icon="mdi-magnify"
+            density="comfortable"
+            clearable
+            hide-details
+          />
+        </v-col>
 
+        <!-- Category -->
+        <v-col cols="12" md="3">
+          <v-select
+            v-model="filters.category_id"
+            :items="categoryStore.categories.data"
+            item-title="name"
+            item-value="id"
+            label="Category"
+            multiple
+          >
+            <template v-slot:selection="{ item, index }">
+              <v-chip v-if="index < 2" :text="item.title" size="x-small"/>
+
+              <span
+                v-if="index === 2"
+                class="text-grey text-caption align-self-center"
+              >
+                (+{{ filters.category_id.length - 2 }} others)
+              </span>
+            </template>
+          </v-select>
+        </v-col>
+
+        <!-- Stock Status -->
+        <!-- <v-col cols="12" md="2">
+          <v-select
+            v-model="filters.stock_status"
+            :items="stockStatusOptions"
+            label="Stock Status"
+            clearable
+            hide-details
+          />
+        </v-col> -->
+
+        <!-- Price Range -->
+        <v-col cols="12" md="2">
+          <v-text-field
+            v-model="filters.min_price"
+            type="number"
+            label="Min Price"
+            clearable
+            hide-details
+          />
+        </v-col>
+
+        <v-col cols="12" md="2">
+          <v-text-field
+            v-model="filters.max_price"
+            type="number"
+            label="Max Price"
+            clearable
+            hide-details
+          />
+        </v-col>
+      </v-row>
+    </v-card-text>
+
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn
+        class="bg-primary"
+        elevation="1"
+        prepend-icon="mdi-filter-outline"
+        @click="applyFilter"
+      >
+        Apply Filter
+      </v-btn>
+      <v-btn class="ms-3" variant="outlined" @click="resetFilter">Reset</v-btn>
+    </v-card-actions>
+  </v-card>
   <v-data-table-server
     :headers="headers"
     :items="productStore.products.data"
@@ -59,8 +151,9 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, onMounted, reactive } from 'vue'
   import { useProductStore } from '@/stores/productStore'
+  import { useCategoryStore } from '@/stores/categoryStore'
   import ProductDialog from '@/components/ProductDialog.vue'
   import { useDate } from '@/composables/useDate'
   import { useAppUtils } from '@/composables/useAppUtils'
@@ -73,6 +166,8 @@
   const { t } = useI18n()
 
   const productStore = useProductStore()
+  const categoryStore = useCategoryStore()
+
   const itemsPerPage = ref(10)
   const headers = [
     { title: 'No', key: 'no' },
@@ -88,11 +183,39 @@
 
   const isDialogOpen = ref(false)
   const selectedProduct = ref(null)
+  const showFilterForm = ref(false)
+  const showExportForm = ref(false)
+  const filters = ref({
+    keyword: '',
+    category_id: null,
+    min_price: null,
+    max_price: null
+  })
+
+  const toggleFilterForm = () => {
+    showFilterForm.value = !showFilterForm.value
+    showExportForm.value = false
+  }
 
   // fetch products when page loads
   onMounted(() => {
     productStore.fetchProducts()
+    categoryStore.fetchCategories()
   })
+  const applyFilter = () => {
+    productStore.fetchProducts()
+  }
+
+  const resetFilter = () => {
+    filters.value = {
+      keyword: '',
+      category_id: null,
+      min_price: null,
+      max_price: null
+    }
+
+    productStore.fetchProducts()
+  }
   const loadItems = ({ page, itemsPerPage }) => {
     productStore.fetchProducts({
       page,
