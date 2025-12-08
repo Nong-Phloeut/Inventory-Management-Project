@@ -2,7 +2,6 @@
   <v-btn
     :color="color"
     :variant="variant"
-    class="mb-4"
     @click="$emit('click')"
   >
     <v-icon v-if="icon" :icon="icon" class="mr-2" />

@@ -5,8 +5,8 @@ import http from './api' // <-- your axios instance (with baseURL set)
  */
 export default {
   // Get all categories
-  getAll() {
-    return http.get('/categories')
+  getAll(filters) {
+    return http.get('/categories', { params: filters })
   },
 
   // Get a single category by ID

@@ -10,10 +10,25 @@ class CategoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Category::all());
+        // Get keyword from query params
+        $keyword = $request->query('keyword');
+
+        // Query builder
+        $query = Category::query();
+
+        // Apply keyword filter if provided
+        if ($keyword) {
+            $query->where('name', 'like', "%{$keyword}%");
+        }
+
+        // Paginate results (default 10 per page)
+        $categories = $query->orderBy('id', 'desc')->paginate(10);
+
+        return response()->json($categories);
     }
+
 
     /**
      * Show the form for creating a new resource.

@@ -9,11 +9,11 @@ export const useCategoryStore = defineStore('category', {
   }),
 
   actions: {
-    async fetchCategories() {
+    async fetchCategories(filters) {
       this.loading = true
       this.error = null
       try {
-        const res = await categoryService.getAll()
+        const res = await categoryService.getAll(filters)
         this.categories = res.data
       } catch (err) {
         this.error = err.response?.data?.message || err.message

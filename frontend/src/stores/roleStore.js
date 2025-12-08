@@ -8,7 +8,9 @@ export const useRoleStore = defineStore('role', {
   actions: {
     async fetchRoles() {
       const res = await roleService.getAll()
-      this.roles = res.data
+      console.log(res);
+      
+      this.roles = res.data.data
     },
     async addRole(data) {
       const res = await roleService.create(data)
