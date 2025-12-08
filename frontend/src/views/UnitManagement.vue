@@ -36,7 +36,8 @@
   const headers = [
     { title: 'ID', key: 'id' },
     { title: 'Unit Name', key: 'name' },
-    { title: 'Abbreviation', key: 'abbreviation' },
+    { title: 'Abbreviation', key: 'abbreviation', sortable: false },
+    { title: 'Description', key: 'description', sortable: false },
     { title: 'Actions', key: 'actions', sortable: false }
   ]
 

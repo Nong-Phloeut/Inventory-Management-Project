@@ -29,6 +29,10 @@ class UpdateUnitRequest extends FormRequest
                 'string',
                 Rule::unique('units')->ignore($unitId),
             ],
+            'description' => [
+                'nullable',
+                'string',
+            ],
         ];
     }
 

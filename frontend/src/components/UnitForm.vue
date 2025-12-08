@@ -28,6 +28,14 @@
             />
           </v-col>
         </v-row>
+        <v-row>
+          <v-col>
+            <v-text-field
+              v-model="localItem.description"
+              label="Description"
+            />
+          </v-col>
+        </v-row>
       </v-card-text>
 
       <v-card-actions class="justify-end">
@@ -39,67 +47,69 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+  import { ref, computed, watch } from 'vue'
 
-const props = defineProps({
-  modelValue: Boolean,
-  editItem: Object
-})
+  const props = defineProps({
+    modelValue: Boolean,
+    editItem: Object
+  })
 
-const emit = defineEmits(['update:modelValue', 'saved'])
+  const emit = defineEmits(['update:modelValue', 'saved'])
 
-const localItem = ref({ name: '', abbreviation: '' })
-const errors = ref({})
+  const localItem = ref({ name: '', abbreviation: '', description: '' })
+  const errors = ref({})
 
-/* RESET FORM ON OPEN */
-watch(
-  () => props.editItem,
-  val => {
-    localItem.value = val ? { ...val } : { name: '', abbreviation: '' }
+  /* RESET FORM ON OPEN */
+  watch(
+    () => props.editItem,
+    val => {
+      localItem.value = val
+        ? { ...val }
+        : { name: '', abbreviation: '', description: '' }
+      errors.value = {}
+    },
+    { immediate: true }
+  )
+
+  /* RESET ERRORS WHEN OPEN */
+  watch(
+    () => props.modelValue,
+    v => v && (errors.value = {})
+  )
+
+  const modelValue = computed({
+    get: () => props.modelValue,
+    set: v => emit('update:modelValue', v)
+  })
+
+  const close = () => {
+    emit('update:modelValue', false)
     errors.value = {}
-  },
-  { immediate: true }
-)
-
-/* RESET ERRORS WHEN OPEN */
-watch(
-  () => props.modelValue,
-  v => v && (errors.value = {})
-)
-
-const modelValue = computed({
-  get: () => props.modelValue,
-  set: v => emit('update:modelValue', v)
-})
-
-const close = () => {
-  emit('update:modelValue', false)
-  errors.value = {}
-}
-
-/* VALIDATION FUNCTION */
-const validate = () => {
-  const newErrors = {}
-
-  if (!localItem.value.name) {
-    newErrors.name = ['Unit name is required']
   }
 
-  if (!localItem.value.abbreviation) {
-    newErrors.abbreviation = ['Abbreviation is required']
-  } else if (localItem.value.abbreviation.length > 10) {
-    newErrors.abbreviation = ['Abbreviation must not exceed 10 characters']
+  /* VALIDATION FUNCTION */
+  const validate = () => {
+    const newErrors = {}
+
+    if (!localItem.value.name) {
+      newErrors.name = ['Unit name is required']
+    }
+
+    if (!localItem.value.abbreviation) {
+      newErrors.abbreviation = ['Abbreviation is required']
+    } else if (localItem.value.abbreviation.length > 10) {
+      newErrors.abbreviation = ['Abbreviation must not exceed 10 characters']
+    }
+
+    errors.value = newErrors
+    return Object.keys(newErrors).length === 0
   }
 
-  errors.value = newErrors
-  return Object.keys(newErrors).length === 0
-}
+  /* SAVE */
+  const save = () => {
+    if (!validate()) return
 
-/* SAVE */
-const save = () => {
-  if (!validate()) return
-
-  emit('saved', { ...localItem.value })
-  close()
-}
+    emit('saved', { ...localItem.value })
+    close()
+  }
 </script>
