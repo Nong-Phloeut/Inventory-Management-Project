@@ -248,9 +248,10 @@
   const applyFilter = () => {
     stockStore.fetchStocks({
       keyword: filters.value.keyword,
-      category_id: filters.value.category_id.join(','),
-      min_price: filters.value.min_price,
-      max_price: filters.value.max_price
+      category_id: filters.value.category_id?.join(',') ?? '',
+      stock_level: filters.value.stock_level,
+      min_qty: filters.value.min_qty,
+      max_qty: filters.value.max_qty
     })
   }
   const loadItems = ({ page, itemsPerPage }) => {

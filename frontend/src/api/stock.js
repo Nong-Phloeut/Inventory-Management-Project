@@ -1,8 +1,8 @@
 import http from './api'
 
 export default {
-  getAll(params) {
-    return http.get('/stocks', { ...params })
+  getAll(filters) {
+    return http.get('/stocks',{ params: filters })
   },
   create(data) {
     return http.post('/stocks', data)

@@ -2,11 +2,58 @@
   <custom-title icon="mdi-truck-delivery">
     Supplier Management
     <template #right>
+      <v-btn
+        color="primary"
+        class="me-4"
+        prepend-icon="mdi-filter-outline"
+        @click="toggleFilterForm"
+      >
+        Filter
+      </v-btn>
       <BaseButton icon="mdi-plus" @click="openAddDialog">
         Add Supplier
       </BaseButton>
     </template>
   </custom-title>
+  <v-card class="mb-4 pa-4" elevation="0" v-show="showFilterForm">
+    <v-row>
+      <!-- Search -->
+      <v-col cols="12" md="3">
+        <v-text-field
+          v-model="filters.keyword"
+          label="Search (Name, Contact, Phone, Email)"
+          prepend-inner-icon="mdi-magnify"
+          hide-details
+        />
+      </v-col>
+
+      <!-- Status -->
+      <v-col cols="12" md="3">
+        <v-select
+          v-model="filters.status"
+          :items="statusOptions"
+          label="Status"
+          hide-details
+        />
+      </v-col>
+
+      <!-- Buttons -->
+      <v-col cols="12" md="3" class="d-flex align-center">
+        <v-btn
+          color="primary"
+          prepend-icon="mdi-filter-outline"
+          @click="applyFilter"
+        >
+          Apply Filter
+        </v-btn>
+
+        <v-btn class="ms-3" variant="outlined" @click="resetFilter">
+          Reset
+        </v-btn>
+      </v-col>
+    </v-row>
+  </v-card>
+
   <v-data-table-server
     v-model:items-per-page="itemsPerPage"
     :items-length="supplierStore.suppliers.total || 0"
@@ -64,6 +111,7 @@
   const isDialogOpen = ref(false)
   const selectedSupplier = ref(null)
   const itemsPerPage = ref(10)
+  const showFilterForm = ref(false)
   // Table headers
   const headers = [
     { title: 'Name', key: 'name' },
@@ -78,7 +126,31 @@
   onMounted(() => {
     supplierStore.fetchSuppliers()
   })
+  const filters = ref({
+    keyword: '',
+    status: ''
+  })
 
+  const statusOptions = [
+    { title: 'Active', value: 1 },
+    { title: 'Inactive', value: 0 }
+  ]
+
+  const applyFilter = () => {
+    supplierStore.fetchSuppliers(filters.value)
+  }
+
+  const resetFilter = () => {
+    filters.value = {
+      keyword: '',
+      status: ''
+    }
+
+    supplierStore.fetchSuppliers()
+  }
+  const toggleFilterForm = () => {
+    showFilterForm.value = !showFilterForm.value
+  }
   // Open add dialog
   const openAddDialog = () => {
     selectedSupplier.value = null

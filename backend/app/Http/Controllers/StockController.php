@@ -32,10 +32,12 @@ class StockController extends Controller
             });
         }
 
-        // Filter by category
+        // Filter by category (supports comma-separated IDs)
         if ($request->filled('category_id')) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('category_id', $request->category_id);
+            $ids = explode(',', $request->category_id);
+
+            $query->whereHas('product', function ($q) use ($ids) {
+                $q->whereIn('category_id', $ids);
             });
         }
 

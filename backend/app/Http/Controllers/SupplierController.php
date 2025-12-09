@@ -14,8 +14,22 @@ class SupplierController extends Controller
     {
         $query = Supplier::query();
 
-        // Filter by status if provided (?status=1 or ?status=0)
-        if ($request->has('status')) {
+            // ✅ Only search when keyword is NOT empty
+        if ($request->filled('keyword')) {
+            $keyword = trim($request->keyword);
+
+            if ($keyword !== '') {
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('name', 'like', "%$keyword%")
+                    ->orWhere('contact_name', 'like', "%$keyword%")
+                    ->orWhere('phone', 'like', "%$keyword%")
+                    ->orWhere('email', 'like', "%$keyword%");
+                });
+            }
+        }
+
+        // ✅ Only filter status when it's NOT empty
+        if ($request->has('status') && $request->status !== '' && $request->status !== null) {
             $query->where('status', $request->status);
         }
         $perPage = $request->query('per_page', 10);
