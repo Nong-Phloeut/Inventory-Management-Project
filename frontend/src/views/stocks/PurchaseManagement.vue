@@ -13,7 +13,7 @@
         <v-text-field
           v-model="filters.keyword"
           label="Search (Invoice / Purchase)"
-          clearable
+          hide-details
         />
       </v-col>
 
@@ -23,7 +23,7 @@
           v-model="filters.status"
           label="Status"
           :items="['draft', 'ordered', 'received', 'cancelled']"
-          clearable
+          hide-details
         />
       </v-col>
 
@@ -33,7 +33,7 @@
           v-model="filters.payment_status"
           label="Payment Status"
           :items="['unpaid', 'partial', 'paid']"
-          clearable
+          hide-details
         />
       </v-col>
 
@@ -45,26 +45,32 @@
           :items="supplierStore.suppliers.data"
           item-title="name"
           item-value="id"
-          clearable
+          hide-details
         />
       </v-col>
 
       <!-- Date From -->
       <v-col cols="12" md="3">
-        <v-date-input v-model="filters.date_from" label="From Date" />
+        <v-date-input
+          v-model="filters.date_from"
+          hide-details
+          label="From Date"
+        />
       </v-col>
 
       <!-- Date To -->
       <v-col cols="12" md="3">
-        <v-date-input v-model="filters.date_to" label="To Date" />
+        <v-date-input v-model="filters.date_to" hide-details label="To Date" />
+      </v-col>
+      <v-col cols="12" md="3" class="d-flex align-center">
+        <v-btn variant="outlined" class="mr-2" @click="resetFilter">
+          Reset
+        </v-btn>
+        <v-btn class="bg-primary" elevation="1" @click="applyFilter">
+          Apply Filters
+        </v-btn>
       </v-col>
     </v-row>
-
-    <!-- Buttons -->
-    <v-col cols="12" md="3" class="d-flex align-center">
-      <v-btn variant="outlined" class="mr-2" @click="resetFilter">Reset</v-btn>
-      <v-btn class="bg-primary" elevation="1" @click="applyFilter">Apply</v-btn>
-    </v-col>
   </v-card>
 
   <v-data-table-server
