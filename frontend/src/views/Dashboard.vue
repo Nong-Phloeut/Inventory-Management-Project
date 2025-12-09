@@ -1,13 +1,34 @@
 <template>
   <v-container fluid class="pa-0">
-    <custom-title icon="mdi-view-dashboard">Inventory Dashboard</custom-title>
+    <custom-title icon="mdi-view-dashboard">
+      Inventory Dashboard
+      <template #right>
+        <v-row dense>
+          <v-col cols="12" md="6">
+            <v-date-input
+              label="Select a date"
+              prepend-icon=""
+              prepend-inner-icon="$calendar"
+              variant="solo"
+            ></v-date-input>
+          </v-col>
 
-    <!-- Top Cards -->
+          <v-col cols="12" md="6">
+            <v-date-input
+              label="Select a date"
+              prepend-icon=""
+              variant="solo"
+            ></v-date-input>
+          </v-col>
+        </v-row>
+      </template>
+    </custom-title>
+
     <v-row class="mb-6" dense>
       <v-col v-for="card in cards" :key="card.title" cols="12" sm="6" md="3">
         <v-card class="card pa-0" :elevation="4" @click="handleCardClick(card)">
           <template v-slot:title>
-            <div>{{ card.title }}</div>
+            <span class="text-kpi">{{ card.title }}</span>
           </template>
           <v-card-text class="d-flex justify-space-between align-center">
             <h1 class="font-weight-bold">{{ card.value }}</h1>
@@ -47,9 +68,7 @@
       </v-col>
     </v-row>
 
-    <!-- Charts & Tables -->
     <v-row dense>
-      <!-- Stock by Category Chart -->
       <v-col cols="12" md="6">
         <v-card :elevation="4" class="pa-6">
           <h3 class="mb-4">Stock by Category</h3>
@@ -64,24 +83,6 @@
           <div style="height: 275px">
             <canvas ref="chartCanvas"></canvas>
           </div>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <!-- Quick Actions -->
-    <v-row class="mt-6 mb-5" dense>
-      <v-col cols="12">
-        <v-card :elevation="4" class="pa-6">
-          <h3 class="mb-4">Quick Actions</h3>
-          <v-btn color="primary" class="mr-4" prepend-icon="mdi-plus-circle">
-            Add New Product
-          </v-btn>
-          <v-btn color="success" class="mr-4" prepend-icon="mdi-truck-fast">
-            Add Stock
-          </v-btn>
-          <v-btn color="info" prepend-icon="mdi-file-chart">
-            Generate Report
-          </v-btn>
         </v-card>
       </v-col>
     </v-row>
@@ -226,19 +227,19 @@
         value: dashboardStore.stats.suppliers,
         icon: 'mdi-cube-off-outline',
         color: 'red'
-      },
-      {
-        title: 'Suppliers',
-        value: dashboardStore.stats.suppliers,
-        icon: 'mdi-truck',
-        color: 'purple'
-      },
-      {
-        title: 'Inventory Value',
-        value: formatCurrency(dashboardStore.stats.inventoryValue),
-        icon: 'mdi-currency-usd',
-        color: 'blue'
       }
+      // {
+      //   title: 'Suppliers',
+      //   value: dashboardStore.stats.suppliers,
+      //   icon: 'mdi-truck',
+      //   color: 'purple'
+      // },
+      // {
+      //   title: 'Inventory Value',
+      //   value: formatCurrency(dashboardStore.stats.inventoryValue),
+      //   icon: 'mdi-currency-usd',
+      //   color: 'blue'
+      // }
     ]
   })
 </script>
@@ -271,5 +272,8 @@
   }
   .dashboard-title .v-icon {
     margin-right: 8px;
+  }
+  .text-kpi {
+    font-size: 17px;
   }
 </style>
