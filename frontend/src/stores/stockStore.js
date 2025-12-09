@@ -6,8 +6,8 @@ export const useStockStore = defineStore('stock', {
     stocks: []
   }),
   actions: {
-    async fetchStocks() {
-      const res = await stockService.getAll()
+    async fetchStocks(filters = {}) {
+      const res = await stockService.getAll(filters)
       this.stocks = res.data.data
     },
     async addStock(data) {

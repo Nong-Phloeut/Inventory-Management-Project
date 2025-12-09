@@ -1,7 +1,115 @@
 <template>
-  <custom-title icon="mdi-warehouse">Current Stock Levels</custom-title>
+  <custom-title icon="mdi-warehouse">
+    Current Stock Levels
+    <template #right>
+      <v-btn
+        color="primary"
+        prepend-icon="mdi-filter-outline"
+        @click="toggleFilterForm"
+      >
+        Filter
+      </v-btn>
+    </template>
+  </custom-title>
+  <v-card class="mb-4 pa-4" elevation="0" v-show="showFilterForm">
+    <v-row>
+      <!-- Product Name / SKU -->
+      <v-col cols="12" md="3">
+        <v-text-field
+          v-model="filters.keyword"
+          label="Search (Product / SKU)"
+          prepend-inner-icon="mdi-magnify"
+          hide-details
+        />
+      </v-col>
 
-  <v-data-table :headers="headers" :items="stockStore.stocks.data">
+      <!-- Category -->
+      <v-col cols="12" md="3">
+        <v-select
+          v-model="filters.category_id"
+          :items="categoryStore.categories.data"
+          item-title="name"
+          item-value="id"
+          label="Category"
+          multiple
+        >
+          <template v-slot:selection="{ item, index }">
+            <v-chip v-if="index < 2" :text="item.title" size="x-small" />
+
+            <span
+              v-if="index === 2"
+              class="text-grey text-caption align-self-center"
+            >
+              (+{{ filters.category_id.length - 2 }} others)
+            </span>
+          </template>
+        </v-select>
+      </v-col>
+
+      <!-- Unit -->
+      <v-col cols="12" md="3">
+        <v-select
+          v-model="filters.unit_id"
+          :items="unitStore.units"
+          item-title="name"
+          item-value="id"
+          label="Unit"
+          hide-details
+        />
+      </v-col>
+
+      <!-- Stock Level -->
+      <v-col cols="12" md="3">
+        <v-select
+          v-model="filters.stock_level"
+          :items="stockLevelOptions"
+          label="Stock Level"
+          hide-details
+        />
+      </v-col>
+
+      <!-- Quantity Range -->
+      <v-col cols="12" md="3">
+        <v-text-field
+          v-model="filters.min_qty"
+          type="number"
+          label="Min Quantity"
+          hide-details
+        />
+      </v-col>
+
+      <v-col cols="12" md="3">
+        <v-text-field
+          v-model="filters.max_qty"
+          type="number"
+          label="Max Quantity"
+          hide-details
+        />
+      </v-col>
+
+      <!-- Buttons -->
+      <v-col cols="12" md="3" class="d-flex align-center">
+        <v-btn class="me-3" variant="outlined" @click="resetFilter">
+          Reset
+        </v-btn>
+        <v-btn
+          color="primary"
+          prepend-icon="mdi-filter-outline"
+          @click="applyFilter"
+        >
+          Apply Filter
+        </v-btn>
+      </v-col>
+    </v-row>
+  </v-card>
+
+  <v-data-table-server
+    v-model:items-per-page="itemsPerPage"
+    :items-length="stockStore.stocks.total || 0"
+    @update:options="loadItems"
+    :headers="headers"
+    :items="stockStore.stocks.data"
+  >
     <template #item.product="{ item }">
       {{ item.product?.name }}
     </template>
@@ -64,7 +172,7 @@
         </v-tooltip>
       </v-row>
     </template>
-  </v-data-table>
+  </v-data-table-server>
 
   <MovementDialog v-model="isDialogOpen" :stock="selectedStock" />
 
@@ -84,12 +192,17 @@
   import StockActionDialog from '@/components/stocks/StockActionDialog.vue'
   import { useStockMovementStore } from '@/stores/stockMovementStore'
   import { useDate } from '@/composables/useDate'
+  import { useCategoryStore } from '@/stores/categoryStore'
+  import { useUnitStore } from '@/stores/unitStore'
+
   // import { useAppUtils } from '@/composables/useAppUtils'
 
   const { formatDate, formatDateTime, addDays } = useDate()
   // const { confirm, notif } = useAppUtils()
   const stockMovementStore = useStockMovementStore()
   const stockStore = useStockStore()
+  const categoryStore = useCategoryStore()
+  const unitStore = useUnitStore()
 
   const headers = [
     { title: 'No', key: 'no' },
@@ -103,19 +216,63 @@
     { title: 'Last Updated', key: 'updated_at' },
     { title: '', key: 'actions' }
   ]
+  const itemsPerPage = ref(10)
   const form = ref({
     quantity: 0,
     note: ''
   })
+  const filters = ref({
+    keyword: '',
+    category_id: null,
+    unit_id: null,
+    stock_level: null,
+    min_qty: null,
+    max_qty: null
+  })
+  const stockLevelOptions = [
+    { title: 'In Stock', value: 'in_stock' },
+    { title: 'Low Stock', value: 'low_stock' },
+    { title: 'Out of Stock', value: 'out_of_stock' }
+  ]
 
   const isDialogOpen = ref(false)
   const selectedStock = ref(null)
   const dialogVisible = ref(false)
   const dialogType = ref('') // return | adjustment | loss
-
+  const showFilterForm = ref(false)
   onMounted(() => {
-    stockStore.fetchStocks()
+    unitStore.fetchUnits()
+    categoryStore.fetchCategories()
+    stockStore.fetchStocks(filters.value)
   })
+  const applyFilter = () => {
+    stockStore.fetchStocks({
+      keyword: filters.value.keyword,
+      category_id: filters.value.category_id.join(','),
+      min_price: filters.value.min_price,
+      max_price: filters.value.max_price
+    })
+  }
+  const loadItems = ({ page, itemsPerPage }) => {
+    stockStore.fetchStocks({
+      page,
+      per_page: itemsPerPage
+    })
+  }
+  const resetFilter = () => {
+    filters.value = {
+      keyword: '',
+      category_id: null,
+      unit_id: null,
+      stock_level: null,
+      min_qty: null,
+      max_qty: null
+    }
+    stockStore.fetchStocks()
+  }
+  const toggleFilterForm = () => {
+    showFilterForm.value = !showFilterForm.value
+  }
   function openDialog(type, stock) {
     dialogType.value = type
     selectedStock.value = stock

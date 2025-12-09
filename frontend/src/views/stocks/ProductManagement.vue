@@ -184,7 +184,6 @@
   const isDialogOpen = ref(false)
   const selectedProduct = ref(null)
   const showFilterForm = ref(false)
-  const showExportForm = ref(false)
 
   const filters = ref({
     keyword: '',
@@ -195,7 +194,6 @@
 
   const toggleFilterForm = () => {
     showFilterForm.value = !showFilterForm.value
-    showExportForm.value = false
   }
 
   // fetch products when page loads

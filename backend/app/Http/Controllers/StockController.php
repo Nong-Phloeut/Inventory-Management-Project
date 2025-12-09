@@ -22,6 +22,53 @@ class StockController extends Controller
             'product.unit'
         ])->orderBy($sortBy, $sortDir);
 
+        // 🔍 Search by product name or SKU
+        if ($request->filled('keyword')) {
+            $keyword = $request->keyword;
+
+            $query->whereHas('product', function ($q) use ($keyword) {
+                $q->where('name', 'like', "%$keyword%")
+                ->orWhere('sku', 'like', "%$keyword%");
+            });
+        }
+
+        // Filter by category
+        if ($request->filled('category_id')) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('category_id', $request->category_id);
+            });
+        }
+
+        // Filter by unit
+        if ($request->filled('unit_id')) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('unit_id', $request->unit_id);
+            });
+        }
+
+        // Filter by quantity range
+        if ($request->filled('min_qty')) {
+            $query->where('quantity', '>=', $request->min_qty);
+        }
+
+        if ($request->filled('max_qty')) {
+            $query->where('quantity', '<=', $request->max_qty);
+        }
+
+        // Stock level filter
+        if ($request->filled('stock_level')) {
+            if ($request->stock_level === 'out_of_stock') {
+                $query->where('quantity', '=', 0);
+            }
+
+            if ($request->stock_level === 'low_stock') {
+                $query->whereBetween('quantity', [1, 5]); // adjust threshold
+            }
+
+            if ($request->stock_level === 'in_stock') {
+                $query->where('quantity', '>', 5);
+            }
+        }
 
         return response()->json([
             'status' => 'success',

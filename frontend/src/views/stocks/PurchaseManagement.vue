@@ -55,16 +55,15 @@
 
         <!-- Date From -->
         <v-col cols="12" md="3">
-          <v-text-field
+          <v-date-input
             v-model="filters.date_from"
-            type="date"
             label="From Date"
           />
         </v-col>
 
         <!-- Date To -->
         <v-col cols="12" md="3">
-          <v-text-field v-model="filters.date_to" type="date" label="To Date" />
+          <v-date-input v-model="filters.date_to"  label="To Date" />
         </v-col>
       </v-row>
     </v-card-text>
