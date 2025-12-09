@@ -67,9 +67,12 @@
     </v-col>
   </v-card>
 
-  <v-data-table
+  <v-data-table-server
+    v-model:items-per-page="itemsPerPage"
+    :items-length="purchaseStore.purchases.total || 0"
     :headers="headers"
     :items="purchaseStore.purchases.data"
+    @update:options="loadItems"
     item-key="id"
     hover
   >
@@ -126,13 +129,12 @@
         @click="deleteProduct(item)"
       /> -->
     </template>
-  </v-data-table>
+  </v-data-table-server>
 </template>
 
 <script setup>
   import { ref, onMounted } from 'vue'
   import { usePurchaseStore } from '@/stores/purchaseStore'
-  import { useAppUtils } from '@/composables/useAppUtils'
   import { useSupplierStore } from '@/stores/supplierStore'
 
   import { useRouter } from 'vue-router'
@@ -140,14 +142,13 @@
   import { useDate } from '@/composables/useDate'
   import { useCurrency } from '@/composables/useCurrency.js'
 
-  const { formatCurrency, formatKHR } = useCurrency()
-  const { formatDate, formatDateTime, addDays } = useDate()
+  const { formatCurrency } = useCurrency()
+  const { formatDate } = useDate()
   const { t } = useI18n()
   const router = useRouter()
-  const { confirm, notif } = useAppUtils()
   const purchaseStore = usePurchaseStore()
   const supplierStore = useSupplierStore()
-
+  const itemsPerPage = ref(10)
   const headers = [
     { title: 'Po No', key: 'purchase_number' },
     { title: 'Supplier', key: 'supplier.name' },
@@ -173,7 +174,12 @@
     supplierStore.fetchSuppliers()
     purchaseStore.fetchPurchases()
   })
-
+  const loadItems = ({ page, itemsPerPage }) => {
+    purchaseStore.fetchPurchases({
+      page,
+      per_page: itemsPerPage
+    })
+  }
   const toggleFilter = () => {
     showFilter.value = !showFilter.value
   }

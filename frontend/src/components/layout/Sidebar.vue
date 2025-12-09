@@ -11,22 +11,6 @@
         <v-img src="logo.png" width="190" contain class="mx-auto" />
       </v-list-item>
     </v-list>
-
-    <!-- <v-list dense>
-      <v-list-item
-        v-for="(item, index) in menu"
-        :key="index"
-        link
-        :to="item.path"
-        exact
-        color="primary"
-      >
-        <template v-slot:prepend>
-          <v-icon :icon="item.icon"></v-icon>
-        </template>
-        <v-list-item-title>{{ item.title }}</v-list-item-title>
-      </v-list-item>
-    </v-list> -->
     <v-list
       v-model:opened="open"
       v-for="(link, i) in menu"
