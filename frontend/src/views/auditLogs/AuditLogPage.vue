@@ -4,14 +4,7 @@
     <custom-title icon="mdi-timeline-clock-outline">
       Audit Log
       <template #right>
-        <v-btn
-          color="primary"
-          prepend-icon="mdi-filter-outline"
-          class="me-4"
-          @click="toggleFilterForm"
-        >
-          Filter
-        </v-btn>
+        <BaseButtonFilter class="me-4" @click="toggleFilterForm" />
 
         <v-btn
           color="green"
@@ -24,7 +17,7 @@
     </custom-title>
 
     <!-- FILTER FORM -->
-    <v-card class="mb-4 pa-4" elevation="0" v-show="showFilterForm">
+    <v-card class="mb-4 pa-4 rounded-lg" elevation="0" v-show="showFilterForm">
       <v-row>
         <v-col cols="12" md="3">
           <v-text-field
@@ -55,15 +48,15 @@
         </v-col>
 
         <v-col cols="12" md="3" class="d-flex align-center">
+          <v-btn class="me-3" variant="outlined" @click="resetFilter">
+            Reset
+          </v-btn>
           <v-btn
             color="primary"
             prepend-icon="mdi-filter-outline"
             @click="applyFilter"
           >
             Apply Filter
-          </v-btn>
-          <v-btn class="ms-3" variant="outlined" @click="resetFilter">
-            Reset
           </v-btn>
         </v-col>
       </v-row>

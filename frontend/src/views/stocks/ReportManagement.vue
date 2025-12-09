@@ -26,7 +26,7 @@
         <v-col cols="12" md="3">
           <v-select
             v-model="filters.category"
-            :items="categoryStore.categories"
+            :items="categoryStore.categories.data"
             label="Category"
             item-title="name"
             item-value="id"

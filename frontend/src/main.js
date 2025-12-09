@@ -8,6 +8,7 @@ import "./style.css"
 
 import CustomTitle from "./components/global/CustomTitle.vue";
 import BaseButton from "./components/customs/BaseButton.vue";
+import BaseButtonFilter from "./components/customs/BaseButtonFilter.vue";
 import Notif from '@/components/global/Notification.vue'
 import Confirm from '@/components/global/Confirm.vue'
 
@@ -20,6 +21,7 @@ app.use(router)
 app.use(i18n)
 app.component("CustomTitle", CustomTitle);
 app.component("BaseButton", BaseButton);
+app.component("BaseButtonFilter", BaseButtonFilter);
 app.config.globalProperties.$notif = Notif.value?.newAlert
 app.config.globalProperties.$confirm = Confirm.value?.open
 

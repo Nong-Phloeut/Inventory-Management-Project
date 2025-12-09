@@ -2,21 +2,14 @@
   <custom-title icon="mdi-package-variant-closed">
     Products
     <template #right>
-      <v-btn
-        color="primary"
-        prepend-icon="mdi-filter-outline"
-        class="me-4"
-        @click="toggleFilterForm"
-      >
-        Filter
-      </v-btn>
+      <BaseButtonFilter class="me-4" @click="toggleFilterForm"/>
       <BaseButton icon="mdi-plus" @click="openAddDialog">
         Add Product
       </BaseButton>
     </template>
   </custom-title>
   <!-- FILTER FORM -->
-  <v-card class="mb-4" elevation="0" v-show="showFilterForm">
+  <v-card class="mb-4 rounded-lg" elevation="0" v-show="showFilterForm">
     <v-card-text class="py-0 mt-4">
       <v-row dense >
         <v-col cols="12" md="4">

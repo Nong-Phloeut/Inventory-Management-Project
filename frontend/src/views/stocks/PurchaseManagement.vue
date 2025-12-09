@@ -1,79 +1,70 @@
 <template>
   <custom-title icon="mdi-cart-arrow-down">
     <template #right>
-      <v-btn color="primary" class="me-4" @click="toggleFilter">
-        <v-icon start>mdi-filter</v-icon>
-        Filter
-      </v-btn>
+      <BaseButtonFilter class="me-4" @click="toggleFilter" />
       <BaseButton icon="mdi-plus" @click="goToCreate">New Purchase</BaseButton>
     </template>
     Purchase Orders
   </custom-title>
-  <v-card v-show="showFilter" elevation="0" class="mb-4 rounded-lg">
-    <v-card-text class="py-0 mt-4">
-      <v-row dense>
-        <!-- Keyword -->
-        <v-col cols="12" md="3">
-          <v-text-field
-            v-model="filters.keyword"
-            label="Search (Invoice / Purchase)"
-            clearable
-          />
-        </v-col>
+  <v-card v-show="showFilter" elevation="0" class="mb-4 pa-4 rounded-lg">
+    <v-row>
+      <!-- Keyword -->
+      <v-col cols="12" md="3">
+        <v-text-field
+          v-model="filters.keyword"
+          label="Search (Invoice / Purchase)"
+          clearable
+        />
+      </v-col>
 
-        <!-- Status -->
-        <v-col cols="12" md="3">
-          <v-select
-            v-model="filters.status"
-            label="Status"
-            :items="['draft', 'ordered', 'received', 'cancelled']"
-            clearable
-          />
-        </v-col>
+      <!-- Status -->
+      <v-col cols="12" md="3">
+        <v-select
+          v-model="filters.status"
+          label="Status"
+          :items="['draft', 'ordered', 'received', 'cancelled']"
+          clearable
+        />
+      </v-col>
 
-        <!-- Payment Status -->
-        <v-col cols="12" md="3">
-          <v-select
-            v-model="filters.payment_status"
-            label="Payment Status"
-            :items="['unpaid', 'partial', 'paid']"
-            clearable
-          />
-        </v-col>
+      <!-- Payment Status -->
+      <v-col cols="12" md="3">
+        <v-select
+          v-model="filters.payment_status"
+          label="Payment Status"
+          :items="['unpaid', 'partial', 'paid']"
+          clearable
+        />
+      </v-col>
 
-        <!-- Supplier -->
-        <v-col cols="12" md="3">
-          <v-select
-            v-model="filters.supplier_id"
-            label="Supplier"
-            :items="supplierStore.suppliers.data"
-            item-title="name"
-            item-value="id"
-            clearable
-          />
-        </v-col>
+      <!-- Supplier -->
+      <v-col cols="12" md="3">
+        <v-select
+          v-model="filters.supplier_id"
+          label="Supplier"
+          :items="supplierStore.suppliers.data"
+          item-title="name"
+          item-value="id"
+          clearable
+        />
+      </v-col>
 
-        <!-- Date From -->
-        <v-col cols="12" md="3">
-          <v-date-input
-            v-model="filters.date_from"
-            label="From Date"
-          />
-        </v-col>
+      <!-- Date From -->
+      <v-col cols="12" md="3">
+        <v-date-input v-model="filters.date_from" label="From Date" />
+      </v-col>
 
-        <!-- Date To -->
-        <v-col cols="12" md="3">
-          <v-date-input v-model="filters.date_to"  label="To Date" />
-        </v-col>
-      </v-row>
-    </v-card-text>
+      <!-- Date To -->
+      <v-col cols="12" md="3">
+        <v-date-input v-model="filters.date_to" label="To Date" />
+      </v-col>
+    </v-row>
 
     <!-- Buttons -->
-    <v-card-actions class="py-0">
-      <v-spacer></v-spacer>
+    <v-col cols="12" md="3" class="d-flex align-center">
       <v-btn variant="outlined" class="mr-2" @click="resetFilter">Reset</v-btn>
       <v-btn class="bg-primary" elevation="1" @click="applyFilter">Apply</v-btn>
-    </v-card-actions>
+    </v-col>
   </v-card>
 
   <v-data-table

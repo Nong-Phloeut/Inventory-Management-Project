@@ -2,16 +2,10 @@
   <custom-title icon="mdi-warehouse">
     Current Stock Levels
     <template #right>
-      <v-btn
-        color="primary"
-        prepend-icon="mdi-filter-outline"
-        @click="toggleFilterForm"
-      >
-        Filter
-      </v-btn>
+      <BaseButtonFilter @click="toggleFilterForm" />
     </template>
   </custom-title>
-  <v-card class="mb-4 pa-4" elevation="0" v-show="showFilterForm">
+  <v-card class="mb-4 pa-4 rounded-lg" elevation="0" v-show="showFilterForm" >
     <v-row>
       <!-- Product Name / SKU -->
       <v-col cols="12" md="3">
