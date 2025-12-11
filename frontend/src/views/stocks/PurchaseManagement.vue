@@ -176,16 +176,17 @@
     date_to: null
   })
 
-  onMounted(() => {
-    supplierStore.fetchSuppliers()
-    purchaseStore.fetchPurchases()
-  })
   const loadItems = ({ page, itemsPerPage }) => {
     purchaseStore.fetchPurchases({
       page,
       per_page: itemsPerPage
     })
   }
+
+  onMounted(async () => {
+    await supplierStore.fetchSuppliers({ per_page: -1 })
+    await purchaseStore.fetchPurchases()
+  })
   const toggleFilter = () => {
     showFilter.value = !showFilter.value
   }
