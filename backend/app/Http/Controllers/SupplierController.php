@@ -32,8 +32,25 @@ class SupplierController extends Controller
         if ($request->has('status') && $request->status !== '' && $request->status !== null) {
             $query->where('status', $request->status);
         }
+        
+        // ✅ Per-page (default 10) — -1 means list all
         $perPage = $request->query('per_page', 10);
-        // Pagination (default 10 per page)
+
+        // If per_page = -1 → return all suppliers
+        if ($perPage == -1) {
+            $suppliers = $query->orderBy('id', 'desc')->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Suppliers retrieved successfully.',
+                'data'    => [
+                    'data'      => $suppliers,
+                    'total'     => $suppliers->count(),
+                    'per_page'  => -1,
+                ],
+            ], 200);
+        }
+
         $suppliers = $query->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json([

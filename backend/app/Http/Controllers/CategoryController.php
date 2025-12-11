@@ -15,7 +15,6 @@ class CategoryController extends Controller
         // Get keyword from query params
         $keyword = $request->query('keyword');
         // Get items per page (default = 10)
-        per_page = -1 mena list all
         $perPage = $request->query('per_page', 10);
         // Query builder
         $query = Category::query();
