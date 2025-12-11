@@ -10,7 +10,8 @@ export const useProductStore = defineStore('product', {
 
   actions: {
     async fetchProducts(filterParams = {}) {
-      this.products = await productService.getAll(filterParams)
+      const res = await productService.getAll(filterParams)
+      this.products = res.data
     },
 
     async addProduct(product) {

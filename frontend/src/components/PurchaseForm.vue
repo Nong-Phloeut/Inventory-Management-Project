@@ -66,7 +66,6 @@
       </v-card-title>
 
       <v-divider />
-
       <v-row class="mt-3" dense>
         <v-col cols="12">
           <v-row
@@ -77,7 +76,7 @@
           >
             <v-col cols="12" md="2">
               <v-select
-                :items="productStore.products.data"
+                :items="productStore.products"
                 v-model="item.product_id"
                 item-title="name"
                 item-value="id"
@@ -257,7 +256,7 @@
     items => {
       items.forEach(item => {
         if (item.product_id) {
-          const product = productStore.products.data.find(
+          const product = productStore.products.find(
             p => p.id === item.product_id
           )
           if (product) {
