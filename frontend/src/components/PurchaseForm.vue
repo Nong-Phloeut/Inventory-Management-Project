@@ -199,7 +199,11 @@
         </v-col>
         <v-col class="text-end">
           <v-btn variant="tonal" class="me-2" @click="goBack">Cancel</v-btn>
-          <v-btn color="primary" @click="save" :disabled="purchase.items.length <= 0">
+          <v-btn
+            color="primary"
+            @click="save"
+            :disabled="purchase.items.length <= 0"
+          >
             {{ isEdit ? 'Update Purchase' : 'Save Purchase' }}
           </v-btn>
         </v-col>
@@ -274,8 +278,8 @@
   const isEdit = computed(() => !!purchase.id)
 
   onMounted(async () => {
-    await supplierStore.fetchSuppliers({ status: 1 })
-    await productStore.fetchProducts({ status: 'active' })
+    await supplierStore.fetchSuppliers({ status: 1, per_page: -1 })
+    await productStore.fetchProducts({ status: 'active', per_page: -1 })
 
     if (route.params.id) {
       await purchaseStore.fetchPurchaseById(route.params.id)

@@ -55,6 +55,20 @@ class ProductController extends Controller
         }
 
         $perPage = $request->query('per_page', 10);
+             // If per_page = -1 → return all suppliers
+        if ($perPage == -1) {
+            $products = $query->orderBy('id', 'desc')->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Products retrieved successfully.',
+                'data'    => [
+                    'data'      => $products,
+                    'total'     => $products->count(),
+                    'per_page'  => -1,
+                ],
+            ], 200);
+        }
 
         $products = $query->orderBy('id', 'desc')->paginate($perPage);
 

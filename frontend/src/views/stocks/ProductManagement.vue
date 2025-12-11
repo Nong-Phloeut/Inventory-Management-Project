@@ -192,7 +192,9 @@
   // fetch products when page loads
   onMounted(() => {
     productStore.fetchProducts()
-    categoryStore.fetchCategories()
+    categoryStore.fetchCategories({
+      per_page: -1
+    })
   })
 
 const applyFilter = () => {

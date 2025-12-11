@@ -146,7 +146,9 @@
     }
   }
   const loadData = () => {
-    categoryStore.fetchCategories()
+    categoryStore.fetchCategories({
+      per_page: -1
+    })
     unitStore.fetchUnits()
   }
   onMounted(() => loadData())

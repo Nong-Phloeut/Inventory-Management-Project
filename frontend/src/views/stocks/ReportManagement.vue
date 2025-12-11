@@ -236,7 +236,9 @@
 
   onMounted(() => {
     renderCharts()
-    categoryStore.fetchCategories()
+    categoryStore.fetchCategories({
+      per_page: -1
+    })
   })
 </script>
 
