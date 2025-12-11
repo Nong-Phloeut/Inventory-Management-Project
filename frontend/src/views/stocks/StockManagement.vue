@@ -5,7 +5,7 @@
       <BaseButtonFilter @click="toggleFilterForm" />
     </template>
   </custom-title>
-  <v-card class="mb-4 pa-4 rounded-lg" elevation="0" v-show="showFilterForm" >
+  <v-card class="mb-4 pa-4 rounded-lg" elevation="0" v-show="showFilterForm">
     <v-row>
       <!-- Product Name / SKU -->
       <v-col cols="12" md="3">
@@ -234,9 +234,12 @@
   const dialogVisible = ref(false)
   const dialogType = ref('') // return | adjustment | loss
   const showFilterForm = ref(false)
+
   onMounted(() => {
     unitStore.fetchUnits()
-    categoryStore.fetchCategories()
+    categoryStore.fetchCategories({
+      per_page: -1
+    })
     stockStore.fetchStocks(filters.value)
   })
   const applyFilter = () => {

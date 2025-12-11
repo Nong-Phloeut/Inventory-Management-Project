@@ -15,6 +15,7 @@ class CategoryController extends Controller
         // Get keyword from query params
         $keyword = $request->query('keyword');
         // Get items per page (default = 10)
+        per_page = -1 mena list all
         $perPage = $request->query('per_page', 10);
         // Query builder
         $query = Category::query();
@@ -22,6 +23,16 @@ class CategoryController extends Controller
         // Apply keyword filter if provided
         if ($keyword) {
             $query->where('name', 'like', "%{$keyword}%");
+        }
+
+            // If per_page = -1 → get all items (no pagination)
+        if ($perPage == -1) {
+            $categories = $query->orderBy('id', 'desc')->get();
+            return response()->json([
+                "data" => $categories,
+                "total" => $categories->count(),
+                "per_page" => -1,
+            ]);
         }
 
         // Paginate results (default 10 per page)

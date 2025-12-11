@@ -2,28 +2,53 @@
   <v-container fluid class="pa-0">
     <custom-title icon="mdi-view-dashboard">Inventory Dashboard</custom-title>
 
-    <!-- Top Cards -->
     <v-row class="mb-6" dense>
       <v-col v-for="card in cards" :key="card.title" cols="12" sm="6" md="3">
-        <v-card class="card pa-6" :elevation="4" @click="handleCardClick(card)">
-          <v-row align="center">
-            <v-col cols="8">
-              <div>{{ card.title }}</div>
-              <div class="text-h4 font-weight-bold mt-1">{{ card.value }}</div>
-            </v-col>
-            <v-col cols="4" class="text-right">
-              <v-icon size="48" :color="card.color">{{ card.icon }}</v-icon>
-            </v-col>
-          </v-row>
+        <v-card class="card pa-0" :elevation="0" @click="handleCardClick(card)">
+          <template v-slot:title>
+            <span class="text-kpi">{{ card.title }}</span>
+          </template>
+          <v-card-text class="d-flex justify-space-between align-center">
+            <h1 class="font-weight-bold">{{ card.value }}</h1>
+
+            <v-chip
+              size="small"
+              :color="card.trend > 0 ? 'green' : 'red'"
+              text-color="white"
+              class="mt-1"
+              label
+            >
+              <v-icon
+                size="14"
+                class="mr-1"
+                :color="
+                  card.trend > 0 ? 'green' : card.trend < 0 ? 'red' : 'grey'
+                "
+              >
+                {{
+                  card.trend > 0
+                    ? 'mdi-arrow-up'
+                    : card.trend < 0
+                      ? 'mdi-arrow-down'
+                      : 'mdi-minus'
+                }}
+              </v-icon>
+
+              {{ card.trend }}%
+            </v-chip>
+          </v-card-text>
+          <template v-slot:append>
+            <v-btn icon="" size="small" variant="tonal" :color="card.color">
+              <v-icon :color="card.color" :icon="card.icon"></v-icon>
+            </v-btn>
+          </template>
         </v-card>
       </v-col>
     </v-row>
 
-    <!-- Charts & Tables -->
     <v-row dense>
-      <!-- Stock by Category Chart -->
       <v-col cols="12" md="6">
-        <v-card :elevation="4" class="pa-6">
+        <v-card :elevation="0" class="pa-6" rounded="xl">
           <h3 class="mb-4">Stock by Category</h3>
           <div style="height: 275px">
             <canvas ref="barChartCanvas"></canvas>
@@ -31,29 +56,11 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="6">
-        <v-card :elevation="4" class="pa-6">
+        <v-card :elevation="0" class="pa-6" rounded="xl">
           <h3 class="mb-4">Monthly Purchase vs. Sales</h3>
           <div style="height: 275px">
             <canvas ref="chartCanvas"></canvas>
           </div>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <!-- Quick Actions -->
-    <v-row class="mt-6 mb-5" dense>
-      <v-col cols="12">
-        <v-card :elevation="4" class="pa-6">
-          <h3 class="mb-4">Quick Actions</h3>
-          <v-btn color="primary" class="mr-4" prepend-icon="mdi-plus-circle">
-            Add New Product
-          </v-btn>
-          <v-btn color="success" class="mr-4" prepend-icon="mdi-truck-fast">
-            Add Stock
-          </v-btn>
-          <v-btn color="info" prepend-icon="mdi-file-chart">
-            Generate Report
-          </v-btn>
         </v-card>
       </v-col>
     </v-row>
@@ -177,7 +184,8 @@
         title: 'Total Products',
         value: dashboardStore.stats.totalProducts,
         icon: 'mdi-cube-outline',
-        color: 'blue-grey'
+        color: 'blue-grey',
+        trend: 12
       },
       {
         title: 'In Stock',
@@ -189,20 +197,21 @@
         title: 'Low Stock',
         value: dashboardStore.stats.lowStock,
         icon: 'mdi-alert-circle-outline',
-        color: 'warning'
+        color: 'warning',
+        trend: -20
       },
       {
         title: 'Out-of-Stock',
         value: dashboardStore.stats.suppliers,
         icon: 'mdi-cube-off-outline',
         color: 'red'
-      },
-      {
-        title: 'Suppliers',
-        value: dashboardStore.stats.suppliers,
-        icon: 'mdi-truck',
-        color: 'purple'
-      },
+      }
+      // {
+      //   title: 'Suppliers',
+      //   value: dashboardStore.stats.suppliers,
+      //   icon: 'mdi-truck',
+      //   color: 'purple'
+      // },
       // {
       //   title: 'Inventory Value',
       //   value: formatCurrency(dashboardStore.stats.inventoryValue),
@@ -221,6 +230,7 @@
   }
   .card:hover {
     transform: translateY(-5px);
+    transition: 0.25s ease;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
   }
   .v-progress-linear {
@@ -233,13 +243,8 @@
     text-transform: none;
     font-weight: 500;
   }
-  .dashboard-title {
-    display: flex;
-    align-items: center;
-    margin-bottom: 24px;
-    color: #333;
-  }
-  .dashboard-title .v-icon {
-    margin-right: 8px;
+
+  .text-kpi {
+    font-size: 17px;
   }
 </style>

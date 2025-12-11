@@ -65,7 +65,7 @@ const vuetify = createVuetify({
           textField: '#2f9dab',
           icon: '#653748',
           btnEdit: '#a0627f',
-          background: '#f8f7f8',
+          background: '#f2f2f2',
           warning: '#FB8C00',
           error: '#B00020'
         }
