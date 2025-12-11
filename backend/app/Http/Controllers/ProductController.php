@@ -62,17 +62,18 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Products retrieved successfully.',
-                'data'    => [
-                    'data'      => $products,
-                    'total'     => $products->count(),
-                    'per_page'  => -1,
-                ],
+                'data' => $products
             ], 200);
         }
 
         $products = $query->orderBy('id', 'desc')->paginate($perPage);
 
-        return response()->json($products);
+        return response()->json([
+            'success' => true,
+            'message' => 'Products retrieved successfully.',
+            'data' => $products
+        ], 200);
+
     }
 
 
