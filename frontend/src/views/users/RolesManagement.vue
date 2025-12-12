@@ -11,51 +11,69 @@
         v-for="(role, index) in rolesStore.roles.data"
         :key="index"
         cols="12"
-        sm="4"
-        md="4"
+        sm="6"
+        md="6"
       >
-        <v-card class="pa-0 rounded-lg" elevation="0">
-          <v-card-text>
-            <div class="d-flex justify-space-between align-center">
-              <h3 class="font-weight-medium">{{ role.name }}</h3>
-            </div>
+        <v-card class="pa-4 rounded-lg" elevation="0" hover>
+          <div class="d-flex align-center mb-2">
+            <h3 class="text-primary">
+              {{ role.name }}
+            </h3>
 
-            <p class="text-grey-darken-1 mt-2">
-              Status:
-              <v-chip
-                :color="role.status === 1 ? 'green' : 'red'"
-                small
-                class="font-weight-medium"
-              >
-                {{ role.status === 1 ? 'Active' : 'Inactive' }}
-              </v-chip>
-            </p>
-
-            <p class="mt-2 mb-4">
-              {{ role.description || '-' }}
-            </p>
-          </v-card-text>
-
-          <v-divider class="my-2"></v-divider>
-          <v-card-actions class="py-0">
             <v-spacer></v-spacer>
-            <v-btn variant="outlined" size="small" elevation="0">
-              View List
+
+            <v-chip
+              :color="role.status === 1 ? 'success' : 'error'"
+              variant="tonal"
+              density="compact"
+              class="font-weight-medium"
+            >
+              <v-icon start>
+                {{
+                  role.status === 1 ? 'mdi-check-circle' : 'mdi-close-circle'
+                }}
+              </v-icon>
+              {{ role.status === 1 ? 'Active' : 'Inactive' }}
+            </v-chip>
+          </div>
+
+          <p class="text-grey-darken-1 mb-4">
+            {{ role.description || 'No description provided.' }}
+          </p>
+
+          
+          <v-divider class="my-0"></v-divider>
+          <v-card-actions class="px-0 py-0">
+            <v-btn variant="outlined" size="small" color="grey-darken-1">
+              <v-icon start>mdi-eye</v-icon>
+              Details
+            </v-btn>
+
+            <v-spacer></v-spacer>
+
+            <v-btn
+              color="error"
+              variant="outlined"
+              size="small"
+              @click="onDeleteRole(role.id)"
+            >
+              <v-icon start>mdi-delete</v-icon>
+              Delete
             </v-btn>
 
             <v-btn
               color="primary"
-              variant="outlined"
+              variant="flat"
               size="small"
               @click="openEdit(role)"
             >
+              <v-icon start>mdi-pencil</v-icon>
               Edit
             </v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
     </v-row>
-
     <RoleDialog v-model="dialog" :editedRole="selectedRole" @save="saveRole" />
   </v-container>
 </template>
@@ -63,11 +81,15 @@
 <script setup>
   import { ref, onMounted } from 'vue'
   import { useRoleStore } from '@/stores/roleStore'
+  import { useAppUtils } from '@/composables/useAppUtils'
+  import { useI18n } from 'vue-i18n'
   import RoleDialog from '@/components/users/RoleDialog.vue'
 
   const dialog = ref(false)
   const selectedRole = ref({})
+  const { t } = useI18n()
 
+  const { confirm, notif } = useAppUtils()
   // Pinia store
   const rolesStore = useRoleStore()
 
@@ -86,6 +108,24 @@
   function openEdit(role) {
     selectedRole.value = { ...role }
     dialog.value = true
+  }
+  function onDeleteRole(role) {
+    confirm({
+      title: 'Are you sure?',
+      message: 'Are you sure you want to delete this supplier?',
+      options: {
+        type: 'error',
+        color: 'error',
+        width: 400
+      },
+      agree: async () => {
+        await rolesStore.deleteRole(role)
+        notif(t('messages.deleted_success'), {
+          type: 'success',
+          color: 'primary'
+        })
+      }
+    })
   }
 
   // Handle submit

@@ -40,16 +40,8 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name'        => 'required|string|unique:roles,name',
-            'slug'        => 'required|string|unique:roles,slug',
-            'status'      => 'required',
-            'description' => 'nullable|string',
-        ]);
-
-        $role = Role::create($validated);
-
-        return response()->json($role, 201);
+        $role = Role::store($request);
+        return $role;
     }
 
     /**
@@ -71,18 +63,10 @@ class RoleController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Role $role)
+    public function update(Request $request, string $id)
     {
-        $validated = $request->validate([
-            'name'        => 'required|string|unique:roles,name',
-            'slug'        => 'required|string|unique:roles,slug',
-            'status'      => 'required',
-            'description' => 'nullable|string',
-        ]);
-
-        $role->update($validated);
-
-        return response()->json($role, 200);
+        $role = Role::store($request, $id);
+        return response()->json(['success' => true, 'data' => $role], 200);
     }
 
     /**

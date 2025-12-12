@@ -8,8 +8,6 @@ export const useRoleStore = defineStore('role', {
   actions: {
     async fetchRoles() {
       const res = await roleService.getAll()
-      console.log(res);
-      
       this.roles = res.data.data
     },
     async addRole(data) {
@@ -22,6 +20,7 @@ export const useRoleStore = defineStore('role', {
     },
     async deleteRole(id) {
       await roleService.delete(id)
+      await this.fetchRoles()
     }
   }
 })
