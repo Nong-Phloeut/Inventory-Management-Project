@@ -150,7 +150,7 @@
   const handleDelete = async id => {
     confirm({
       title: 'Are you sure?',
-      message: 'Are you sure you want to delete this class?',
+      message: 'Are you sure you want to delete this Category?',
       options: {
         type: 'error',
         color: 'error',

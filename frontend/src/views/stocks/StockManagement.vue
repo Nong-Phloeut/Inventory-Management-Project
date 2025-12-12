@@ -246,6 +246,7 @@
     stockStore.fetchStocks({
       keyword: filters.value.keyword,
       category_id: filters.value.category_id?.join(',') ?? '',
+      unit_id: filters.value.unit_id,
       stock_level: filters.value.stock_level,
       min_qty: filters.value.min_qty,
       max_qty: filters.value.max_qty
