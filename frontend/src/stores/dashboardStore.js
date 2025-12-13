@@ -4,6 +4,7 @@ import dashboardService from '../api/dashboard'
 export const useDashboardStore = defineStore('dashboard', {
   state: () => ({
     stats: null,
+    monthlyPurchases: null,
     loading: false
   }),
   actions: {
@@ -12,6 +13,12 @@ export const useDashboardStore = defineStore('dashboard', {
       const res = await dashboardService.getStats()
       this.stats = res.data
       this.loading = false
+    },
+    async fetchMonthlyPurchases(year) {
+      const res = await dashboardService.getMonthlyPurchases(year)
+      console.log(res);
+      
+      this.monthlyPurchases = res.data
     }
   }
 })

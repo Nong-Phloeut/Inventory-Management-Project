@@ -109,7 +109,7 @@ const routes = [
       {
         path: '/reports',
         name: 'Reports',
-        component: () => import('@/views/stocks/ReportManagement.vue'),
+        component: () => import('@/views/reports/ReportManagement.vue'),
         meta: { requiresAuth: true }
       },
       {

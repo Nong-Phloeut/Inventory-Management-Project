@@ -14,16 +14,16 @@ class SupplierController extends Controller
     {
         $query = Supplier::query();
 
-            // ✅ Only search when keyword is NOT empty
+        // ✅ Only search when keyword is NOT empty
         if ($request->filled('keyword')) {
             $keyword = trim($request->keyword);
 
             if ($keyword !== '') {
                 $query->where(function ($q) use ($keyword) {
                     $q->where('name', 'like', "%$keyword%")
-                    ->orWhere('contact_name', 'like', "%$keyword%")
-                    ->orWhere('phone', 'like', "%$keyword%")
-                    ->orWhere('email', 'like', "%$keyword%");
+                        ->orWhere('contact_name', 'like', "%$keyword%")
+                        ->orWhere('phone', 'like', "%$keyword%")
+                        ->orWhere('email', 'like', "%$keyword%");
                 });
             }
         }
@@ -32,22 +32,24 @@ class SupplierController extends Controller
         if ($request->has('status') && $request->status !== '' && $request->status !== null) {
             $query->where('status', $request->status);
         }
-        
+
         // ✅ Per-page (default 10) — -1 means list all
         $perPage = $request->query('per_page', 10);
 
         // If per_page = -1 → return all suppliers
         if ($perPage == -1) {
-            $suppliers = $query->orderBy('id', 'desc')->get();
+            $items = $query->orderBy('id', 'desc')->get();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Suppliers retrieved successfully.',
-                'data'    => [
-                    'data'      => $suppliers,
-                    'total'     => $suppliers->count(),
-                    'per_page'  => -1,
-                ],
+                'message' => 'Products retrieved successfully.',
+                'data' => [
+                    'current_page' => 1,
+                    'data' => $items,
+                    'per_page' => $items->count(),
+                    'total' => $items->count(),
+                    'last_page' => 1
+                ]
             ], 200);
         }
 

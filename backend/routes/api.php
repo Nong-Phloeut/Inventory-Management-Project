@@ -37,6 +37,7 @@ Route::apiResource('stocks', StockController::class);
 Route::apiResource('purchases', PurchaseController::class);
 Route::apiResource('roles', RoleController::class);
 Route::get('/dashboard', [DashboardController::class, 'stats']);
+Route::get('/monthly-purchases', [DashboardController::class, 'getMonthlyPurchases']);
 Route::apiResource('sales', SaleController::class);
 Route::apiResource('employees', EmployeeController::class);
 Route::apiResource('/stock-movements', StockMovementController::class);

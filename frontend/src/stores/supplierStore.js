@@ -6,7 +6,7 @@ import {
   createSupplier,
   updateSupplier as updateSupplierApi,
   deleteSupplier
-} from '../api/supplier' // adjust path if needed
+} from '../api/supplier'
 
 export const useSupplierStore = defineStore('supplier', {
   state: () => ({
@@ -24,15 +24,12 @@ export const useSupplierStore = defineStore('supplier', {
     },
     async addSupplier(supplier) {
       await createSupplier(supplier)
-      await this.fetchSuppliers() // push new supplier returned from API
     },
     async updateSupplier(supplier) {
       await updateSupplierApi(supplier.id, supplier)
-      await this.fetchSuppliers()
     },
     async removeSupplier(id) {
       await deleteSupplier(id)
-      await this.fetchSuppliers()
     }
   }
 })

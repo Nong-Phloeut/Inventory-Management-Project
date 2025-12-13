@@ -76,7 +76,7 @@
           >
             <v-col cols="12" md="2">
               <v-select
-                :items="productStore.products"
+                :items="productStore.products.data"
                 v-model="item.product_id"
                 item-title="name"
                 item-value="id"
@@ -240,7 +240,7 @@
   const purchase = reactive({
     id: null,
     supplier_id: null,
-    purchase_date: '',
+    purchase_date: new Date(),
     status: 'draft',
     payment_status: 'unpaid',
     note: '',
@@ -256,7 +256,7 @@
     items => {
       items.forEach(item => {
         if (item.product_id) {
-          const product = productStore.products.find(
+          const product = productStore.products.data.find(
             p => p.id === item.product_id
           )
           if (product) {

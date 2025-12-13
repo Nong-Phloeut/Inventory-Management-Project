@@ -26,6 +26,7 @@
           item-value="id"
           label="Category"
           multiple
+          hide-details
         >
           <template v-slot:selection="{ item, index }">
             <v-chip v-if="index < 2" :text="item.title" size="x-small" />
@@ -103,6 +104,7 @@
     @update:options="loadItems"
     :headers="headers"
     :items="stockStore.stocks.data"
+    class="text-no-wrap elevation-0"
   >
     <template #item.product="{ item }">
       {{ item.product?.name }}
@@ -207,7 +209,6 @@
     { title: 'Unit', key: 'product.unit.abbreviation' },
     // { title: 'Stock Alert', key: 'product.low_stock_threshold' },
     { title: 'Status', key: 'stock_alert' },
-    { title: 'Last Updated', key: 'updated_at' },
     { title: '', key: 'actions' }
   ]
   const itemsPerPage = ref(10)

@@ -14,7 +14,6 @@ export const useAuditLogStore = defineStore('auditLogStore', {
     },
     async getById(id) {
       const res = await auditLogService.getById(id)
-      console.log(res.data)
       this.log = res.data
     },
     exportCSV() {

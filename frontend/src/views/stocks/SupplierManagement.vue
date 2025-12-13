@@ -13,7 +13,7 @@
       <!-- Search -->
       <v-col cols="12" md="3">
         <v-text-field
-          v-model="filters.keyword"
+          v-model="draftFilters.keyword"
           label="Search (Name, Contact, Phone, Email)"
           prepend-inner-icon="mdi-magnify"
           hide-details
@@ -23,7 +23,7 @@
       <!-- Status -->
       <v-col cols="12" md="3">
         <v-select
-          v-model="filters.status"
+          v-model="draftFilters.status"
           :items="statusOptions"
           label="Status"
           hide-details
@@ -32,7 +32,12 @@
 
       <!-- Buttons -->
       <v-col cols="12" md="3" class="d-flex align-center">
-        <v-btn class="me-3" variant="outlined" @click="resetFilter">
+        <v-btn
+          class="me-3"
+          variant="outlined"
+          :disabled="!isFilterActive"
+          @click="resetFilter"
+        >
           Reset
         </v-btn>
         <v-btn
@@ -47,12 +52,12 @@
   </v-card>
 
   <v-data-table-server
-    v-model:items-per-page="itemsPerPage"
-    :items-length="supplierStore.suppliers.total || 0"
-    :items="supplierStore.suppliers.data"
-    :loading="supplierStore.loading"
-    @update:options="loadItems"
     :headers="headers"
+    :items="supplierStore.suppliers.data"
+    :items-length="supplierStore.suppliers.total || 0"
+    :loading="supplierStore.loading"
+    v-model:items-per-page="tableOptions.itemsPerPage"
+    @update:options="loadItems"
   >
     <template #item.actions="{ item }">
       <v-btn
@@ -89,22 +94,57 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, reactive, computed, onMounted } from 'vue'
   import { useSupplierStore } from '@/stores/supplierStore'
   import SupplierDialog from '@/components/SupplierDialog.vue'
   import { useAppUtils } from '@/composables/useAppUtils'
   import { useI18n } from 'vue-i18n'
+
+  const supplierStore = useSupplierStore()
+  const { confirm, notif } = useAppUtils()
   const { t } = useI18n()
 
-  const { confirm, notif } = useAppUtils()
-  const supplierStore = useSupplierStore()
+  /* =====================
+   TABLE STATE
+===================== */
 
-  // State
+  const tableOptions = reactive({
+    page: 1,
+    itemsPerPage: 10
+  })
+
+  /* =====================
+   FILTER STATE
+===================== */
+
+  // what user types/selects
+  const draftFilters = reactive({
+    keyword: '',
+    status: ''
+  })
+
+  // what API actually uses
+  const appliedFilters = reactive({
+    keyword: '',
+    status: ''
+  })
+
+  const isFilterActive = computed(() => {
+    return draftFilters.keyword.trim() !== '' || draftFilters.status !== ''
+  })
+
+  /* =====================
+   UI STATE
+===================== */
+
+  const showFilterForm = ref(false)
   const isDialogOpen = ref(false)
   const selectedSupplier = ref(null)
-  const itemsPerPage = ref(10)
-  const showFilterForm = ref(false)
-  // Table headers
+
+  /* =====================
+   TABLE HEADERS
+===================== */
+
   const headers = [
     { title: 'Name', key: 'name' },
     { title: 'Contact', key: 'contact_name' },
@@ -114,87 +154,102 @@
     { title: 'Actions', key: 'actions', sortable: false }
   ]
 
-  // Load suppliers on mount
-  onMounted(() => {
-    supplierStore.fetchSuppliers()
-  })
-  const filters = ref({
-    keyword: '',
-    status: ''
-  })
-
   const statusOptions = [
     { title: 'Active', value: 1 },
     { title: 'Inactive', value: 0 }
   ]
 
+  /* =====================
+   FETCH DATA (ONE SOURCE)
+===================== */
+
+  const fetchData = () => {
+    supplierStore.fetchSuppliers({
+      page: tableOptions.page,
+      per_page: tableOptions.itemsPerPage,
+      keyword: appliedFilters.keyword,
+      status: appliedFilters.status
+    })
+  }
+
+  /* =====================
+   EVENTS
+===================== */
+
+  const loadItems = ({ page, itemsPerPage }) => {
+    tableOptions.page = page
+    tableOptions.itemsPerPage = itemsPerPage
+    fetchData()
+  }
+
   const applyFilter = () => {
-    supplierStore.fetchSuppliers(filters.value)
+    appliedFilters.keyword = draftFilters.keyword
+    appliedFilters.status = draftFilters.status
+
+    tableOptions.page = 1
+    fetchData()
   }
 
   const resetFilter = () => {
-    filters.value = {
-      keyword: '',
-      status: ''
-    }
+    draftFilters.keyword = ''
+    draftFilters.status = ''
 
-    supplierStore.fetchSuppliers()
+    appliedFilters.keyword = ''
+    appliedFilters.status = ''
+
+    tableOptions.page = 1
+    fetchData()
   }
+
   const toggleFilterForm = () => {
     showFilterForm.value = !showFilterForm.value
   }
-  // Open add dialog
+
+  /* =====================
+   CRUD
+===================== */
+
   const openAddDialog = () => {
     selectedSupplier.value = null
     isDialogOpen.value = true
   }
 
-  // Open edit dialog
   const openEditDialog = supplier => {
     selectedSupplier.value = { ...supplier }
     isDialogOpen.value = true
   }
-  const loadItems = ({ page, itemsPerPage }) => {
-    supplierStore.fetchSuppliers({
-      page,
-      per_page: itemsPerPage
-    })
-  }
-  // Save (add or update)
+
   const handleSave = async supplier => {
     if (supplier.id) {
       await supplierStore.updateSupplier(supplier)
-      notif(t('messages.updated_success'), {
-        type: 'success',
-        color: 'primary'
-      })
+      notif(t('messages.updated_success'), { type: 'success' })
     } else {
       await supplierStore.addSupplier(supplier)
-      notif(t('messages.saved_success'), {
-        type: 'success',
-        color: 'primary'
-      })
+      notif(t('messages.saved_success'), { type: 'success' })
     }
+
     isDialogOpen.value = false
+    fetchData()
   }
 
-  // Delete
-  const handleDelete = async id => {
+  const handleDelete = id => {
     confirm({
       title: 'Are you sure?',
       message: 'Are you sure you want to delete this supplier?',
-      options: {
-        type: 'error',
-        color: 'error',
-        width: 400
-      },
+      options: { type: 'error' },
       agree: async () => {
         await supplierStore.removeSupplier(id)
-        notif(t('messages.deleted_success'), {
-          type: 'success',
-          color: 'primary'
-        })
+        notif(t('messages.deleted_success'), { type: 'success' })
+        fetchData()
       }
     })
   }
+
+  /* =====================
+   INIT
+===================== */
+
+  onMounted(() => {
+    fetchData()
+  })
 </script>

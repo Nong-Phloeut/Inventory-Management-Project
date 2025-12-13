@@ -3,25 +3,23 @@
     <custom-title icon="mdi-file-chart">Inventory Reports</custom-title>
 
     <!-- Filters -->
-    <v-card class="pa-6 mb-6" elevation="4">
+    <v-card class="pa-6 mb-6" elevation="0">
       <v-row dense>
         <v-col cols="12" md="3">
-          <v-text-field
+          <v-date-input
             v-model="filters.from"
-            type="date"
             label="From Date"
             density="compact"
             hide-details
-          ></v-text-field>
+          ></v-date-input>
         </v-col>
         <v-col cols="12" md="3">
-          <v-text-field
+          <v-date-input
             v-model="filters.to"
-            type="date"
             label="To Date"
             density="compact"
             hide-details
-          ></v-text-field>
+          ></v-date-input>
         </v-col>
         <v-col cols="12" md="3">
           <v-select
@@ -107,8 +105,8 @@
   const categoryStore = useCategoryStore()
 
   const filters = ref({
-    from: '',
-    to: '',
+    from: null,
+    to: null,
     category: null
   })
 

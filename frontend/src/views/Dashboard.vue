@@ -3,53 +3,88 @@
     <custom-title icon="mdi-view-dashboard">Inventory Dashboard</custom-title>
 
     <v-row class="mb-6" dense>
-      <v-col v-for="card in cards" :key="card.title" cols="12" sm="6" md="3">
-        <v-card class="card pa-0" :elevation="0" @click="handleCardClick(card)">
-          <template v-slot:title>
-            <span class="text-kpi">{{ card.title }}</span>
-          </template>
-          <v-card-text class="d-flex justify-space-between align-center">
-            <h1 class="font-weight-bold">{{ card.value }}</h1>
+      <!-- REVENUE -->
+      <v-col cols="4" md="4">
+        <v-card elevation="0" rounded="xl" class="pa-4 revenue-card">
+          <span class="text-grey">Inventory Value</span>
 
-            <v-chip
-              size="small"
-              :color="card.trend > 0 ? 'green' : 'red'"
-              text-color="white"
-              class="mt-1"
-              label
-            >
-              <v-icon
-                size="14"
-                class="mr-1"
-                :color="
-                  card.trend > 0 ? 'green' : card.trend < 0 ? 'red' : 'grey'
-                "
-              >
-                {{
-                  card.trend > 0
-                    ? 'mdi-arrow-up'
-                    : card.trend < 0
-                      ? 'mdi-arrow-down'
-                      : 'mdi-minus'
-                }}
-              </v-icon>
+          <div class="d-flex align-center">
+            <h1 class="font-weight-bold me-3">
+              {{ formatCurrency(inventoryValue) }}
+            </h1>
 
-              {{ card.trend }}%
+            <v-chip size="small" color="red" label variant="tonal">
+              <v-icon size="14" class="mr-1">mdi-arrow-up</v-icon>
+              7.9%
             </v-chip>
-          </v-card-text>
-          <template v-slot:append>
-            <v-btn icon="" size="small" variant="tonal" :color="card.color">
-              <v-icon :color="card.color" :icon="card.icon"></v-icon>
-            </v-btn>
-          </template>
+          </div>
         </v-card>
+      </v-col>
+
+      <!-- KPI CARDS -->
+      <v-col cols="12" md="8">
+        <v-row dense>
+          <v-col
+            v-for="card in cards"
+            :key="card.title"
+            cols="12"
+            sm="3"
+            md="3"
+          >
+            <v-card
+              class="card pa-4"
+              elevation="0"
+              rounded="xl"
+              @click="handleCardClick(card)"
+            >
+              <div class="d-flex justify-space-between align-center">
+                <span class="text-kpi">{{ card.title }}</span>
+                <v-icon :color="card.color" size="20">
+                  {{ card.icon }}
+                </v-icon>
+              </div>
+
+              <div class="d-flex justify-space-between align-center mt-3">
+                <h2 class="font-weight-bold">
+                  {{ card.value }}
+                </h2>
+
+                <v-chip
+                  v-if="card.trend !== undefined"
+                  size="small"
+                  label
+                  :color="card.trend > 0 ? 'green' : 'red'"
+                >
+                  <v-icon size="14" class="mr-1">
+                    {{ card.trend > 0 ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
+                  </v-icon>
+                  {{ card.trend }}%
+                </v-chip>
+              </div>
+            </v-card>
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
 
     <v-row dense>
       <v-col cols="12" md="6">
         <v-card :elevation="0" class="pa-6" rounded="xl">
-          <h3 class="mb-4">Stock by Category</h3>
+          <v-toolbar class="bg-white">
+            <h3>Stock by Category</h3>
+            <v-spacer></v-spacer>
+            <!-- <v-select
+              v-model="selectedMonth"
+              :items="monthsReport"
+              label="Month"
+              rounded="lg"
+              density="compact"
+              hide-details
+              max-width="170"
+            ></v-select> -->
+            {{ formatDate(new Date()) }}
+          </v-toolbar>
+
           <div style="height: 275px">
             <canvas ref="barChartCanvas"></canvas>
           </div>
@@ -57,13 +92,27 @@
       </v-col>
       <v-col cols="12" md="6">
         <v-card :elevation="0" class="pa-6" rounded="xl">
-          <h3 class="mb-4">Monthly Purchase vs. Sales</h3>
+          <v-toolbar class="bg-white">
+            <h3>Monthly Purchase</h3>
+            <!-- vs. Sales -->
+            <v-spacer></v-spacer>
+            <v-select
+              v-model="selectedYear"
+              :items="years"
+              label="Year"
+              rounded="lg"
+              density="compact"
+              hide-details
+              max-width="170"
+            ></v-select>
+          </v-toolbar>
           <div style="height: 275px">
             <canvas ref="chartCanvas"></canvas>
           </div>
         </v-card>
       </v-col>
     </v-row>
+    <!-- {{ dashboardStore.monthlyPurchases.data }} -->
   </v-container>
   <LowStockItemsDialog v-model="showLowStockDialog" />
 </template>
@@ -74,8 +123,10 @@
   import { useDashboardStore } from '@/stores/dashboardStore'
   import LowStockItemsDialog from '@/components/stocks/LowStockItemsDialog.vue'
   import { useCurrency } from '@/composables/useCurrency.js'
+  import { useDate } from '@/composables/useDate'
 
   const { formatCurrency, formatKHR } = useCurrency()
+  const { formatDate } = useDate()
   const dashboardStore = useDashboardStore()
   const barChartCanvas = ref(null)
   let barChartInstance = null
@@ -90,8 +141,36 @@
     }
   }
 
+  const selectedMonth = ref(new Date().getMonth() + 1) // 1-indexed
+  const selectedYear = ref(new Date().getFullYear())
+
+  const monthsReport = [
+    { title: 'January', value: 1 },
+    { title: 'February', value: 2 },
+    { title: 'March', value: 3 },
+    { title: 'April', value: 4 },
+    { title: 'May', value: 5 },
+    { title: 'June', value: 6 },
+    { title: 'July', value: 7 },
+    { title: 'August', value: 8 },
+    { title: 'September', value: 9 },
+    { title: 'October', value: 10 },
+    { title: 'November', value: 11 },
+    { title: 'December', value: 12 }
+  ]
+
+  const currentYear = new Date().getFullYear()
+  const years = computed(() => {
+    const list = []
+    for (let i = currentYear; i >= currentYear - 10; i--) {
+      list.push(i)
+    }
+    return list
+  })
+
   onMounted(async () => {
     await dashboardStore.fetchStats()
+    await dashboardStore.fetchMonthlyPurchases(selectedYear.value)
     renderBarChart()
 
     const months = [
@@ -109,13 +188,6 @@
       'Dec'
     ]
 
-    const purchases = [
-      1200, 1500, 1100, 1800, 1700, 2000, 2200, 2100, 1600, 1900, 2300, 2500
-    ]
-    const sales = [
-      900, 1300, 1200, 1600, 1500, 1800, 2000, 1700, 1400, 1800, 2100, 2400
-    ]
-
     chartInstance = new Chart(chartCanvas.value, {
       type: 'line',
       data: {
@@ -123,16 +195,16 @@
         datasets: [
           {
             label: 'Purchases ($)',
-            data: purchases,
-            borderWidth: 2,
-            tension: 0.4
-          },
-          {
-            label: 'Sales ($)',
-            data: sales,
+            data: dashboardStore.monthlyPurchases.data,
             borderWidth: 2,
             tension: 0.4
           }
+          // {
+          //   label: 'Sales ($)',
+          //   data: sales,
+          //   borderWidth: 2,
+          //   tension: 0.4
+          // }
         ]
       },
       options: {
@@ -155,6 +227,16 @@
     })
   })
 
+  // Watch for year changes
+  watch(selectedYear, async newYear => {
+    await dashboardStore.fetchMonthlyPurchases(newYear)
+
+    if (chartInstance) {
+      chartInstance.data.datasets[0].data = dashboardStore.monthlyPurchases.data
+      chartInstance.update() // <-- important
+    }
+  })
+
   watch(
     () => dashboardStore.stats?.stockByCategory,
     () => renderBarChart()
@@ -175,7 +257,9 @@
       }
     })
   }
-
+  const inventoryValue = computed(() => {
+    return dashboardStore.stats?.inventoryValue ?? 0
+  })
   // Cards
   const cards = computed(() => {
     if (!dashboardStore.stats) return []
@@ -206,18 +290,6 @@
         icon: 'mdi-cube-off-outline',
         color: 'red'
       }
-      // {
-      //   title: 'Suppliers',
-      //   value: dashboardStore.stats.suppliers,
-      //   icon: 'mdi-truck',
-      //   color: 'purple'
-      // },
-      // {
-      //   title: 'Inventory Value',
-      //   value: formatCurrency(dashboardStore.stats.inventoryValue),
-      //   icon: 'mdi-currency-usd',
-      //   color: 'blue'
-      // }
     ]
   })
 </script>
