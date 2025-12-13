@@ -16,7 +16,7 @@ class DashboardController extends Controller
         // 1. Total products
         $totalProducts = Product::count();
         $totalProductsLast = Product::whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])->count();
-        $trendProducts = $totalProducts - $totalProductsLast
+        $trendProducts = $totalProducts - $totalProductsLast;
 
         // 2. Total stock quantity (sum of all stock movements per product)
         $inStock = DB::table('stocks')->sum('quantity');
@@ -96,7 +96,7 @@ class DashboardController extends Controller
                 'sales'     => $monthlySales[$m] ?? 0,
             ];
         });
-            
+
         // 6. Return aggregated data as JSON
         return response()->json([
             'totalProducts' => $totalProducts,
