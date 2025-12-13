@@ -18,17 +18,15 @@ class ProductController extends Controller
             'unit:id,name,abbreviation'
         ]);
 
+        /* =====================
+       FILTERS
+    ===================== */
 
-
-        $keyword   = $request->query('keyword');
-        $minPrice  = $request->query('min_price');
-        $maxPrice  = $request->query('max_price');
-
-        if ($request->has('is_active')) {
+        if ($request->filled('is_active')) {
             $query->where('is_active', $request->is_active);
         }
 
-        if ($request->has('status')) {
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
@@ -46,28 +44,40 @@ class ProductController extends Controller
             });
         }
 
-        if ($minPrice !== null) {
-            $query->where('price', '>=', $minPrice);
+        if ($request->filled('min_price')) {
+            $query->where('price', '>=', $request->min_price);
         }
 
-        if ($maxPrice !== null) {
-            $query->where('price', '<=', $maxPrice);
+        if ($request->filled('max_price')) {
+            $query->where('price', '<=', $request->max_price);
         }
 
-        $perPage = $request->query('per_page', 10);
-        // If per_page = -1 → return all suppliers
-        if ($perPage == -1) {
-            $products = $query->orderBy('id', 'desc')->get();
+        /* =====================
+        PAGINATION
+        ===================== */
+
+        $perPage = (int) $request->query('per_page', 10);
+
+        if ($perPage === -1) {
+            // get all but keep pagination structure
+            $items = $query->orderBy('id', 'desc')->get();
+
             return response()->json([
+                'success' => true,
+                'message' => 'Products retrieved successfully.',
                 'data' => [
-                    'success' => true,
-                    'message' => 'Products retrieved successfully.',
-                    'data' => $products
+                    'current_page' => 1,
+                    'data' => $items,
+                    'per_page' => $items->count(),
+                    'total' => $items->count(),
+                    'last_page' => 1
                 ]
             ], 200);
         }
 
-        $products = $query->orderBy('id', 'desc')->paginate($perPage);
+        $products = $query
+            ->orderBy('id', 'desc')
+            ->paginate($perPage);
 
         return response()->json([
             'success' => true,
@@ -75,7 +85,6 @@ class ProductController extends Controller
             'data' => $products
         ], 200);
     }
-
 
     /**
      * Store a newly created resource in storage.
