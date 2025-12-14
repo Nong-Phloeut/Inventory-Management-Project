@@ -44,11 +44,7 @@
           
           <v-divider class="my-0"></v-divider>
           <v-card-actions class="px-0 py-0">
-            <v-btn variant="outlined" size="small" color="grey-darken-1">
-              <v-icon start>mdi-eye</v-icon>
-              Details
-            </v-btn>
-
+      
             <v-spacer></v-spacer>
 
             <v-btn

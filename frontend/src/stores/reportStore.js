@@ -13,7 +13,6 @@ export const useReportStore = defineStore('report', {
       this.purchaseReport = res.data
       this.tableReport = res.data.table
       this.kpisReport = res.data.kpis
-      this.kpisReport = res.data.byCategory
     }
   }
 })

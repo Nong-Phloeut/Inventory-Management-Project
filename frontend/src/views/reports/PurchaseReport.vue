@@ -77,7 +77,6 @@
           class="card pa-4"
           elevation="0"
           rounded="xl"
-          @click="handleCardClick(kpi)"
         >
           <div class="d-flex justify-space-between align-center">
             <span class="text-kpi">{{ kpi.title }}</span>
