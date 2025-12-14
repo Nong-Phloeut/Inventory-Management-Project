@@ -17,7 +17,7 @@ class UserSeeder extends Seeder
                 'username' => 'admin',
                 'password' => Hash::make('password123'),
                 'role_id' => 1, // Administrator
-                'status' => 'Active',
+                'status' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -27,7 +27,7 @@ class UserSeeder extends Seeder
                 'username' => 'manager',
                 'password' => Hash::make('password123'),
                 'role_id' => 2, // Manager
-                'status' => 'Active',
+                'status' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -37,7 +37,7 @@ class UserSeeder extends Seeder
                 'username' => 'purchaser',
                 'password' => Hash::make('password123'),
                 'role_id' => 3, // Purchaser
-                'status' => 'Active',
+                'status' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]

@@ -1,0 +1,42 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            // Add username if it doesn't exist
+            if (!Schema::hasColumn('users', 'username')) {
+                $table->string('username')->unique()->after('email');
+            }
+
+            // Add status as integer if it doesn't exist
+            if (!Schema::hasColumn('users', 'status')) {
+                $table->tinyInteger('status')->default(1)->after('username');
+                // Example: 1 = active, 0 = inactive
+            }
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            if (Schema::hasColumn('users', 'status')) {
+                $table->dropColumn('status');
+            }
+            if (Schema::hasColumn('users', 'username')) {
+                $table->dropColumn('username');
+            }
+        });
+    }
+};

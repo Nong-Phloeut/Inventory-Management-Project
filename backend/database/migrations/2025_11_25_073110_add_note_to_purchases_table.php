@@ -23,6 +23,9 @@ return new class extends Migration
     {
         Schema::table('purchases', function (Blueprint $table) {
             $table->text('note')->nullable()->after('status');
+            if (Schema::hasColumn('purchases', 'note')) {
+                $table->dropColumn('note');
+            }
         });
     }
 };
