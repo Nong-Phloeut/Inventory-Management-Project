@@ -16,6 +16,7 @@ use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -24,11 +25,19 @@ use Illuminate\Support\Facades\Route;
 // })->middleware('auth:sanctum');
 
 
-Route::get('/user', function () {
-    return response()->json([
-        'message' => 'API is working'
-    ]);
+// Route::get('/user', function () {
+//     return response()->json([
+//         'message' => 'API is working'
+//     ]);
+// });
+Route::prefix('users')->group(function () {
+    Route::get('/', [UserController::class, 'index']);
+    Route::post('/', [UserController::class, 'store']);
+    Route::get('/{id}', [UserController::class, 'show']);
+    Route::put('/{id}', [UserController::class, 'update']);
+    Route::delete('/{id}', [UserController::class, 'destroy']);
 });
+
 
 Route::apiResource('suppliers', SupplierController::class);
 Route::apiResource('categories', CategoryController::class);
