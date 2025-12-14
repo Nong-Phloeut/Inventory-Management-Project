@@ -135,9 +135,25 @@
           ]
         },
         {
-          path: '/reports',
-          title: 'Report',
-          icon: 'mdi-chart-line'
+          title: 'Reports',
+          icon: 'mdi-chart-line',
+          subLinks: [
+            {
+              path: '/inventory-reports',
+              title: 'Inventory',
+              icon: 'mdi-warehouse'
+            },
+            {
+              path: '/purchase-reports',
+              title: 'Purchase',
+              icon: 'mdi-cart-arrow-down'
+            },
+            // {
+            //   path: '/ai-assistant-reports',
+            //   title: 'Users',
+            //   icon: 'mdi-ai'
+            // }
+          ]
         },
         {
           path: '/audit-logs',

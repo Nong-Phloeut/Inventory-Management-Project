@@ -62,7 +62,12 @@
 
       <!-- Date To -->
       <v-col cols="12" md="3">
-        <v-date-input v-model="filters.date_to" label="To Date" hide-details />
+        <v-date-input
+          v-model="filters.date_to"
+          label="To Date"
+          hide-details
+          :allowed-dates="date => !filters.date_from || date >= filters.date_from"
+        />
       </v-col>
 
       <!-- Buttons -->

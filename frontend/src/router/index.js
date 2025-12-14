@@ -107,9 +107,21 @@ const routes = [
       //   props: true
       // },
       {
-        path: '/reports',
+        path: '/purchase-reports',
         name: 'Reports',
-        component: () => import('@/views/reports/ReportManagement.vue'),
+        component: () => import('@/views/reports/PurchaseReport.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: '/inventory-reports',
+        name: 'InventoryReport',
+        component: () => import('@/views/reports/InventoryReport.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: '/ai-assistant-reports',
+        name: 'aiReports',
+        component: () => import('@/views/reports/InventoryAIReports.vue'),
         meta: { requiresAuth: true }
       },
       {

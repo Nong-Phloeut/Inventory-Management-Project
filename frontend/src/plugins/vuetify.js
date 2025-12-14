@@ -53,6 +53,10 @@ const vuetify = createVuetify({
       variant: 'outlined',
       density: 'comfortable',
       color: 'primary'
+    },
+    
+    VDataTableServer: {
+      class: 'rounded-lg'
     }
   },
   theme: {

@@ -2,9 +2,8 @@
   <v-container fluid class="pa-0">
     <custom-title icon="mdi-view-dashboard">Inventory Dashboard</custom-title>
 
-    <v-row class="mb-6" dense>
-      <!-- REVENUE -->
-      <v-col cols="4" md="4">
+    <!-- <v-row class="mb-6" dense> -->
+      <!-- <v-col cols="4" md="4">
         <v-card elevation="0" rounded="xl" class="pa-4 revenue-card">
           <span class="text-grey">Inventory Value</span>
 
@@ -19,10 +18,10 @@
             </v-chip>
           </div>
         </v-card>
-      </v-col>
+      </v-col> -->
 
       <!-- KPI CARDS -->
-      <v-col cols="12" md="8">
+      <!-- <v-col cols="12" md="8"> -->
         <v-row dense>
           <v-col
             v-for="card in cards"
@@ -64,10 +63,10 @@
             </v-card>
           </v-col>
         </v-row>
-      </v-col>
-    </v-row>
+      <!-- </v-col> -->
+    <!-- </v-row> -->
 
-    <v-row dense>
+    <v-row dense class="mt-4">
       <v-col cols="12" md="6">
         <v-card :elevation="0" class="pa-6" rounded="xl">
           <v-toolbar class="bg-white">
