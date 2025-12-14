@@ -67,14 +67,25 @@ class UserController extends Controller
         ], 200);
     }
 
-    // DELETE USER
-    public function destroy($id)
-    {
-        $user = User::findOrFail($id);
-        $user->delete();
+      // DELETE USER
+      public function destroy($id)
+      {
+            $user = User::findOrFail($id);
 
-        return response()->json([
-            'message' => 'User deleted successfully'
-        ], 200);
-    }
+            // Protect admin users
+            if ($user->role && $user->role->slug === 'admin') {
+                  return response()->json([
+                        'status' => 'error',
+                        'message' => 'Admin user cannot be deleted'
+                  ], 403);
+            }
+
+            $user->delete();
+
+            return response()->json([
+                  'status' => 'success',
+                  'message' => 'User deleted successfully'
+            ]);
+      }
+
 }

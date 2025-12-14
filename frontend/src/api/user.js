@@ -1,11 +1,11 @@
 import http from './api'
 
-const API_URL = '/employees' // adjust to your backend
+const API_URL = '/users'
 
 export default {
   async getAll() {
     const res = await http.get(API_URL)
-    return res.data
+    return res.data // ✅ returns ARRAY
   },
 
   async getById(id) {
@@ -13,13 +13,13 @@ export default {
     return res.data
   },
 
-  async create(employee) {
-    const res = await http.post(API_URL, employee)
+  async create(user) {
+    const res = await http.post(API_URL, user)
     return res.data
   },
 
-  async update(id, employee) {
-    const res = await http.put(`${API_URL}/${id}`, employee)
+  async update(id, user) {
+    const res = await http.put(`${API_URL}/${id}`, user)
     return res.data
   },
 

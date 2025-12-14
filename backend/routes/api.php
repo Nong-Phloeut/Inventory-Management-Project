@@ -59,7 +59,11 @@ Route::prefix('stock')->group(function () {
 Route::get('audit-logs', [AuditLogController::class, 'index']);
 Route::get('audit-logs/{id}', [AuditLogController::class, 'show']);
 
+// Route::post('/login', [AuthController::class, 'login']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('auth:api')->get('/me', [AuthController::class, 'me']);
+Route::middleware('auth:api')->post('/logout', [AuthController::class, 'logout']);
+
 Route::middleware('jwt.auth')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);

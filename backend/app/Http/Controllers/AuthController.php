@@ -2,77 +2,62 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class AuthController extends Controller
 {
+    // Login user
     public function login(Request $request)
     {
-        // Step 1: Validate input
-        // $validator = Validator::make($request->all(), [
-        //     'email' => 'required|email',
-        //     'password' => 'required|min:6',
-        // ]);
-
-        // if ($validator->fails()) {
-        //     return response()->json([
-        //         'status' => 'validation_error',
-        //         'errors' => $validator->errors()
-        //     ], 422);
-        // }
-
-        // Step 2: Attempt login
         $credentials = $request->only('email', 'password');
-        // dd($credentials);
 
-        if (!$token = JWTAuth::attempt($credentials)) {
+        try {
+            if (!$token = JWTAuth::attempt($credentials)) {
+                return response()->json([
+                    'status' => 'invalid_credentials',
+                    'message' => 'Email or password is incorrect'
+                ], 401);
+            }
+
+            $user = JWTAuth::user(); // get user from token
+
             return response()->json([
-                'status' => 'invalid_credentials',
-                'message' => 'Email or password is incorrect'
-            ], 401);
+                'status' => 'success',
+                'token' => $token,
+                'user' => $user
+            ]);
+
+        } catch (JWTException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Could not create token: ' . $e->getMessage()
+            ], 500);
         }
-        // Get the logged-in user
-        $user = Auth::user();
-        // Create audit log manually
-        AuditLog::create([
-            'user_id' => $user->id,
-            'action_type' => 'login',
-            'module' => 'Auth',
-            'description' => 'User logged in',
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'url' => $request->fullUrl(),
-            'method' => $request->method(),
-            'old_values' => null,
-            'new_values' => null,
-        ]);
-        // Step 3: Success
-        return response()->json([
-            'status' => 'success',
-            'token' => $token,
-            'user' => $user,
-        ]);
     }
 
+    // Get currently authenticated user
     public function me()
     {
-        return response()->json(Auth::user());
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            return response()->json($user);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Token invalid or expired'], 401);
+        }
     }
 
+    // Logout
     public function logout()
     {
-        JWTAuth::invalidate(JWTAuth::getToken());
-        return response()->json(['message' => 'Logged out successfully']);
-    }
-
-    public function refresh()
-    {
-        return response()->json([
-            'token' => JWTAuth::refresh(JWTAuth::getToken())
-        ]);
+        try {
+            JWTAuth::parseToken()->invalidate();
+            return response()->json(['message' => 'Logged out successfully']);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Failed to logout, token invalid'], 500);
+        }
     }
 }
