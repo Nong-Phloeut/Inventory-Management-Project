@@ -24,11 +24,15 @@ class PurchaseReportController extends Controller
                     ->where('status', '!=', 'cancelled');
             });
 
-        if ($categoryId) {
-            $query->whereHas('product', function ($q) use ($categoryId) {
-                $q->where('category_id', $categoryId);
+        if ($request->filled('category')) {
+            // Split comma-separated string into array
+            $categories = explode(',', $request->category_id);
+
+            $query->whereHas('product', function ($q) use ($categories) {
+                $q->whereIn('category', $categories);
             });
         }
+
 
         $items = $query->get();
 

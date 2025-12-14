@@ -6,9 +6,11 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\InventoryAIController;
 use App\Http\Controllers\LossController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\PurchaseReportController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\StockController;
@@ -62,4 +64,9 @@ Route::post('/units', [UnitController::class, 'store']);
 Route::put('/units/{id}', [UnitController::class, 'update']);
 Route::delete('/units/{id}', [UnitController::class, 'destroy']);
 
+Route::get('/ai/low-stock', [InventoryAIController::class, 'lowStock']);
+Route::get('/ai/purchases', [InventoryAIController::class, 'purchaseReport']);
+Route::get('/ai/stock-movement', [InventoryAIController::class, 'stockMovement']);
+
+Route::get('/reports/purchases', [PurchaseReportController::class, 'index']);
 
