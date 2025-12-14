@@ -13,21 +13,25 @@ return new class extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->string('first_name');
             $table->string('last_name');
             $table->string('phone')->nullable();
-            $table->enum('gender', ['Male', 'Female'])->nullable();
+            $table->enum('gender',['Male','Female'])->nullable();
             $table->date('dob')->nullable();
             $table->string('job_title')->nullable();
             $table->string('department')->nullable();
-            $table->string('employee_id')->unique(); // internal employee code
+            $table->string('employee_id')->unique();
             $table->date('joining_date')->nullable();
-            $table->enum('status', ['Active', 'Inactive'])->default('Active');
+            $table->enum('status',['Active','Inactive'])->default('Active');
             $table->text('address')->nullable();
             $table->string('emergency_name')->nullable();
             $table->string('emergency_phone')->nullable();
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
+
     }
 
     /**

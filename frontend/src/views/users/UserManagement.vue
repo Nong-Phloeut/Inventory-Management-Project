@@ -1,92 +1,192 @@
 <template>
-  <custom-title icon="mdi-account-group">
-    User Management
-    <template #right>
-      <BaseButton icon="mdi-plus" @click="openDialog">Add Employee</BaseButton>
-    </template>
-  </custom-title>
   <v-container fluid class="pa-0">
+    <!-- Title & Add Button -->
+    <custom-title icon="mdi-account" class="mb-2">
+      User Management
+      <template #right>
+        <BaseButton icon="mdi-plus" @click="openAdd" small> Add User </BaseButton>
+      </template>
+    </custom-title>
+
+    <!-- User Table -->
     <v-data-table
-      :items="employeeStore.employees"
+      :items="usersStore.users.data"
       :headers="headers"
-      :loading="employeeStore.loading"
-      class="mt-4"
+      item-key="id"
+      dense
+      hide-default-footer
+      class="compact-table"
     >
-      <template #item.name="{ item }">
-        {{ item.first_name }} {{ item.last_name }}
+      <!-- Row numbering -->
+      <template #item.no="{ index }">{{ index + 1 }}</template>
+
+      <!-- Role chip -->
+      <template #item.role="{ item }">
+        <v-chip
+          :color="roleColor(item.role?.slug)"
+          variant="tonal"
+          density="compact"
+          x-small
+        >
+          <v-icon start x-small v-if="item.role?.slug === 'admin'">mdi-lock</v-icon>
+          {{ item.role?.name || 'N/A' }}
+        </v-chip>
       </template>
 
-      <template #item.actions="{ item }">
-        <v-btn size="small" variant="tonal" icon @click="edit(item)">
-          <v-icon>mdi-pencil</v-icon>
-        </v-btn>
-        <v-btn
-          size="small"
+      <!-- Status chip -->
+      <template #item.status="{ item }">
+        <v-chip
+          :color="statusColor(item.status)"
           variant="tonal"
-          icon
-          color="red"
-          class="ms-2"
-          @click="remove(item.id)"
+          density="compact"
+          x-small
         >
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
+          <v-icon start x-small>
+            {{ item.status === 'Active' ? 'mdi-check-circle' : 'mdi-close-circle' }}
+          </v-icon>
+          {{ item.status || 'Non' }}
+        </v-chip>
+      </template>
+
+      <!-- Actions as icons only -->
+      <template #item.actions="{ item }">
+        <v-icon
+          x-small
+          color="primary"
+          class="mr-1"
+          v-if="item.role?.slug !== 'admin'"
+          @click="openEdit(item)"
+        >mdi-pencil</v-icon>
+
+        <v-icon
+          x-small
+          color="red"
+          v-if="item.role?.slug !== 'admin'"
+          @click="onDeleteUser(item)"
+        >mdi-delete</v-icon>
+
+        <v-chip
+          v-if="item.role?.slug === 'admin'"
+          color="grey"
+          variant="tonal"
+          density="compact"
+          x-small
+        >
+          <v-icon start x-small>mdi-lock</v-icon> Admin
+        </v-chip>
       </template>
     </v-data-table>
 
-    <employee-dialog
-      v-model="dialog"
-      :employee="selectedEmployee"
-      @save="saveEmployee"
-    />
+    <!-- User Dialog -->
+    <UserDialog v-model="dialog" :edited-user="selectedUser" @save="saveUser" />
   </v-container>
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue'
-  import { useEmployeeStore } from '@/stores/employeeStore'
-  import EmployeeDialog from '@/components/EmployeeDialog.vue'
+import { ref, onMounted } from 'vue'
+import { useUserStore } from '@/stores/userStore'
+import { useAppUtils } from '@/composables/useAppUtils'
+import { useI18n } from 'vue-i18n'
+import UserDialog from '@/components/users/UserDialog.vue'
 
-  const employeeStore = useEmployeeStore()
+const dialog = ref(false)
+const selectedUser = ref({})
+const { t } = useI18n()
+const { confirm, notif } = useAppUtils()
+const usersStore = useUserStore()
 
-  const dialog = ref(false)
-  const selectedEmployee = ref(null)
+// Fetch users on mount
+onMounted(() => {
+  usersStore.fetchUsers()
+})
 
-  const headers = [
-    { title: 'ID', key: 'employee_id' },
-    { title: 'Name', key: 'name' },
-    { title: 'Email', key: 'email' },
-    { title: 'Phone', key: 'phone' },
-    { title: 'Department', key: 'department' },
-    { title: 'Job Title', key: 'job_title' },
-    { title: 'Status', key: 'status' },
-    { title: 'Actions', key: 'actions', sortable: false }
-  ]
+// Open Add User dialog
+function openAdd() {
+  selectedUser.value = {}
+  dialog.value = true
+}
 
-  onMounted(() => {
-    employeeStore.fetchEmployees()
-  })
+// Open Edit User dialog
+function openEdit(user) {
+  selectedUser.value = { ...user }
+  dialog.value = true
+}
 
-  function openDialog() {
-    selectedEmployee.value = null
-    dialog.value = true
-  }
-
-  function edit(emp) {
-    selectedEmployee.value = { ...emp }
-    dialog.value = true
-  }
-
-  async function saveEmployee(employee) {
-    if (employee.id) {
-      await employeeStore.updateEmployee(employee.id, employee)
+// Save User (Add or Update)
+async function saveUser(user) {
+  try {
+    if (user.id) {
+      await usersStore.updateUser(user)
+      notif(t('messages.updated_success'), { type: 'success', color: 'primary' })
     } else {
-      await employeeStore.createEmployee(employee)
+      await usersStore.addUser(user)
+      notif(t('messages.saved_success'), { type: 'success', color: 'primary' })
     }
+    await usersStore.fetchUsers()
+    dialog.value = false
+  } catch (error) {
+    notif(error.response?.data?.message || t('messages.save_failed'), { type: 'error', color: 'error' })
   }
+}
 
-  async function remove(id) {
-    if (confirm('Are you sure you want to delete this employee?')) {
-      await employeeStore.deleteEmployee(id)
+// Delete User
+function onDeleteUser(user) {
+  confirm({
+    title: 'Are you sure?',
+    message: `Do you really want to delete user "${user.full_name}"?`,
+    options: { type: 'error', color: 'error', width: 400 },
+    agree: async () => {
+      try {
+        await usersStore.deleteUser(user.id)
+        notif(t('messages.deleted_success'), { type: 'success', color: 'primary' })
+        await usersStore.fetchUsers()
+      } catch (err) {
+        notif(err.response?.data?.message || t('messages.delete_failed'), { type: 'error', color: 'error' })
+      }
     }
+  })
+}
+
+// Table headers
+const headers = [
+  { title: 'No.', key: 'no', sortable: false },
+  { title: 'Full Name', key: 'full_name' },
+  { title: 'Email', key: 'email' },
+  { title: 'Username', key: 'username' },
+  { title: 'Role', key: 'role' },
+  { title: 'Status', key: 'status' },
+  { title: 'Actions', key: 'actions', sortable: false }
+]
+
+// Role color helper
+function roleColor(slug) {
+  switch (slug) {
+    case 'admin': return 'blue'
+    case 'manager': return 'yellow'
+    case 'purchaser': return 'green'
+    default: return 'grey'
   }
+}
+
+// Status color helper
+function statusColor(status) {
+  switch (status) {
+    case 'Active': return 'success'
+    case 'Inactive': return 'error'
+    default: return 'grey'
+  }
+}
 </script>
+
+<style scoped>
+.compact-table .v-data-table__wrapper {
+  font-size: 12px;
+}
+.v-data-table .v-icon {
+  cursor: pointer;
+}
+.v-data-table .v-chip {
+  font-size: 11px;
+  height: 20px;
+}
+</style>

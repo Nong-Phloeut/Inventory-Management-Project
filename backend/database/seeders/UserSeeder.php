@@ -2,26 +2,45 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-         User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password123'),
-            'email_verified_at' => now(),
+        DB::table('users')->insert([
+            [
+                'name' => 'Admin User',
+                'email' => 'admin@example.com',
+                'username' => 'admin',
+                'password' => Hash::make('password123'),
+                'role_id' => 1, // Administrator
+                'status' => 'Active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Manager User',
+                'email' => 'manager@example.com',
+                'username' => 'manager',
+                'password' => Hash::make('password123'),
+                'role_id' => 2, // Manager
+                'status' => 'Active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Purchaser User',
+                'email' => 'purchaser@example.com',
+                'username' => 'purchaser',
+                'password' => Hash::make('password123'),
+                'role_id' => 3, // Purchaser
+                'status' => 'Active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
         ]);
-
-        // Add more users if needed
-        // User::factory(5)->create(); // optional: create 5 random users
     }
 }

@@ -108,7 +108,7 @@
   function onDeleteRole(role) {
     confirm({
       title: 'Are you sure?',
-      message: 'Are you sure you want to delete this supplier?',
+      message: 'Are you sure you want to delete this role?',
       options: {
         type: 'error',
         color: 'error',

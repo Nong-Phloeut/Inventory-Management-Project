@@ -128,7 +128,7 @@
               icon: 'mdi-shield-account'
             },
             {
-              path: '/list-users',
+              path: '/users-management',
               title: 'Users',
               icon: 'mdi-account'
             }
