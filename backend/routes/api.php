@@ -67,6 +67,3 @@ Route::delete('/units/{id}', [UnitController::class, 'destroy']);
 Route::get('/ai/low-stock', [InventoryAIController::class, 'lowStock']);
 Route::get('/ai/purchases', [InventoryAIController::class, 'purchaseReport']);
 Route::get('/ai/stock-movement', [InventoryAIController::class, 'stockMovement']);
-
-Route::get('/reports/purchases', [PurchaseReportController::class, 'index']);
-
