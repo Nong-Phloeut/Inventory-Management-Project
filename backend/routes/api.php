@@ -9,6 +9,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LossController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\PurchaseReportController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\StockController;
@@ -62,4 +63,5 @@ Route::post('/units', [UnitController::class, 'store']);
 Route::put('/units/{id}', [UnitController::class, 'update']);
 Route::delete('/units/{id}', [UnitController::class, 'destroy']);
 
+Route::get('/reports/purchases', [PurchaseReportController::class, 'index']);
 
