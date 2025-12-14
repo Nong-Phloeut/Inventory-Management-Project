@@ -64,4 +64,5 @@ Route::put('/units/{id}', [UnitController::class, 'update']);
 Route::delete('/units/{id}', [UnitController::class, 'destroy']);
 
 Route::get('/reports/purchases', [PurchaseReportController::class, 'index']);
+Route::get('/reports/inventory', [PurchaseReportController::class, 'inventoryReport']);
 

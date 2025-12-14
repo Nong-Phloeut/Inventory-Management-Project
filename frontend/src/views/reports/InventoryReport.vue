@@ -20,88 +20,84 @@
   <!-- FILTERS -->
   <v-card elevation="0" class="mb-6 pa-4 rounded-lg">
     <v-row dense>
-      <v-col cols="12" md="3">
-        <v-date-input
-          v-model="filters.from"
-          label="From Date"
+      <v-col cols="12" md="4">
+        <v-select
+          v-model="filters.category"
+          :items="categoryStore.categories.data"
+          item-title="name"
+          item-value="id"
+          label="Categories"
+          multiple
           hide-details
-        ></v-date-input>
+        >
+          <template v-slot:selection="{ item, index }">
+            <v-chip v-if="index < 2" :text="item.title" size="x-small" />
+
+            <span
+              v-if="index === 2"
+              class="text-grey text-caption align-self-center"
+            >
+              (+{{ filters.category.length - 2 }} others)
+            </span>
+          </template>
+        </v-select>
       </v-col>
-      <v-col cols="12" md="3">
-        <v-date-input
-          v-model="filters.to"
-          label="To Date"
-          hide-details
-        ></v-date-input>
-      </v-col>
+
       <v-col cols="12" md="3">
         <v-select
-          label="Category"
-          :items="categories"
-          v-model="filters.category"
+          label="Stock Status"
+          :items="statusOptions"
+          v-model="filters.status"
           hide-details
         />
       </v-col>
+
       <v-col cols="12" md="3" class="d-flex align-center">
-        <v-btn color="primary" prepend-icon="mdi-filter">Apply Filter</v-btn>
+        <v-btn color="primary" prepend-icon="mdi-filter" @click="applyFilter">
+          Apply Filter
+        </v-btn>
       </v-col>
     </v-row>
   </v-card>
 
   <!-- KPI SUMMARY -->
   <v-row dense>
-    <v-col v-for="kpi in kpis" :key="kpi.title" cols="12" sm="3" md="3">
-      <v-card class="card pa-4" elevation="0" rounded="xl">
+    <v-col v-for="kpi in kpis" :key="kpi.title" cols="12" sm="6" md="3">
+      <v-card class="pa-4" elevation="0" rounded="xl">
         <div class="d-flex justify-space-between align-center">
-          <span class="text-kpi">{{ kpi.title }}</span>
-          <v-icon :color="kpi.color" size="20">
-            {{ kpi.icon }}
-          </v-icon>
+          <span class="text-subtitle-2">{{ kpi.title }}</span>
+          <v-icon :color="kpi.color">{{ kpi.icon }}</v-icon>
         </div>
-
-        <div class="d-flex justify-space-between align-center mt-3">
-          <h2 class="font-weight-bold">
-            {{ kpi.value }}
-          </h2>
-        </div>
+        <h2 class="font-weight-bold mt-3">
+          {{ kpi.value }}
+        </h2>
       </v-card>
     </v-col>
   </v-row>
 
-  <!-- CHART PLACEHOLDERS -->
-  <v-row dense class="mb-6 mt-4">
-    <v-col cols="12" md="6">
+  <!-- CHART -->
+  <v-row dense class="mt-6">
+    <v-col cols="12">
       <v-card elevation="0" class="pa-4 rounded-lg">
-        <div class="text-subtitle-1 font-weight-medium mb-2">
+        <div class="text-subtitle-1 font-weight-medium mb-3">
           Stock by Category
         </div>
-        <div class="chart-placeholder">Bar Chart</div>
-      </v-card>
-    </v-col>
-    <v-col cols="12" md="6">
-      <v-card elevation="0" class="pa-4 rounded-lg">
-        <div class="text-subtitle-1 font-weight-medium mb-2">
-          Stock Value by Warehouse
+        <div class="chart-wrapper">
+          <canvas ref="categoryChart"></canvas>
         </div>
-        <div class="chart-placeholder">Pie Chart</div>
       </v-card>
     </v-col>
   </v-row>
 
   <!-- INVENTORY TABLE -->
-  <v-card elevation="0" class="rounded-lg">
-    <v-data-table
-      :headers="headers"
-      :items="items"
-      class="rounded-lg"
-      density="comfortable"
-    >
+  <v-card elevation="0" class="rounded-lg mt-6">
+    <v-data-table :headers="headers" :items="items" density="comfortable">
       <template #item.status="{ value }">
         <v-chip
+          size="small"
           :color="
             value === 'Low' ? 'warning' : value === 'Out' ? 'error' : 'success'
           "
-          size="small"
         >
           {{ value }}
         </v-chip>
@@ -111,71 +107,89 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue'
+  import { ref, computed, onMounted, watch } from 'vue'
+  import { Chart } from 'chart.js/auto'
+  import { useCategoryStore } from '@/stores/categoryStore'
+  import { useReportStore } from '@/stores/reportStore'
+
+  const categoryStore = useCategoryStore()
+  const reportStore = useReportStore()
 
   const filters = ref({
-    from: null, // 1st day of current month
-    to: null, // last day of current month
-    category: null
+    category: null,
+    status: null
   })
 
-  const categories = ['Electronics', 'Office Supplies', 'Furniture']
-  const warehouses = ['Main Warehouse', 'Branch A', 'Branch B']
-  const stockStatuses = ['In Stock', 'Low', 'Out']
+  const statusOptions = ['In Stock', 'Low', 'Out']
 
-  const kpis = [
-    { title: 'Total Products', value: 320, icon: 'mdi-package-variant-closed' },
-    { title: 'Total Stock Qty', value: 12840, icon: 'mdi-counter' },
-    { title: 'Low Stock Items', value: 24, icon: 'mdi-alert' },
-    { title: 'Out of Stock', value: 8, icon: 'mdi-close-circle' }
-  ]
+  /* =====================
+   COMPUTED DATA
+===================== */
+  const kpis = computed(() => reportStore.inventoryReport?.kpis ?? [])
+  const items = computed(() => reportStore.inventoryReport?.table ?? [])
 
   const headers = [
     { title: 'Product', value: 'name' },
+    { title: 'SKU', value: 'sku' },
     { title: 'Category', value: 'category' },
-    { title: 'Warehouse', value: 'warehouse' },
     { title: 'Quantity', value: 'qty' },
     { title: 'Unit Price', value: 'price' },
     { title: 'Status', value: 'status' }
   ]
 
-  const items = [
-    {
-      name: 'Laptop Dell XPS',
-      category: 'Electronics',
-      warehouse: 'Main Warehouse',
-      qty: 12,
-      price: '$1,200',
-      status: 'Low'
-    },
-    {
-      name: 'Office Chair',
-      category: 'Furniture',
-      warehouse: 'Branch A',
-      qty: 0,
-      price: '$85',
-      status: 'Out'
-    },
-    {
-      name: 'Printer HP 107A',
-      category: 'Office Supplies',
-      warehouse: 'Main Warehouse',
-      qty: 56,
-      price: '$140',
-      status: 'In Stock'
-    }
-  ]
+  /* =====================
+   CHART
+===================== */
+  const categoryChart = ref(null)
+  let chartInstance = null
+
+  const renderChart = () => {
+    if (!reportStore.inventoryReport?.chart) return
+
+    if (chartInstance) chartInstance.destroy()
+
+    chartInstance = new Chart(categoryChart.value, {
+      type: 'bar',
+      data: {
+        labels: reportStore.inventoryReport.chart.labels,
+        datasets: [
+          {
+            label: 'Stock Quantity',
+            data: reportStore.inventoryReport.chart.data,
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    })
+  }
+
+  watch(
+    () => reportStore.inventoryReport,
+    () => renderChart()
+  )
+
+  /* =====================
+   ACTIONS
+===================== */
+  const applyFilter = () => {
+    reportStore.fetchReportsInventory({
+      category: filters.value.category?.join(',') ?? '',
+      status: filters.value.status
+    })
+  }
+
+  onMounted(() => {
+    categoryStore.fetchCategories({ per_page: -1 })
+    reportStore.fetchReportsInventory()
+  })
 </script>
 
 <style scoped>
-  .chart-placeholder {
-    height: 240px;
-    border: 2px dashed rgba(0, 0, 0, 0.2);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(0, 0, 0, 0.4);
-    font-weight: 500;
+  .chart-wrapper {
+    height: 300px;
   }
 </style>

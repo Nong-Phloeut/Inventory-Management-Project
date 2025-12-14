@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Purchase;
 use App\Models\Product;
 use App\Models\PurchaseItem;
+use App\Models\Stock;
 use Carbon\Carbon;
 use DB;
 
@@ -80,6 +81,124 @@ class PurchaseReportController extends Controller
             'trend' => $trend,
             'byCategory' => $byCategory,
             'table' => $tableData
+        ]);
+    }
+
+
+    public function inventoryReport(Request $request)
+    {
+        // Filters
+        $categoryIds = $request->filled('category')
+            ? explode(',', $request->category)
+            : null;
+
+        $status = $request->status ?? null;
+
+        // Base query
+        $query = Product::with(['category', 'stock']);
+
+        // Category filter (multiple)
+        if ($categoryIds) {
+            $query->whereIn('category_id', $categoryIds);
+        }
+
+        // Stock status filter
+        if ($status) {
+            $query->whereHas('stock', function ($q) use ($status) {
+                if ($status === 'Low') {
+                    $q->where('quantity', '>', 0)
+                        ->whereColumn('quantity', '<', 'products.low_stock_threshold');
+                } elseif ($status === 'Out') {
+                    $q->where('quantity', 0);
+                } elseif ($status === 'In Stock') {
+                    $q->whereColumn('quantity', '>=', 'products.low_stock_threshold');
+                }
+            });
+        }
+
+        $products = $query->get();
+
+        /* =========================
+       KPIs
+    ========================= */
+
+        $totalProducts = Product::count();
+
+        $totalQty = Stock::sum('quantity');
+
+        $lowStock = Product::whereHas('stock', function ($q) {
+            $q->where('quantity', '>', 0)
+                ->whereColumn('quantity', '<', 'products.low_stock_threshold');
+        })->count();
+
+        $outOfStock = Product::whereHas('stock', function ($q) {
+            $q->where('quantity', 0);
+        })->count();
+
+        $kpis = [
+            [
+                'title' => 'Total Products',
+                'value' => $totalProducts,
+                'icon'  => 'mdi-package-variant-closed',
+                'color' => 'primary',
+            ],
+            [
+                'title' => 'Total Stock Qty',
+                'value' => $totalQty,
+                'icon'  => 'mdi-counter',
+                'color' => 'success',
+            ],
+            [
+                'title' => 'Low Stock Items',
+                'value' => $lowStock,
+                'icon'  => 'mdi-alert',
+                'color' => 'warning',
+            ],
+            [
+                'title' => 'Out of Stock',
+                'value' => $outOfStock,
+                'icon'  => 'mdi-close-circle',
+                'color' => 'error',
+            ],
+        ];
+
+        /* =========================
+       Chart: Stock by Category
+    ========================= */
+
+        $byCategory = $products
+            ->groupBy(fn($p) => optional($p->category)->name ?? 'Uncategorized')
+            ->map(
+                fn($group) =>
+                $group->sum(fn($p) => optional($p->stock)->quantity ?? 0)
+            );
+
+        /* =========================
+       Table data
+    ========================= */
+
+        $table = $products->map(function ($p) {
+            $qty = optional($p->stock)->quantity ?? 0;
+
+            return [
+                'name'     => $p->name,
+                'sku'      => $p->sku,
+                'category' => optional($p->category)->name,
+                'price'    => number_format($p->price, 2),
+                'qty'      => $qty,
+                'status'   => $qty === 0
+                    ? 'Out'
+                    : ($qty < $p->low_stock_threshold ? 'Low' : 'In Stock'),
+            ];
+        });
+
+        return response()->json([
+            'kpis' => $kpis,
+            'chart' => [
+                'labels' => $byCategory->keys()->values(),
+                'data'   => $byCategory->values(),
+            ],
+            'table' => $table,
         ]);
     }
 }

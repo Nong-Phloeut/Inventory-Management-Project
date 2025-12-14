@@ -12,7 +12,6 @@ class Role extends Model
     // Fillable attributes for mass assignment
     protected $fillable = [
         'name',        // Full role name, e.g., Administrator
-        'slug',        // Role code, e.g., admin
         'status',
         'description', // Optional description
     ];
@@ -21,7 +20,6 @@ class Role extends Model
     {
         $roles = $request->only(
             'name',
-            'slug',
             'status',
             'description',
         );
@@ -33,7 +31,7 @@ class Role extends Model
             }
             $record->update($roles);
         } else {
-    
+
             $record = self::create($roles);
             $id = $record->$id;
         }

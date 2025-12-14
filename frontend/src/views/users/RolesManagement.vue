@@ -14,7 +14,7 @@
         sm="6"
         md="6"
       >
-        <v-card class="pa-4 rounded-lg" elevation="0" hover>
+        <v-card class="pa-4 rounded-lg" elevation="0">
           <div class="d-flex align-center mb-2">
             <h3 class="text-primary">
               {{ role.name }}

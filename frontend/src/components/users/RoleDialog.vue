@@ -20,15 +20,6 @@
             density="comfortable"
           />
 
-          <!-- Slug -->
-          <v-text-field
-            v-model="role.slug"
-            label="Slug"
-            :rules="[rules.required]"
-            variant="outlined"
-            density="comfortable"
-          />
-
           <!-- Status -->
           <v-select
             v-model="role.status"
@@ -90,8 +81,6 @@
   const role = ref({
     id: null,
     name: '',
-    slug: '',
-    scope: '',
     status: 1,
     description: ''
   })

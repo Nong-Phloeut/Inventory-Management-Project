@@ -4,6 +4,7 @@ import reportService from '../api/report'
 export const useReportStore = defineStore('report', {
   state: () => ({
     purchaseReport: [],
+    inventoryReport: [],
     tableReport: [],
     kpisReport: {},
   }),
@@ -13,6 +14,11 @@ export const useReportStore = defineStore('report', {
       this.purchaseReport = res.data
       this.tableReport = res.data.table
       this.kpisReport = res.data.kpis
+    },
+    async fetchReportsInventory(params) {
+      const res = await reportService.getReportsInventory(params);
+      console.log(res.data);
+      this.inventoryReport = res.data
     }
   }
 })

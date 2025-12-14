@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50)->unique();          // Role name (Admin, Manager, User)
-            $table->string('slug', 50)->unique();          // admin, manager, user
             $table->string('description')->nullable();     // Optional description
             $table->tinyInteger('status')->default(1)->comment('1=active, 2=inactive');
             $table->timestamps();
