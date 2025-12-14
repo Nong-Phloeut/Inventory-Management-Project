@@ -154,7 +154,7 @@
       options: {
         type: 'error',
         color: 'error',
-        width: 400
+        width: 500
       },
       agree: async () => {
         await categoryStore.deleteCategory(id)

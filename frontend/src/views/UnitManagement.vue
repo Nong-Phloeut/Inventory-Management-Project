@@ -77,7 +77,7 @@
     confirm({
       title: 'Are you sure?',
       message: `Are you sure you want to delete unit "${item.name}"?`,
-      options: { type: 'error', color: 'error', width: 400 },
+      options: { type: 'error', color: 'error', width: 550 },
       agree: async () => {
         try {
           await unitStore.deleteUnit(item.id)

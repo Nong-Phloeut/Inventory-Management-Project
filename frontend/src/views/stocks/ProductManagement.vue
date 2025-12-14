@@ -291,7 +291,7 @@
     confirm({
       title: 'Delete Product',
       message: 'Are you sure you want to delete this product?',
-      options: { type: 'error' },
+      options: { type: 'error' ,width: 500},
       agree: async () => {
         await productStore.deleteProduct(product.id)
         notif(t('messages.deleted_success'), { type: 'success' })

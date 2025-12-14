@@ -16,19 +16,19 @@ class StoreUserRequest extends FormRequest
     public function rules()
     {
         return [
-            'full_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'email'     => 'required|email|unique:users,email',
             'username'  => 'required|unique:users,username',
             'password'  => 'required|min:6',
             'role_id'   => 'required|exists:roles,id',
-            'status'    => 'required|in:Active,Inactive',
+            'status'    => 'required',
         ];
     }
 
     public function messages()
     {
         return [
-            'full_name.required' => 'Full name is required.',
+            'name.required' => 'Full name is required.',
             'email.required'     => 'Email is required.',
             'email.email'        => 'Email must be a valid email address.',
             'email.unique'       => 'This email is already taken.',
