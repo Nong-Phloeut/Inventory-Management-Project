@@ -51,11 +51,7 @@
   <!-- KPI SUMMARY -->
   <v-row dense>
     <v-col v-for="kpi in kpis" :key="kpi.title" cols="12" sm="3" md="3">
-      <v-card
-        class="card pa-4"
-        elevation="0"
-        rounded="xl"
-      >
+      <v-card class="card pa-4" elevation="0" rounded="xl">
         <div class="d-flex justify-space-between align-center">
           <span class="text-kpi">{{ kpi.title }}</span>
           <v-icon :color="kpi.color" size="20">
@@ -118,9 +114,9 @@
   import { ref } from 'vue'
 
   const filters = ref({
-    category: null,
-    warehouse: null,
-    status: null
+    from: null, // 1st day of current month
+    to: null, // last day of current month
+    category: null
   })
 
   const categories = ['Electronics', 'Office Supplies', 'Furniture']

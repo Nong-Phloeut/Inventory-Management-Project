@@ -73,11 +73,7 @@
     <!-- Summary Cards -->
     <v-row dense>
       <v-col v-for="kpi in kpis" :key="kpi.title" cols="12" sm="3" md="3">
-        <v-card
-          class="card pa-4"
-          elevation="0"
-          rounded="xl"
-        >
+        <v-card class="card pa-4" elevation="0" rounded="xl">
           <div class="d-flex justify-space-between align-center">
             <span class="text-kpi">{{ kpi.title }}</span>
             <v-icon :color="kpi.color" size="20">
@@ -153,8 +149,8 @@
   const { formatCurrency } = useCurrency()
 
   const filters = ref({
-    from: new Date(),
-    to: new Date(),
+    from: null, // 1st day of current month
+    to: null, // last day of current month
     category: null
   })
 
@@ -301,8 +297,12 @@
       per_page: -1
     })
     const payload = {
-      from: filters.value.from,
-      to: filters.value.to,
+      from:
+        filters.value.from ??
+        new Date(new Date().getFullYear(), new Date().getMonth(), 1), // default first day of month
+      to:
+        filters.value.to ??
+        new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0), // default last day of month
       category: filters.value.category?.join(',') ?? ''
     }
     reportStore.fetchReportsPurchases(payload)
