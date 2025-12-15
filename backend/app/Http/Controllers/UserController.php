@@ -7,13 +7,13 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
-
+use Illuminate\Http\Request;
 class UserController extends Controller
 {
     // LIST ALL USERS
-    public function index()
+    public function index(Request $request)
     {
-        $query = User::query(); // start query
+        $query = User::query();
 
         // Keyword search
         if ($request->filled('keyword')) {

@@ -13,31 +13,35 @@ class AuthController extends Controller
     // Login user
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $credentials = [
+            'email'    => $request->email,
+            'password' => $request->password,
+            'status'   => 1, // ✅ only active users
+        ];
 
         try {
             if (!$token = JWTAuth::attempt($credentials)) {
                 return response()->json([
-                    'status' => 'invalid_credentials',
-                    'message' => 'Email or password is incorrect'
+                    'status'  => 'invalid_credentials',
+                    'message' => 'Email or password is incorrect or account is inactive'
                 ], 401);
             }
 
-            $user = JWTAuth::user(); // get user from token
+            $user = JWTAuth::user();
 
             return response()->json([
                 'status' => 'success',
-                'token' => $token,
-                'user' => $user
+                'token'  => $token,
+                'user'   => $user
             ]);
-
         } catch (JWTException $e) {
             return response()->json([
-                'status' => 'error',
-                'message' => 'Could not create token: ' . $e->getMessage()
+                'status'  => 'error',
+                'message' => 'Could not create token'
             ], 500);
         }
     }
+
 
     // Get currently authenticated user
     public function me()
