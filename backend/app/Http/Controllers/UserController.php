@@ -11,7 +11,7 @@ use App\Http\Requests\UpdateUserRequest;
 class UserController extends Controller
 {
     // LIST ALL USERS
-    public function index(Request $request)
+        public function index(Request $request)
     {
         $query = User::with('role');
 
@@ -24,11 +24,11 @@ class UserController extends Controller
             });
         }
 
-        // Filter by roles
-        if ($request->filled('roles')) {
-            $roles = explode(',', $request->roles); // expecting comma-separated string
-            $query->whereIn('role_id', $roles);
-        }
+        // // Filter by roles
+        // if ($request->filled('roles')) {
+        //     $roles = explode(',', $request->roles); // expecting comma-separated string
+        //     $query->whereIn('role_id', $roles);
+        // }
 
         // Filter by status
         if ($request->filled('status')) {
