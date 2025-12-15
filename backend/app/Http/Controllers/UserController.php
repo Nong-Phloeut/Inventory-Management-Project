@@ -13,7 +13,31 @@ class UserController extends Controller
     // LIST ALL USERS
     public function index()
     {
-        $users = User::with('role')->get();
+        $query = User::query(); // start query
+
+        // Keyword search
+        if ($request->filled('keyword')) {
+            $keyword = $request->keyword;
+            $query->where(function($q) use ($keyword) {
+                $q->where('email', 'like', "%{$keyword}%")
+                ->orWhere('username', 'like', "%{$keyword}%");
+            });
+        }
+
+        // Roles filter (use role_id column)
+        if ($request->filled('roles')) {
+            $roles = explode(',', $request->roles);
+            $query->whereIn('role_id', $roles);
+        }
+
+        // Status filter
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Eager load role
+        $users = $query->with('role')->get();
+
         return response()->json($users, 200);
     }
 
