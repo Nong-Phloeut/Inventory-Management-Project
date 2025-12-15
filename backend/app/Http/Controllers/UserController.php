@@ -11,11 +11,35 @@ use App\Http\Requests\UpdateUserRequest;
 class UserController extends Controller
 {
     // LIST ALL USERS
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with('role')->get();
+        $query = User::with('role');
+
+        // Keyword search: email or username
+        if ($request->filled('keyword')) {
+            $keyword = $request->keyword;
+            $query->where(function($q) use ($keyword) {
+                $q->where('email', 'like', "%{$keyword}%")
+                ->orWhere('username', 'like', "%{$keyword}%");
+            });
+        }
+
+        // Filter by roles
+        if ($request->filled('roles')) {
+            $roles = explode(',', $request->roles); // expecting comma-separated string
+            $query->whereIn('role_id', $roles);
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $users = $query->get();
+
         return response()->json($users, 200);
     }
+
 
     // CREATE USER
     public function store(StoreUserRequest $request)

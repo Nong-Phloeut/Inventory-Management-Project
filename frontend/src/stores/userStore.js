@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import UserAPI from '@/api/user' // ✅ MUST be this file
+import userAPI from '@/api/user' // ✅ MUST be this file
 
 export const useUserStore = defineStore('userStore', {
   state: () => ({
@@ -11,14 +11,10 @@ export const useUserStore = defineStore('userStore', {
   }),
 
   actions: {
-    async fetchUsers() {
+    async fetchUsers(param) {
       this.loading = true
       try {
-        const res = await UserAPI.getAll()
-
-        // 🔥 IMPORTANT
-        console.log('USERS FROM API:', res)
-
+        const res = await userAPI.getAll(param)
         this.users.data = res
       } catch (err) {
         console.error('Fetch users failed:', err)
@@ -29,15 +25,15 @@ export const useUserStore = defineStore('userStore', {
     },
 
     async addUser(user) {
-      await UserAPI.create(user)
+      await userAPI.create(user)
     },
 
     async updateUser(user) {
-      await UserAPI.update(user.id, user)
+      await userAPI.update(user.id, user)
     },
 
     async deleteUser(id) {
-      await UserAPI.remove(id)
+      await userAPI.remove(id)
     }
   }
 })

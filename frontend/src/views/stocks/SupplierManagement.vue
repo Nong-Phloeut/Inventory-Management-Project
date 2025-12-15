@@ -120,7 +120,7 @@
   // what user types/selects
   const draftFilters = reactive({
     keyword: '',
-    status: ''
+    status: null
   })
 
   // what API actually uses

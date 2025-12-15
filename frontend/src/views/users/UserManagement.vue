@@ -4,18 +4,77 @@
     <custom-title icon="mdi-account" class="mb-2">
       User Management
       <template #right>
+        <BaseButtonFilter class="me-4" @click="toggleFilterForm" />
         <BaseButton icon="mdi-plus" @click="openAdd" small>Add User</BaseButton>
       </template>
     </custom-title>
+    <v-card class="mb-4 pa-4 rounded-lg" elevation="0" v-show="showFilterForm">
+      <v-row>
+        <!-- Product Name / SKU -->
+        <v-col cols="12" md="3">
+          <v-text-field
+            v-model="filters.keyword"
+            label="Search (Username / Email)"
+            prepend-inner-icon="mdi-magnify"
+            hide-details
+          />
+        </v-col>
 
+        <!-- Category -->
+        <v-col cols="12" md="3">
+          <v-select
+            v-model="filters.roles"
+            :items="rolesStore.roles.data"
+            item-title="name"
+            item-value="id"
+            label="Roles"
+            multiple
+            hide-details
+          >
+            <template v-slot:selection="{ item, index }">
+              <v-chip v-if="index < 2" :text="item.title" size="x-small" />
+
+              <span
+                v-if="index === 2"
+                class="text-grey text-caption align-self-center"
+              >
+                (+{{ filters.roles.length - 2 }} others)
+              </span>
+            </template>
+          </v-select>
+        </v-col>
+        <v-col cols="12" md="3">
+          <v-select
+            v-model="filters.status"
+            :items="statusOptions"
+            item-title="title"
+            item-value="value"
+            label="Status"
+            hide-details
+          />
+        </v-col>
+
+        <!-- Buttons -->
+        <v-col cols="12" md="3" class="d-flex align-center">
+          <v-btn class="me-3" variant="outlined" @click="resetFilter">
+            Reset
+          </v-btn>
+          <v-btn
+            color="primary"
+            prepend-icon="mdi-filter-outline"
+            @click="applyFilter"
+          >
+            Apply Filter
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-card>
     <!-- User Table -->
     <v-data-table
       :items="usersStore.users.data"
       :headers="headers"
       item-key="id"
       dense
-      hide-default-footer
-      class="compact-table"
     >
       <!-- Row numbering -->
       <template #item.no="{ index }">{{ index + 1 }}</template>
@@ -90,12 +149,25 @@
   import { useAppUtils } from '@/composables/useAppUtils'
   import { useI18n } from 'vue-i18n'
   import UserDialog from '@/components/users/UserDialog.vue'
+  import { useRoleStore } from '@/stores/roleStore'
 
-  const dialog = ref(false)
-  const selectedUser = ref({})
   const { t } = useI18n()
   const { confirm, notif } = useAppUtils()
   const usersStore = useUserStore()
+  const rolesStore = useRoleStore()
+
+  const dialog = ref(false)
+  const selectedUser = ref({})
+  const showFilterForm = ref(false)
+  const filters = ref({
+    keyword: '',
+    roles: null,
+    status: null
+  })
+  const statusOptions = [
+    { title: 'Active', value: 1 },
+    { title: 'Inactive', value: 0 }
+  ]
 
   // Fetch users on mount
   onMounted(() => {
@@ -105,7 +177,7 @@
   const ADMIN_ROLE_ID = 1
 
   function isAdmin(item) {
-    return item.id === ADMIN_ROLE_ID
+    return item.role_id === ADMIN_ROLE_ID
   }
 
   function canEdit(item) {
@@ -114,6 +186,24 @@
 
   function canDelete(item) {
     return !isAdmin(item)
+  }
+  const toggleFilterForm = () => {
+    showFilterForm.value = !showFilterForm.value
+  }
+  const applyFilter = () => {
+    usersStore.fetchUsers({
+      keyword: filters.value.keyword,
+      roles: filters.value.roles?.join(',') ?? '',
+      status: filters.value.status,
+    })
+  }
+  const resetFilter = () => {
+    filters.value = {
+      keyword: '',
+      roles: null,
+      status: null
+    }
+    usersStore.fetchUsers()
   }
   // Open Add User dialog
   function openAdd() {

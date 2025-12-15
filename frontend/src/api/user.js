@@ -3,9 +3,9 @@ import http from './api'
 const API_URL = '/users'
 
 export default {
-  async getAll() {
-    const res = await http.get(API_URL)
-    return res.data // ✅ returns ARRAY
+  async getAll(param) {
+    const res = await http.get(API_URL, { params: param })
+    return res.data 
   },
 
   async getById(id) {
