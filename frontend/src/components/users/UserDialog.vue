@@ -159,7 +159,7 @@
   const formRef = ref(null)
   const valid = ref(true)
   const rules = {
-    required: v => !!v || 'This field is required',
+    required: v => (v !== null && v !== undefined) || 'This field is required',
     email: v => /.+@.+\..+/.test(v) || 'Email must be valid'
   }
 
