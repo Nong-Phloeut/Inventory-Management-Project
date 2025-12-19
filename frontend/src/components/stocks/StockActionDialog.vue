@@ -1,21 +1,71 @@
 <template>
-  <v-dialog v-model="internalModel" max-width="500px">
-    <v-card>
-      <v-card-title>{{ actionTypeLabel }} Stock</v-card-title>
-      <v-card-text>
+  <v-dialog v-model="internalModel" max-width="540px" persistent>
+    <v-card rounded="lg">
+      <!-- Header -->
+      <v-card-title class="d-flex align-center bg-primary text-white">
+        <v-icon class="mr-2">mdi-tune</v-icon>
+        {{ actionTypeLabel }} Stock
+        <v-spacer />
+        <v-btn icon variant="text" @click="close">
+          <v-icon color="white">mdi-close</v-icon>
+        </v-btn>
+      </v-card-title>
+
+      <!-- Content -->
+      <v-card-text class="pt-6">
+        <!-- Current Stock -->
         <v-text-field
-          label="Quantity"
-          v-model.number="form.quantity"
-          type="number"
-          :rules="[v => v > 0 || 'Quantity must be greater than 0']"
+          label="Current Stock"
+          :model-value="form.currentQty"
+          readonly
+          prepend-inner-icon="mdi-database"
         />
-        <v-textarea label="Note" v-model="form.note" />
+
+        <!-- Adjustment Section -->
+        <v-sheet class="pa-4 mb-4" rounded="lg" border>
+          <v-text-field
+            label="Adjustment Quantity"
+            v-model.number="form.adjustQty"
+            type="number"
+            prepend-inner-icon="mdi-swap-vertical"
+            hint="Negative (-) to decrease, Positive (+) to increase"
+            persistent-hint
+          />
+
+          <v-select
+            class="mt-3"
+            label="Adjustment Reason"
+            v-model="form.reason"
+            :items="reasons"
+            prepend-inner-icon="mdi-alert-circle-outline"
+            required
+          />
+
+          <v-textarea
+            class="mt-3"
+            label="Note (optional)"
+            v-model="form.note"
+            rows="2"
+            auto-grow
+          />
+        </v-sheet>
+
+        <!-- Result -->
+        <v-alert variant="tonal" :type="resultType">
+          Resulting Stock:
+          <strong class="ml-2">
+            {{ resultStock }}
+          </strong>
+        </v-alert>
       </v-card-text>
 
-      <v-card-actions>
+      <!-- Actions -->
+      <v-card-actions class="px-6 pb-4">
         <v-spacer />
-        <v-btn text @click="close">Cancel</v-btn>
-        <v-btn color="primary" @click="submit">Submit</v-btn>
+        <v-btn variant="outlined" @click="close">Cancel</v-btn>
+        <v-btn color="primary" :disabled="!canSubmit" @click="submit">
+          Confirm
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -24,42 +74,101 @@
 <script setup>
   import { ref, watch, computed } from 'vue'
 
+  /* =======================
+   Props & Emits
+======================= */
   const props = defineProps({
     modelValue: Boolean,
     actionType: { type: String, required: true },
-    stock: Object
+    stock: { type: Object, default: () => ({}) }
   })
 
   const emit = defineEmits(['update:modelValue', 'submitAction'])
 
-  // ✅ Local ref for v-model
-  const internalModel = ref(props.modelValue)
+  /* =======================
+   Dialog Control
+======================= */
+  const internalModel = ref(false)
+
   watch(
     () => props.modelValue,
     val => (internalModel.value = val)
   )
-//   watch(internalModel, val => emit('update:modelValue', val))
+
   watch(internalModel, val => {
     emit('update:modelValue', val)
+
     if (val && props.stock) {
-      form.value.quantity = props.stock.quantity // initialize with current stock
-      form.value.note = '' // optional: reset note
+      const rawStock = props.stock.raw ?? props.stock
+
+      form.value = {
+        currentQty: Number(rawStock.quantity ?? 0),
+        adjustQty: 0,
+        reason: 'Damaged',
+        note: ''
+      }
     }
   })
 
-  const form = ref({ quantity: 0, note: '' })
+  /* =======================
+   Form State
+======================= */
+  const form = ref({
+    currentQty: 0,
+    adjustQty: 0,
+    reason: 'Damaged',
+    note: ''
+  })
 
+  /* =======================
+   Static Data
+======================= */
+  const reasons = [
+    'Damaged',
+    'Expired',
+    'Lost / Theft',
+    'Count Correction',
+    'POS Error'
+  ]
+
+  /* =======================
+   Computed
+======================= */
   const actionTypeLabel = computed(
     () => props.actionType.charAt(0).toUpperCase() + props.actionType.slice(1)
   )
 
+  const resultStock = computed(() => {
+    return form.value.currentQty + form.value.adjustQty
+  })
+
+  const canSubmit = computed(() => {
+    return form.value.adjustQty !== 0 && !!form.value.reason
+  })
+
+  const resultType = computed(() => {
+    if (form.value.adjustQty > 0) return 'success'
+    if (form.value.adjustQty < 0) return 'warning'
+    return 'info'
+  })
+
+  /* =======================
+   Methods
+======================= */
   function close() {
     internalModel.value = false
   }
 
   function submit() {
-    if (form.value.quantity <= 0) return
-    emit('submitAction', { ...form.value, stock: props.stock })
+    const rawStock = props.stock.raw ?? props.stock
+
+    emit('submitAction', {
+      stockId: rawStock.product_id,
+      quantity: form.value.adjustQty,
+      reason: form.value.reason,
+      note: form.value.note
+    })
+
     close()
   }
 </script>

@@ -1,39 +1,32 @@
 <template>
-  <sidebar
-    :drawer="drawer"
-    @update:drawer="drawer = $event"
-    :rail="rail"
-    @update:rail="rail = $event"
-  />
-  <app-bar @toggle="toggleRail" />
+  <sidebar :rail="rail" :user="user" @update:rail="rail = $event" />
+  <app-bar :user="user" @toggle="toggleRail" />
   <v-main>
     <v-container class="px-4" fluid>
       <router-view />
     </v-container>
   </v-main>
 </template>
-<script>
-  import AppBar from './AppBar.vue'
+
+<script setup>
+  import { ref, onMounted } from 'vue'
   import Sidebar from './Sidebar.vue'
+  import AppBar from './AppBar.vue'
+  import { useAuthStore } from '@/stores/auth'
 
-  export default {
-    name: 'Layout',
-    components: {
-      AppBar,
-      Sidebar
-    },
-    data: () => ({
-      drawer: true,
-       rail: false,
-    }),
+  const rail = ref(false)
+  const user = ref(null)
 
-    methods: {
-      toggleNav() {
-        this.drawer = !this.drawer
-      },
-      toggleRail() {
-        this.rail = !this.rail
-      }
-    }
+  const authStore = useAuthStore()
+
+  // Fetch logged-in user
+  onMounted(async () => {
+    await authStore.fetchMe()
+    user.value = authStore.me
+  })
+
+  // Toggle rail for sidebar
+  function toggleRail() {
+    rail.value = !rail.value
   }
 </script>

@@ -16,8 +16,6 @@ export const useDashboardStore = defineStore('dashboard', {
     },
     async fetchMonthlyPurchases(year) {
       const res = await dashboardService.getMonthlyPurchases(year)
-      console.log(res);
-      
       this.monthlyPurchases = res.data
     }
   }

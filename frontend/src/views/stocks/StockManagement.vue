@@ -170,7 +170,10 @@
     </template>
   </v-data-table-server>
 
-  <MovementDialog v-model="isDialogOpen" :stock="selectedStock" />
+  <MovementDialog
+    v-model="isDialogOpen"
+    :stock="selectedStock"
+  />
 
   <!-- Stock Action Dialog -->
   <StockActionDialog
@@ -299,24 +302,26 @@
   }
 
   async function handleAction(payload) {
-    const { stock, ...data } = payload
+    console.log(payload);
+    
+    const { stockId, ...data } = payload
 
     switch (dialogType.value) {
       case 'return':
         await stockMovementStore.returnStock({
-          product_id: stock.product_id,
+          product_id: stockId,
           ...data
         })
         break
       case 'adjustment':
         await stockMovementStore.adjustStock({
-          product_id: stock.product_id,
+          product_id: stockId,
           ...data
         })
         break
       case 'loss':
         await stockMovementStore.reportLoss({
-          product_id: stock.product_id,
+          product_id: stockId,
           ...data
         })
         break

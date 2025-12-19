@@ -1,10 +1,8 @@
 <template>
   <v-navigation-drawer
     :rail="rail"
-    :model-value="drawer"
     permanent
     @click="$emit('update:rail', false)"
-    @update:model-value="$emit('update:drawer', $event)"
   >
     <v-list class="pa-4 mb-4 mt-4">
       <v-list-item>
@@ -13,7 +11,7 @@
     </v-list>
     <v-list
       v-model:opened="open"
-      v-for="(link, i) in menu"
+      v-for="(link, i) in filteredMenu"
       :key="link.title"
       dense
       class="pa-0"
@@ -76,94 +74,131 @@
   </v-navigation-drawer>
 </template>
 
-<script>
-  export default {
-    data: () => ({
-      drawer: true,
-      rail: false,
-      open: ['dashboard'],
-      menu: [
+<script setup>
+  import { ref, computed, watch  } from 'vue'
+
+  const props = defineProps({
+    user: Object // user will be passed from parent (Layout.vue)
+  })
+
+  const rail = ref(false)
+  const open = ref(['dashboard'])
+
+  const menu = ref([
+    {
+      path: '/dashboard',
+      title: 'Dashboard',
+      icon: 'mdi-view-dashboard',
+      roles: [1, 2, 3]
+    },
+    {
+      path: '/categories',
+      title: 'Categories',
+      icon: 'mdi-shape-outline',
+      roles: [1]
+    },
+    { path: '/units', title: 'Units', icon: 'mdi-counter', roles: [1] },
+    {
+      path: '/products',
+      title: 'Products',
+      icon: 'mdi-package-variant',
+      roles: [1, 2]
+    },
+    {
+      path: '/suppliers',
+      title: 'Suppliers',
+      icon: 'mdi-truck-delivery',
+      roles: [1]
+    },
+    {
+      path: '/stocks',
+      title: 'Stocks',
+      icon: 'mdi-swap-horizontal',
+      roles: [1, 2]
+    },
+    {
+      path: '/purchases',
+      title: 'Purchases',
+      icon: 'mdi-cart-arrow-down',
+      roles: [1, 2, 3]
+    },
+    {
+      title: 'Administration',
+      icon: 'mdi-account-cog',
+      roles: [1],
+      subLinks: [
         {
-          path: '/dashboard',
-          title: 'Dashboard',
-          icon: 'mdi-view-dashboard'
+          path: '/roles-management',
+          title: 'Roles',
+          icon: 'mdi-shield-account',
+          roles: [1]
         },
         {
-          path: '/categories',
-          title: 'Categories',
-          icon: 'mdi-shape-outline'
-        },
-        {
-          path: '/units',
-          title: 'Units',
-          icon: 'mdi-counter'
-        },
-        {
-          path: '/products',
-          title: 'Products',
-          icon: 'mdi-package-variant'
-        },
-        {
-          path: '/suppliers',
-          title: 'Suppliers',
-          icon: 'mdi-truck-delivery'
-        },
-        {
-          path: '/stocks',
-          title: 'Stocks',
-          icon: 'mdi-swap-horizontal'
-        },
-        {
-          path: '/purchases',
-          title: 'Purchases',
-          icon: 'mdi-cart-arrow-down'
-        },
-        {
-          title: 'Administration',
-          icon: 'mdi-account-cog',
-          subLinks: [
-            {
-              path: '/roles-management',
-              title: 'Roles',
-              icon: 'mdi-shield-account'
-            },
-            {
-              path: '/users-management',
-              title: 'Users',
-              icon: 'mdi-account'
-            }
-          ]
-        },
-        {
-          title: 'Reports',
-          icon: 'mdi-chart-line',
-          subLinks: [
-            {
-              path: '/inventory-reports',
-              title: 'Inventory',
-              icon: 'mdi-warehouse'
-            },
-            {
-              path: '/purchase-reports',
-              title: 'Purchase',
-              icon: 'mdi-cart-arrow-down'
-            },
-            // {
-            //   path: '/ai-assistant-reports',
-            //   title: 'Users',
-            //   icon: 'mdi-ai'
-            // }
-          ]
-        },
-        {
-          path: '/audit-logs',
-          title: 'Audit logs',
-          icon: 'mdi-timeline-clock-outline'
+          path: '/users-management',
+          title: 'Users',
+          icon: 'mdi-account',
+          roles: [1]
         }
       ]
-    })
-  }
+    },
+    {
+      title: 'Reports',
+      icon: 'mdi-chart-line',
+      roles: [1, 2],
+      subLinks: [
+        {
+          path: '/inventory-reports',
+          title: 'Inventory',
+          icon: 'mdi-warehouse',
+          roles: [1, 2]
+        },
+        {
+          path: '/purchase-reports',
+          title: 'Purchase',
+          icon: 'mdi-cart-arrow-down',
+          roles: [1, 2, 3]
+        }
+      ]
+    },
+    {
+      path: '/audit-logs',
+      title: 'Audit logs',
+      icon: 'mdi-timeline-clock-outline',
+      roles: [1]
+    }
+  ])
+
+  // Filter menu based on user role
+  const filteredMenu = computed(() => {
+    if (!props.user) return []
+
+    return menu.value
+      .map(link => {
+        // Check if main link is allowed
+        if (!link.roles || link.roles.includes(props.user.role_id)) {
+          // If it has subLinks, filter subLinks as well
+          if (link.subLinks) {
+            const filteredSubs = link.subLinks.filter(
+              s => !s.roles || s.roles.includes(props.user.role_id)
+            )
+            return { ...link, subLinks: filteredSubs }
+          }
+          return link
+        }
+        return null
+      })
+      .filter(link => link !== null)
+  })
+
+  watch(rail, newVal => {
+    if (newVal) {
+      open.value = [] // close all groups
+    } else {
+      open.value = ['dashboard'] // optionally reopen default group
+    }
+  })
 </script>
+
 <style>
   .v-list-group__items {
     margin-left: -35px;

@@ -22,9 +22,9 @@
               <!-- <v-avatar color="brown">
                 <span class="text-h5">{{ initials }}</span>
               </v-avatar> -->
-              <h3>{{ me.name }}</h3>
+              <h3>{{ props.user.name }}</h3>
               <p class="mt-1">
-                {{ me.email }}
+                {{ props.user.username }}
               </p>
               <!-- {{ me }} -->
               <!-- <v-divider class="my-3"></v-divider> -->
@@ -49,10 +49,12 @@
   import { useI18n } from 'vue-i18n'
   const { t } = useI18n()
   const { confirm, notif } = useAppUtils()
+  const props = defineProps({
+    user: Object // user will be passed from parent (Layout.vue)
+  })
 
   const authStore = useAuthStore()
   const router = useRouter()
-  const me = ref({})
   // define emits
   const emit = defineEmits(['toggle'])
   // Drawer toggle event
@@ -62,22 +64,13 @@
   }
 
   const initials = computed(() => {
-    if (!me.value.name) return ''
-    const names = me.value.name.split(' ')
+    if (!props.user) return ''
+    const names = props.user.name.split(' ')
     return names.length >= 2
       ? names[0][0].toUpperCase() + names[1][0].toUpperCase()
       : names[0][0].toUpperCase()
   })
 
-  onMounted(async () => {
-    try {
-      await authStore.fetchMe() // Make sure fetchUser() exists in your store
-      me.value = authStore.me
-    } catch (err) {
-      await authStore.logout()
-      router.push({ name: 'Login' })
-    }
-  })
   const handleLogout = async () => {
     await authStore.logout()
     notif(t('messages.logout_sucess'), {
