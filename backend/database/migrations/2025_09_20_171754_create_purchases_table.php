@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('purchase_number')->unique();
             $table->foreignId('supplier_id')->constrained()->onDelete('cascade');
             // Status: draft, received, cancelled
-            $table->enum('status', ['draft', "ordered", 'received', 'cancelled'])->default('draft');
             // Payment status
             $table->enum('payment_status', ['unpaid', 'partial', 'paid'])->default('unpaid');
             // Purchase date

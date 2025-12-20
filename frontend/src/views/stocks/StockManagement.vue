@@ -123,7 +123,8 @@
     </template>
     <template #item.actions="{ item }">
       <v-row dense>
-        <v-tooltip location="top">
+        <!-- Stock Adjustment (Admin, Storekeeper only) -->
+        <v-tooltip location="top" v-if="canAdjustStock">
           <template #activator="{ props }">
             <v-btn
               v-bind="props"
@@ -138,22 +139,8 @@
           <span>Adjustment</span>
         </v-tooltip>
 
-        <!-- <v-tooltip location="top">
-          <template #activator="{ props }">
-            <v-btn
-              v-bind="props"
-              icon
-              color="red"
-              variant="text"
-              @click="openDialog('loss', item)"
-            >
-              <v-icon>mdi-alert-circle</v-icon>
-            </v-btn>
-          </template>
-          <span>Loss</span>
-        </v-tooltip> -->
-
-        <v-tooltip location="top">
+        <!-- Stock Movements (Admin, Storekeeper, Purchaser) -->
+        <v-tooltip location="top" v-if="canViewMovements">
           <template #activator="{ props }">
             <v-btn
               v-bind="props"
@@ -170,10 +157,7 @@
     </template>
   </v-data-table-server>
 
-  <MovementDialog
-    v-model="isDialogOpen"
-    :stock="selectedStock"
-  />
+  <MovementDialog v-model="isDialogOpen" :stock="selectedStock" />
 
   <!-- Stock Action Dialog -->
   <StockActionDialog
@@ -185,7 +169,7 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, onMounted, computed } from 'vue'
   import { useStockStore } from '@/stores/stockStore'
   import MovementDialog from '@/components/MovementDialog.vue'
   import StockActionDialog from '@/components/stocks/StockActionDialog.vue'
@@ -193,7 +177,9 @@
   import { useDate } from '@/composables/useDate'
   import { useCategoryStore } from '@/stores/categoryStore'
   import { useUnitStore } from '@/stores/unitStore'
+  import { useAuthStore } from '@/stores/auth'
 
+  const authStore = useAuthStore()
   // import { useAppUtils } from '@/composables/useAppUtils'
 
   const { formatDate, formatDateTime, addDays } = useDate()
@@ -238,6 +224,12 @@
   const dialogVisible = ref(false)
   const dialogType = ref('') // return | adjustment | loss
   const showFilterForm = ref(false)
+
+  const canAdjustStock = computed(() => [1, 2].includes(authStore.me?.role_id))
+
+  const canViewMovements = computed(() =>
+    [1, 2, 3].includes(authStore.me?.role_id)
+  )
 
   onMounted(() => {
     unitStore.fetchUnits()
@@ -302,8 +294,8 @@
   }
 
   async function handleAction(payload) {
-    console.log(payload);
-    
+    console.log(payload)
+
     const { stockId, ...data } = payload
 
     switch (dialogType.value) {

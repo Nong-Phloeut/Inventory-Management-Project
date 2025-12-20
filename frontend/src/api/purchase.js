@@ -31,5 +31,15 @@ export default {
   async delete(id) {
     const response = await http.delete(`${API_URL}/${id}`)
     return response.data
+  },
+
+  async getStatuses() {
+    return http.get('/purchase-statuses')
+  },
+
+  async updateStatus(purchaseId, status) {
+    console.log(status);
+    
+    return http.put(`/purchases/${purchaseId}/status`, { status })
   }
 }

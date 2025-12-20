@@ -15,7 +15,7 @@ class Purchase extends Model
         'total_amount',
         'purchase_number',
         'invoice_number',
-        'status',
+        'purchase_status_code',
         'payment_status',
         'subtotal',
         'tax',
@@ -32,5 +32,10 @@ class Purchase extends Model
     public function supplier()
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    public function purchaseStatus()
+    {
+        return $this->belongsTo(PurchaseStatus::class, 'purchase_status_code', 'code');
     }
 }

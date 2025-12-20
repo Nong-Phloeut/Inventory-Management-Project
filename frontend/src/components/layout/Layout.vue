@@ -13,16 +13,23 @@
   import Sidebar from './Sidebar.vue'
   import AppBar from './AppBar.vue'
   import { useAuthStore } from '@/stores/auth'
+  import { useRouter } from 'vue-router'
 
   const rail = ref(false)
   const user = ref(null)
 
   const authStore = useAuthStore()
-
+  const router = useRouter()
+  
   // Fetch logged-in user
   onMounted(async () => {
-    await authStore.fetchMe()
-    user.value = authStore.me
+    try {
+      await authStore.fetchMe()
+      user.value = authStore.me
+    } catch (error) {
+      await authStore.logout()
+      router.push({ name: 'Login' })
+    }
   })
 
   // Toggle rail for sidebar

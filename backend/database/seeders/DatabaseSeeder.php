@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             UserSeeder::class,
+            PurchaseStatusSeeder::class,
             // Add other seeders here
         ]);
         // \App\Models\User::firstOrCreate(

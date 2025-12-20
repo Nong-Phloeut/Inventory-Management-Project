@@ -24,8 +24,9 @@
         <v-select
           v-model="filters.status"
           label="Status"
-          :items="statusOptions"
-          hide-details
+          :items="purchaseStore.statuses"
+          item-title="label"
+          item-value="code"
         />
       </v-col>
 
@@ -66,7 +67,9 @@
           v-model="filters.date_to"
           label="To Date"
           hide-details
-          :allowed-dates="date => !filters.date_from || date >= filters.date_from"
+          :allowed-dates="
+            date => !filters.date_from || date >= filters.date_from
+          "
         />
       </v-col>
 
@@ -111,9 +114,16 @@
     </template>
 
     <template #item.status="{ item }">
-      <v-chip :color="statusColor(item.status)" size="small" variant="tonal">
-        <v-icon :icon="statusIcon(item.status)" start />
-        {{ formatText(item.status) }}
+      <v-chip
+        :color="statusColor(item.purchase_status.code)"
+        size="small"
+        variant="tonal"
+        class="cursor-default"
+      >
+        <v-icon :icon="statusIcon(item.purchase_status.code)" start size="16" />
+        <span class="font-weight-medium">
+          {{ formatText(item.purchase_status.code) }}
+        </span>
       </v-chip>
     </template>
 
@@ -129,7 +139,9 @@
     </template>
 
     <template #item.actions="{ item }">
+      <!-- {{ canEditPurchase(i) }} -->
       <v-btn
+        v-if="canEditPurchase(item)"
         icon="mdi-pencil"
         size="small"
         variant="text"
@@ -154,7 +166,12 @@
   import { useSupplierStore } from '@/stores/supplierStore'
   import { useDate } from '@/composables/useDate'
   import { useCurrency } from '@/composables/useCurrency'
+  import { usePermission } from '@/composables/usePermission'
 
+  // ------------------------------
+  // Composables & Utils
+  // ------------------------------
+  const { isAdmin, isManager, isPurchaser } = usePermission()
   const router = useRouter()
   const purchaseStore = usePurchaseStore()
   const supplierStore = useSupplierStore()
@@ -186,7 +203,7 @@
     { title: 'PO Status', key: 'status' },
     { title: 'Payment Status', key: 'payment_status' },
     { title: 'Date', key: 'purchase_date' },
-    { title: 'Actions', key: 'actions', sortable: false }
+    { title: 'Actions', key: 'actions', sortable: false, align: 'end' }
   ]
 
   /* ---------------- COMPUTED ---------------- */
@@ -233,18 +250,34 @@
   }
 
   /* ---------------- HELPERS ---------------- */
-  const statusColor = v =>
-    ({ received: 'green', ordered: 'blue', cancelled: 'red' })[v] || 'grey'
+  // Map status code to chip color
+  const statusColor = status =>
+    ({
+      draft: 'grey',
+      request: 'orange',
+      approved: 'blue',
+      rejected: 'red',
+      ordered: 'indigo',
+      received: 'green',
+      completed: 'purple',
+      cancelled: 'red'
+    })[status] || 'grey'
+
+  // Map status code to icon
+  const statusIcon = status =>
+    ({
+      draft: 'mdi-file-document-outline',
+      request: 'mdi-account-clock', // waiting for approval
+      approved: 'mdi-check-bold',
+      rejected: 'mdi-cancel',
+      ordered: 'mdi-progress-clock',
+      received: 'mdi-check-circle',
+      completed: 'mdi-flag-checkered',
+      cancelled: 'mdi-close-circle'
+    })[status] || 'mdi-information'
 
   const paymentColor = v =>
     ({ paid: 'green', unpaid: 'red', partial: 'orange' })[v] || 'grey'
-
-  const statusIcon = v =>
-    ({
-      received: 'mdi-check-circle',
-      ordered: 'mdi-progress-clock',
-      cancelled: 'mdi-close-circle'
-    })[v] || 'mdi-information'
 
   const paymentIcon = v =>
     ({
@@ -260,9 +293,43 @@
   const goToEdit = p => router.push(`/purchase/${p.id}/edit`)
   const goToDetails = p => router.push(`/purchases/${p.id}/details`)
 
+  const changeStatus = async (item, status) => {
+    await purchaseStore.updateStatus(item.id, status)
+    await purchaseStore.fetchPurchases()
+  }
+
+  // Function to check if a purchase can be edited
+  const canEditPurchase = computed(() => {
+    return item => {
+      if (!item?.purchase_status?.code) return false
+
+      const finalStatuses = ['received', 'completed', 'cancelled']
+
+      // Nobody can edit final statuses
+      if (finalStatuses.includes(item.purchase_status.code)) return false
+
+      if (isPurchaser.value) {
+        return item.purchase_status.code === 'draft'
+      }
+
+      if (isManager.value) {
+        return item.purchase_status.code === 'request'
+      }
+
+      if (isAdmin.value) {
+        return ['draft', 'request', 'approved', 'ordered'].includes(
+          item.purchase_status.code
+        )
+      }
+
+      return false
+    }
+  })
+
   /* ---------------- INIT ---------------- */
   onMounted(async () => {
     await supplierStore.fetchSuppliers({ per_page: -1 })
     await purchaseStore.fetchPurchases()
+    await purchaseStore.fetchStatuses()
   })
 </script>

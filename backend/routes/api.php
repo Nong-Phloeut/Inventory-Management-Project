@@ -69,6 +69,8 @@ Route::middleware('jwt.auth')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
+    Route::get('/purchase-statuses', [PurchaseController::class, 'statuses']);
+    Route::put('/purchases/{purchase}/status', [PurchaseController::class, 'updateStatus']);
 });
 
 Route::get('/units', [UnitController::class, 'index']);
@@ -78,4 +80,3 @@ Route::delete('/units/{id}', [UnitController::class, 'destroy']);
 
 Route::get('/reports/purchases', [PurchaseReportController::class, 'index']);
 Route::get('/reports/inventory', [PurchaseReportController::class, 'inventoryReport']);
-

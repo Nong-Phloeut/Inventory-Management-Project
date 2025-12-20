@@ -4,7 +4,8 @@ import purchaseService from '../api/purchase'
 export const usePurchaseStore = defineStore('purchase', {
   state: () => ({
     purchases: [],
-    purchase: {}
+    purchase: {},
+    statuses: []
   }),
   actions: {
     async fetchPurchases(ilterParams = {}) {
@@ -24,6 +25,14 @@ export const usePurchaseStore = defineStore('purchase', {
       const { purchase_date } = response
       this.purchase = response
       this.purchase.purchase_date = new Date(purchase_date)
+    },
+    async fetchStatuses() {
+      const { data } = await purchaseService.getStatuses()
+      this.statuses = data
+    },
+    async updateStatus(purchaseId, status) {
+      const { data } = await purchaseService.updateStatus(purchaseId, status)
+      return data
     }
   }
 })

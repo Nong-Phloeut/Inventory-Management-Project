@@ -114,7 +114,7 @@
       path: '/stocks',
       title: 'Stocks',
       icon: 'mdi-swap-horizontal',
-      roles: [1, 2]
+      roles: [1, 2, 3]
     },
     {
       path: '/purchases',
@@ -144,7 +144,7 @@
     {
       title: 'Reports',
       icon: 'mdi-chart-line',
-      roles: [1, 2],
+      roles: [1, 2, 3],
       subLinks: [
         {
           path: '/inventory-reports',

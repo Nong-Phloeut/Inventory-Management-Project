@@ -12,16 +12,15 @@
   </custom-title>
 
   <v-container fluid class="pa-0">
-    <!-- WRAP FORM IN CARD -->
-    <v-card rounded="lg" elevation="0" class="pa-4 mb-4">
-      <v-card-title class="text-h6 font-weight-bold pb-2">
-        Purchase Information
-      </v-card-title>
+    <v-form ref="formRef" v-model="isValid">
+      <!-- WRAP FORM IN CARD -->
+      <v-card rounded="lg" elevation="0" class="pa-4 mb-4">
+        <v-card-title class="text-h6 font-weight-bold pb-2">
+          Purchase Information
+        </v-card-title>
 
-      <v-divider />
-
-      <v-form ref="formRef" v-model="isValid" class="mt-4">
-        <v-row>
+        <v-divider />
+        <v-row class="mt-4">
           <v-col cols="12" sm="6" md="3">
             <v-select
               label="Supplier"
@@ -40,13 +39,15 @@
               :rules="[v => !!v || 'Date is required']"
             />
           </v-col>
-          <v-col cols="12" sm="6" md="3">
+          <!-- <v-col cols="12" sm="6" md="3">
             <v-select
               label="Purchase Status"
               v-model="purchase.status"
-              :items="['draft', 'ordered', 'received', 'cancelled']"
+              :items="purchaseStore.statuses"
+              item-title="label"
+              item-value="code"
             />
-          </v-col>
+          </v-col> -->
 
           <v-col cols="12" sm="6" md="3">
             <v-select
@@ -56,158 +57,196 @@
             />
           </v-col>
         </v-row>
-      </v-form>
-    </v-card>
+      </v-card>
 
-    <!-- ITEMS CARD -->
-    <v-card rounded="lg" elevation="0" class="pa-4">
-      <v-card-title class="text-h6 font-weight-bold pb-2">
-        Item List
-      </v-card-title>
+      <!-- ITEMS CARD -->
+      <v-card rounded="lg" elevation="0" class="pa-4">
+        <v-card-title class="text-h6 font-weight-bold pb-2">
+          Item List
+        </v-card-title>
 
-      <v-divider />
-      <v-row class="mt-3" dense>
-        <v-col cols="12">
-          <v-row
-            v-for="(item, index) in purchase.items"
-            :key="index"
-            dense
-            class="mb-2"
-          >
-            <v-col cols="12" md="2">
-              <v-select
-                :items="productStore.products.data"
-                v-model="item.product_id"
-                item-title="name"
-                item-value="id"
-                label="Product"
-                density="compact"
-                :rules="[v => !!v || 'Product is required']"
-              />
-            </v-col>
+        <v-divider />
+        <v-row class="mt-3" dense>
+          <v-col cols="12">
+            <v-row
+              v-for="(item, index) in purchase.items"
+              :key="index"
+              dense
+              class="mb-2"
+            >
+              <v-col cols="12" md="2">
+                <v-select
+                  :items="productStore.products.data"
+                  v-model="item.product_id"
+                  item-title="name"
+                  item-value="id"
+                  label="Product"
+                  density="compact"
+                  :rules="[v => !!v || 'Product is required']"
+                />
+              </v-col>
 
-            <v-col cols="12" md="1">
-              <v-text-field
-                v-model.number="item.quantity"
-                type="number"
-                label="Quantity"
-                density="compact"
-                min="1"
-                :rules="[v => v > 0 || 'Quantity must be > 0']"
-              />
-            </v-col>
+              <v-col cols="12" md="1">
+                <v-text-field
+                  v-model.number="item.quantity"
+                  type="number"
+                  label="Quantity"
+                  density="compact"
+                  min="1"
+                  :rules="[v => v > 0 || 'Quantity must be > 0']"
+                />
+              </v-col>
 
-            <v-col cols="12" md="2">
-              <v-text-field
-                v-model.number="item.cost_price"
-                type="number"
-                label="Cost Price"
-                density="compact"
-                min="0"
-                prefix="$"
-                :readonly="true"
-                :disabled="!item.product_id"
-                :rules="[v => v >= 0 || 'Price must be ≥ 0']"
-              />
-            </v-col>
-            <v-col cols="12" md="2">
-              <v-text-field
-                v-model.number="item.item_tax"
-                type="number"
-                suffix="%"
-                label="Tax"
-                density="compact"
-                min="0"
-              />
-            </v-col>
+              <v-col cols="12" md="2">
+                <v-text-field
+                  v-model.number="item.cost_price"
+                  type="number"
+                  label="Cost Price"
+                  density="compact"
+                  min="0"
+                  prefix="$"
+                  :readonly="true"
+                  :disabled="!item.product_id"
+                  :rules="[v => v >= 0 || 'Price must be ≥ 0']"
+                />
+              </v-col>
+              <v-col cols="12" md="2">
+                <v-text-field
+                  v-model.number="item.item_tax"
+                  type="number"
+                  suffix="%"
+                  label="Tax"
+                  density="compact"
+                  min="0"
+                />
+              </v-col>
 
-            <v-col cols="12" md="2">
-              <v-text-field
-                v-model.number="item.item_discount"
-                type="number"
-                label="Discount"
-                suffix="%"
-                density="compact"
-                min="0"
-              />
-            </v-col>
-            <v-col cols="12" md="2">
-              <v-text-field
-                :model-value="getItemTotal(index)"
-                prefix="$"
-                type="text"
-                label="Total"
-                density="compact"
-                min="0"
-                :readonly="true"
-                :disabled="!item.product_id"
-              />
-            </v-col>
+              <v-col cols="12" md="2">
+                <v-text-field
+                  v-model.number="item.item_discount"
+                  type="number"
+                  label="Discount"
+                  suffix="%"
+                  density="compact"
+                  min="0"
+                />
+              </v-col>
+              <v-col cols="12" md="2">
+                <v-text-field
+                  :model-value="getItemTotal(index)"
+                  prefix="$"
+                  type="text"
+                  label="Total"
+                  density="compact"
+                  min="0"
+                  :readonly="true"
+                  :disabled="!item.product_id"
+                />
+              </v-col>
 
-            <v-col cols="12" md="1">
-              <v-btn
-                icon="mdi-delete"
-                color="error"
-                variant="text"
-                size="small"
-                @click="removeItem(index)"
-              />
-            </v-col>
-          </v-row>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col cols="12" sm="6" md="8">
-          <v-textarea label="Note" v-model="purchase.note"></v-textarea>
-        </v-col>
-        <v-col cols="12" sm="8" md="4">
-          <v-sheet border rounded="lg" class="pa-4">
-            <div class="mb-2">Summary</div>
+              <v-col cols="12" md="1">
+                <v-btn
+                  icon="mdi-delete"
+                  color="error"
+                  variant="text"
+                  size="small"
+                  @click="removeItem(index)"
+                />
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12" sm="6" md="8">
+            <v-textarea label="Note" v-model="purchase.note"></v-textarea>
+          </v-col>
+          <v-col cols="12" sm="8" md="4">
+            <v-sheet border rounded="lg" class="pa-4">
+              <div class="mb-2">Summary</div>
 
-            <div class="d-flex justify-space-between mb-1">
-              <span>Subtotal:</span>
-              <strong>{{ formatCurrency(subtotal) }}</strong>
-            </div>
+              <div class="d-flex justify-space-between mb-1">
+                <span>Subtotal:</span>
+                <strong>{{ formatCurrency(subtotal) }}</strong>
+              </div>
 
-            <div class="d-flex justify-space-between mb-1">
-              <span>Total Discount Amount:</span>
-              <strong>{{ formatCurrency(totalDiscount) }}</strong>
-            </div>
+              <div class="d-flex justify-space-between mb-1">
+                <span>Total Discount Amount:</span>
+                <strong>{{ formatCurrency(totalDiscount) }}</strong>
+              </div>
 
-            <div class="d-flex justify-space-between mb-1">
-              <span>Total Tax Amount:</span>
-              <strong>{{ formatCurrency(totalTax) }}</strong>
-            </div>
+              <div class="d-flex justify-space-between mb-1">
+                <span>Total Tax Amount:</span>
+                <strong>{{ formatCurrency(totalTax) }}</strong>
+              </div>
 
-            <v-divider class="my-2" />
+              <v-divider class="my-2" />
 
-            <div class="d-flex justify-space-between">
-              <h3 class="font-weight-bold">Total Amount:</h3>
-              <h3>{{ formatCurrency(totalAmount) }}</h3>
-            </div>
-          </v-sheet>
-        </v-col>
-      </v-row>
+              <div class="d-flex justify-space-between">
+                <h3 class="font-weight-bold">Total Amount:</h3>
+                <h3>{{ formatCurrency(totalAmount) }}</h3>
+              </div>
+            </v-sheet>
+          </v-col>
+        </v-row>
 
-      <v-divider class="my-3" />
+        <v-divider class="my-3" />
 
-      <!-- ACTION BUTTONS -->
-      <v-row>
-        <v-col>
-          <v-btn text color="primary" @click="addItem">+ Add Product</v-btn>
-        </v-col>
-        <v-col class="text-end">
-          <v-btn variant="tonal" class="me-2" @click="goBack">Cancel</v-btn>
-          <v-btn
+        <!-- ACTION BUTTONS -->
+        <v-row>
+          <v-col>
+            <v-btn text color="primary" @click="addItem">+ Add Product</v-btn>
+          </v-col>
+
+          <!-- <v-btn variant="tonal" class="me-2" @click="goBack">Cancel</v-btn> -->
+          <!-- <v-btn
             color="primary"
             @click="save"
             :disabled="purchase.items.length <= 0"
           >
             {{ isEdit ? 'Update Purchase' : 'Save Purchase' }}
           </v-btn>
-        </v-col>
-      </v-row>
-    </v-card>
+          v-if="hasRole(1, 2)" -->
+
+          <v-col class="text-end">
+            <!-- <v-btn variant="tonal" class="me-2" @click="goBack">Cancel</v-btn> -->
+
+            <!-- Purchaser buttons -->
+            <v-btn
+              v-if="hasRole(3)"
+              color="primary"
+              @click="savePurchase(false)"
+              :disabled="purchase.items.length <= 0"
+              class="me-2"
+            >
+              {{ isEdit ? 'Update Draft' : 'Save Draft' }}
+            </v-btn>
+
+            <v-btn
+              v-if="hasRole(3)"
+              color="success"
+              @click="savePurchase(true)"
+              :disabled="purchase.items.length <= 0"
+            >
+              Request Approval
+            </v-btn>
+
+            <!-- Manager buttons -->
+            <v-btn
+              v-if="hasRole(2)"
+              color="primary"
+              class="me-3"
+              @click="approvePurchase"
+            >
+              Approve
+            </v-btn>
+
+            <v-btn v-if="hasRole(2)" color="error" @click="rejectPurchase">
+              Reject
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-card>
+    </v-form>
   </v-container>
 </template>
 
@@ -222,11 +261,18 @@
   import { useCurrency } from '@/composables/useCurrency.js'
   import { useDate } from '@/composables/useDate'
   import { usePurchaseCalculator } from '@/composables/usePurchaseCalculator'
+  import { usePermission } from '@/composables/usePermission'
+  import { PURCHASE_STATUSES } from '@/constants/purchaseStatuses.js'
 
-  const { formatDate, formatDateTime, addDays, formatLocalDate } = useDate()
+  // ------------------------------
+  // Composables & Utils
+  // ------------------------------
+  const { hasRole } = usePermission()
+  const { formatDate, formatDateTime, formatLocalDate } = useDate()
   const { formatCurrency, formatCurrencyNoSymbol } = useCurrency()
   const { t } = useI18n()
   const { confirm, notif } = useAppUtils()
+
   const route = useRoute()
   const router = useRouter()
 
@@ -234,6 +280,9 @@
   const productStore = useProductStore()
   const purchaseStore = usePurchaseStore()
 
+  // ------------------------------
+  // Refs & Reactive State
+  // ------------------------------
   const formRef = ref(null)
   const isValid = ref(false)
 
@@ -241,16 +290,25 @@
     id: null,
     supplier_id: null,
     purchase_date: new Date(),
-    status: 'draft',
+    purchase_status_code: PURCHASE_STATUSES.DRAFT,
     payment_status: 'unpaid',
     note: '',
     tax: 0,
     discount: 0,
     items: []
   })
+
   const { itemTotals, subtotal, totalDiscount, totalTax, totalAmount } =
     usePurchaseCalculator(purchase)
 
+  // ------------------------------
+  // Computed Properties
+  // ------------------------------
+  const isEdit = computed(() => !!purchase.id)
+
+  // ------------------------------
+  // Watchers
+  // ------------------------------
   watch(
     () => purchase.items,
     items => {
@@ -259,34 +317,35 @@
           const product = productStore.products.data.find(
             p => p.id === item.product_id
           )
-          if (product) {
-            item.cost_price = product.price // auto-fill price
-          }
+          if (product) item.cost_price = product.price
         }
       })
     },
     { deep: true }
   )
-  function getItemTotal(index) {
-    const total = itemTotals.value[index]?.total || 0
 
-    return formatCurrencyNoSymbol(total)
-    // return total
-  }
-
-  const isEdit = computed(() => !!purchase.id)
-
+  // ------------------------------
+  // Lifecycle Hooks
+  // ------------------------------
   onMounted(async () => {
+    await loadInitialData()
+    if (route.params.id) await loadPurchase(route.params.id)
+    else addItem()
+  })
+
+  // ------------------------------
+  // Methods
+  // ------------------------------
+  async function loadInitialData() {
     await supplierStore.fetchSuppliers({ status: 1, per_page: -1 })
     await productStore.fetchProducts({ status: 'active', per_page: -1 })
+    await purchaseStore.fetchStatuses()
+  }
 
-    if (route.params.id) {
-      await purchaseStore.fetchPurchaseById(route.params.id)
-      Object.assign(purchase, purchaseStore.purchase)
-    } else {
-      addItem()
-    }
-  })
+  async function loadPurchase(id) {
+    await purchaseStore.fetchPurchaseById(id)
+    Object.assign(purchase, purchaseStore.purchase)
+  }
 
   function addItem() {
     purchase.items.push({
@@ -298,22 +357,34 @@
     })
   }
 
-  function removeItem(i) {
-    purchase.items.splice(i, 1)
+  function removeItem(index) {
+    purchase.items.splice(index, 1)
   }
 
-  async function save() {
-    const { valid } = await formRef.value.validate()
+  function getItemTotal(index) {
+    return formatCurrencyNoSymbol(itemTotals.value[index]?.total || 0)
+  }
 
+  async function savePurchase(requestApproval = false) {
+    // 1️⃣ Validate form
+    const { valid } = await formRef.value.validate()
     if (!valid) return
 
+    // 5️⃣ Determine status
+    const status = requestApproval
+      ? PURCHASE_STATUSES.REQUEST
+      : PURCHASE_STATUSES.DRAFT
+
+    // 2️⃣ Format date
     const date =
       purchase.purchase_date instanceof Date
-        ? formatLocalDate(purchase.purchase_date) // NO timezone shift
+        ? formatLocalDate(purchase.purchase_date)
         : purchase.purchase_date
 
+    // 3️⃣ Prepare payload
     const payload = {
       ...purchase,
+      purchase_status_code: status,
       subtotal: subtotal.value,
       total_discount: totalDiscount.value,
       total_tax: totalTax.value,
@@ -321,27 +392,45 @@
       purchase_date: date
     }
 
-    if (isEdit.value) {
-      if (purchase.status === 'received') {
-        notif('Cannot edit a received purchase.', {
-          type: 'error',
-          color: 'error'
-        })
-        return
-      }
-      await purchaseStore.updatePurchase(purchase.id, payload)
-      notif(t('messages.updated_success'), {
-        type: 'success',
-        color: 'primary'
-      })
-    } else {
-      await purchaseStore.addPurchase(payload)
-      notif(t('messages.saved_success'), {
-        type: 'success',
-        color: 'primary'
+    // 4️⃣ Prevent editing received purchase
+    if (isEdit.value && purchase.status === PURCHASE_STATUSES.RECEIVED) {
+      return notif('Cannot edit a received purchase.', {
+        type: 'error',
+        color: 'error'
       })
     }
 
+    // 6️⃣ Save purchase
+    if (isEdit.value) {
+      await purchaseStore.updatePurchase(purchase.id, payload)
+      notif(
+        requestApproval
+          ? t('messages.saved_success') + ' & requested approval'
+          : t('messages.updated_success'),
+        { type: 'success', color: 'primary' }
+      )
+    } else {
+      await purchaseStore.addPurchase(payload)
+      notif(
+        requestApproval
+          ? t('messages.saved_success') + ' & requested approval'
+          : t('messages.saved_success'),
+        { type: 'success', color: 'primary' }
+      )
+    }
+
+    router.push('/purchases')
+  }
+
+  const approvePurchase = async () => {
+    await purchaseStore.updateStatus(purchase.id, 'approved')
+    notif('Purchase approved', { type: 'success', color: 'primary' })
+    router.push('/purchases')
+  }
+
+  const rejectPurchase = async () => {
+    await purchaseStore.updateStatus(purchase.id, 'rejected')
+    notif('Purchase rejected', { type: 'error', color: 'error' })
     router.push('/purchases')
   }
 

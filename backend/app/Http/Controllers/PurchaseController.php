@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\Purchase;
-use App\Models\Stock;
+use App\Models\PurchaseStatus;
 use App\Services\StockService;
-use App\Services\PurchaseService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -19,8 +18,28 @@ class PurchaseController extends Controller
     {
         $query = Purchase::with([
             'items.product:id,name',
-            'supplier:id,name'
+            'supplier:id,name',
+            'purchaseStatus:code,label'
         ]);
+
+        $user = Auth::user();
+        $userRole = $user->role->id ?? null;
+
+        // $roleStatusMap = [
+        //     3 => ['draft', 'requested', 'approved', 'rejected', 'ordered', 'received', 'completed'],
+        //     2 => ['requested', 'approved', 'rejected', 'ordered', 'received', 'completed'],
+        //     1 => ['draft', 'requested', 'approved', 'rejected', 'ordered', 'received', 'completed', 'cancelled'],
+        // ];
+
+        $roleStatusMap = [
+            3 => ['draft', 'request', 'pending', 'approved', 'rejected', 'completed'],
+            2 => ['request','pending', 'approved', 'rejected', 'completed'],
+            1 => ['draft', 'pending', 'rejected',  'completed', 'return'],
+        ];
+
+        if (isset($roleStatusMap[$userRole])) {
+            $query->whereIn('purchase_status_code', $roleStatusMap[$userRole]);
+        }
 
         // 🔍 Search by important names:
         // purchase_number, invoice_number, supplier name
@@ -37,7 +56,7 @@ class PurchaseController extends Controller
 
         // 🔍 Filter by status
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->where('purchase_status_code', $request->status);
         }
 
         // 🔍 Filter by payment status
@@ -93,7 +112,7 @@ class PurchaseController extends Controller
             'purchase_date' => 'required|date',
             'discount' => 'nullable|numeric|min:0',
             'tax' => 'nullable|numeric|min:0',
-            'status' => 'required|in:draft,ordered,received,cancelled',
+            'purchase_status_code' => 'required',
             'payment_status' => 'required|in:paid,unpaid,partial',
             'note' => 'nullable|string',
             'items' => 'required|array|min:1',
@@ -114,7 +133,7 @@ class PurchaseController extends Controller
             $purchase = Purchase::create([
                 'supplier_id'     => $data['supplier_id'],
                 'purchase_date'   => $data['purchase_date'],
-                'status'          => $data['status'],
+                'purchase_status_code'  => $data['purchase_status_code'],
                 'payment_status'  => $data['payment_status'],
                 'subtotal'        => 0,
                 'discount'        => 0,
@@ -185,7 +204,7 @@ class PurchaseController extends Controller
     {
         $purchase = Purchase::findOrFail($id);
 
-        if ($purchase->status === 'received') {
+        if ($purchase->purchase_status_code === 'received') {
             return response()->json(['message' => 'Cannot edit a completed purchase'], 400);
         }
 
@@ -194,7 +213,7 @@ class PurchaseController extends Controller
             'purchase_date' => 'required|date',
             'discount' => 'nullable|numeric|min:0',
             'tax' => 'nullable|numeric|min:0',
-            'status' => 'required|in:draft,ordered,received,cancelled',
+            'purchase_status_code' => 'required',
             'payment_status' => 'required|in:paid,unpaid,partial',
             'note' => 'nullable|string',
             'items' => 'required|array|min:1',
@@ -264,7 +283,7 @@ class PurchaseController extends Controller
             $purchase->update([
                 'supplier_id'  => $data['supplier_id'],
                 'purchase_date' => $data['purchase_date'],
-                'status'       => $data['status'],
+                'purchase_status_code'       => $data['purchase_status_code'],
                 'payment_status' => $data['payment_status'],
                 'subtotal'     => $purchaseSubtotal,
                 'discount'     => $totalDiscount,
@@ -283,7 +302,7 @@ class PurchaseController extends Controller
      */
     public function show(string $id)
     {
-        return Purchase::with('items.product', 'supplier')->findOrFail($id);
+        return Purchase::with('items.product', 'supplier', 'purchaseStatus:code,label')->findOrFail($id);
     }
 
 
@@ -295,5 +314,51 @@ class PurchaseController extends Controller
         $purchase = Purchase::findOrFail($id);
         $purchase->delete();
         return response()->json(null, 204);
+    }
+
+    public function statuses()
+    {
+        $user = Auth::user();
+        $roleCode = $user->role->id ?? null;
+        $roleStatusMap = [
+            3 => ['draft', 'request', 'pending', 'approved', 'rejected', 'completed'],
+            2 => ['request', 'approved', 'rejected','completed'],
+            1 => ['draft', 'request', 'approved', 'rejected','completed', 'return'],
+        ];
+
+        $allowedStatuses = $roleStatusMap[$roleCode] ?? [];
+        $statuses = PurchaseStatus::whereIn('code', $allowedStatuses)->get();
+
+        return response()->json($statuses);
+    }
+
+    public function updateStatus(Request $request, Purchase $purchase)
+    {
+        // Validate incoming code exists in purchase_statuses
+        $request->validate([
+            'status' => 'required|exists:purchase_statuses,code',
+        ]);
+
+        // Find the status record by code
+        $status = PurchaseStatus::where('code', $request->status)->first();
+
+        if (!$status) {
+            return response()->json(['message' => 'Invalid status code'], 400);
+        }
+
+        // Update the purchase with status ID and completed_at if necessary
+        $purchase->purchase_status_code = $status->code;
+
+        if ($status->code === 'completed') {
+            $purchase->completed_at = now();
+        }
+
+        $purchase->save();
+
+        return response()->json([
+            'message' => 'Purchase status updated successfully',
+            'purchase' => $purchase,
+            'status' => $status,
+        ]);
     }
 }

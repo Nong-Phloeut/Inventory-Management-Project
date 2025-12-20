@@ -30,18 +30,19 @@
         </v-col>
         <v-col cols="12" md="3">
           <strong>Purchase Date:</strong>
-          {{ formatDate(purchase.purchase_date) }}
         </v-col>
         <v-col cols="12" md="3">
           <strong>Status:</strong>
           <v-chip
-            :color="statusColor(purchase.status)"
+            :color="statusColor(purchase.purchase_status?.code)"
             variant="tonal"
             size="small"
             class="font-weight-medium"
             label
           >
-            <span class="text-capitalize">{{ purchase.status }}</span>
+            <span class="text-capitalize">
+              {{ purchase.purchase_status?.label }}
+            </span>
           </v-chip>
         </v-col>
       </v-row>
@@ -84,9 +85,7 @@
         <template #item.item_discount="{ item }">
           {{ item.item_discount }} %
         </template>
-        <template #item.item_tax="{ item }">
-          {{item.item_tax }} %
-        </template>
+        <template #item.item_tax="{ item }">{{ item.item_tax }} %</template>
         <template #item.total="{ item }">
           {{ formatCurrency(item.quantity * item.cost_price) }}
         </template>
@@ -164,20 +163,17 @@
     purchase.value = purchaseStore.purchase
   })
 
-  const statusColor = val => {
-    switch (val) {
-      case 'received':
-        return 'green'
-      case 'ordered':
-        return 'blue'
-      case 'ordered':
-        return 'green-darken-1'
-      case 'cancelled':
-        return 'red'
-      default:
-        return 'grey'
-    }
-  }
+  const statusColor = status =>
+    ({
+      draft: 'grey',
+      requested: 'orange',
+      approved: 'blue',
+      rejected: 'red',
+      ordered: 'indigo',
+      received: 'green',
+      completed: 'purple',
+      cancelled: 'red'
+    })[status] || 'grey'
 
   function printInvoice() {
     window.print()
