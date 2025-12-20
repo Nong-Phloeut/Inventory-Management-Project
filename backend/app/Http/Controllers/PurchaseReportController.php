@@ -22,7 +22,7 @@ class PurchaseReportController extends Controller
         $query = PurchaseItem::with(['purchase', 'product.category', 'purchase.supplier'])
             ->whereHas('purchase', function ($q) use ($from, $to) {
                 $q->whereBetween('purchase_date', [$from, $to])
-                    ->where('status', '!=', 'cancelled');
+                    ->where('purchase_status_code', '!=', 'cancelled');
             });
 
         if ($categoryId) {
@@ -73,10 +73,10 @@ class PurchaseReportController extends Controller
 
         return response()->json([
             'kpis' => [
-                ['title' => 'Total Purchases', 'value' => number_format($totalPurchases, 2)],
-                ['title' => 'Purchase Orders', 'value' => $totalOrders],
-                ['title' => 'Total Quantity', 'value' => $totalQuantity],
-                ['title' => 'Avg Purchase Cost', 'value' => number_format($avgPurchaseCost, 2)],
+                ['title' => 'Total Purchases', 'key' => 'total_purchases', 'value' => $totalPurchases],
+                ['title' => 'Purchase Orders', 'key' => 'purchase_orders', 'value' => $totalOrders],
+                ['title' => 'Total Quantity', 'key' => 'total_quantity', 'value' => $totalQuantity],
+                ['title' => 'Avg Purchase Cost', 'key' => 'avg_purchase_cost', 'value' => $avgPurchaseCost],
             ],
             'trend' => $trend,
             'byCategory' => $byCategory,

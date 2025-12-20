@@ -158,15 +158,19 @@
 
   // Watch the actual ref value
   watch(
-    () => reportStore.kpisReport, // if kpisReport is a ref from Pinia, use as is
+    () => reportStore.kpisReport,
     newKpis => {
-      if (!newKpis || !Array.isArray(newKpis)) return
+      if (!Array.isArray(newKpis)) return
 
-      kpis.value = newKpis.map((item, index) => {
+      kpis.value = newKpis.map(item => {
         let value = item.value
-        if (index === 0 || index === 3) {
+        if (
+          item.key == 'total_purchases' ||
+          item.key == 'avg_purchase_cost'
+        ) {
           value = formatCurrency(Number(item.value))
         }
+
         return {
           title: item.title,
           value,
@@ -177,6 +181,7 @@
     },
     { immediate: true }
   )
+
   // Optional helper functions
   function getKpiIcon(title) {
     switch (title) {
