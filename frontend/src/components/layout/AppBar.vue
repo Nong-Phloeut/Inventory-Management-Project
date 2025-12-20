@@ -3,13 +3,18 @@
     <v-app-bar-nav-icon @click="togglerDrawer">
       <v-icon>mdi-menu</v-icon>
     </v-app-bar-nav-icon>
-    <strong class="font-weight-bold d-none d-lg-block d-print-block">
+    <v-app-bar-title class="font-weight-bold d-none d-lg-block d-print-block">
       Inventory Management
-    </strong>
+    </v-app-bar-title>
+    <v-btn class="text-none" stacked to="/notifications">
+      <v-badge color="error" content="2">
+        <v-icon>mdi-bell-outline</v-icon>
+      </v-badge>
+    </v-btn>
     <template v-slot:append>
       <v-menu min-width="200px" rounded>
         <template v-slot:activator="{ props }">
-          <v-btn icon v-bind="props" class="me-4">
+          <v-btn stacked v-bind="props" class="me-4">
             <v-avatar color="brown" size="large">
               <!-- <v-img :src="user.profile"></v-img> -->
               <span class="text-h6">{{ initials }}</span>
