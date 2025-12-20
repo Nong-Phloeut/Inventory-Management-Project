@@ -16,11 +16,55 @@
     </template>
   </custom-title>
   <v-container fluid class="pa-0">
-    <v-card variant="flat" border class="rounded-lg">
+    <v-card
+      v-if="1 == 1"
+      class="mx-auto overflow-hidden rounded-xl"
+      max-width="500"
+      elevation="0"
+    >
+      <v-sheet color="blue-darken-1" height="6"></v-sheet>
+
+      <v-card-text class="pa-8">
+        <v-row align="start" no-gutters>
+          <v-col cols="12" class="text-center mb-4">
+            <v-avatar color="blue-lighten-5" size="80" class="mb-2">
+              <v-icon color="blue-darken-1" size="40">mdi-send</v-icon>
+            </v-avatar>
+            <h2 class="font-weight-bold grey-darken-3">
+              Stay Connected
+            </h2>
+          </v-col>
+
+          <v-col cols="12">
+            <p class="text-center text-grey-darken-1 px-2">
+              Link your Telegram to get
+              <strong>instant alerts</strong>
+              for purchases, stock updates, and approvals directly on your
+              phone.
+            </p>
+          </v-col>
+        </v-row>
+
+        <v-btn
+          block
+          size="large"
+          color="blue-darken-1"
+          class="mt-6 text-none font-weight-bold rounded-lg"
+          elevation="2"
+          prepend-icon="mdi-send"
+          @click="linkTelegram"
+        >
+          Connect Telegram Bot
+        </v-btn>
+      </v-card-text>
+    </v-card>
+
+    <v-card variant="flat" v-else>
       <v-list lines="two" class="py-0">
         <v-list-item
           v-for="item in notifications"
           :key="item.id"
+          :value="item.id"
           :class="!item.read ? 'unread' : ''"
         >
           <template #prepend>
