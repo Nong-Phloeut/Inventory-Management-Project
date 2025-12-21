@@ -2,8 +2,8 @@
   <custom-title icon="mdi-cart-arrow-down">
     Purchase Orders
     <template #right>
-      <BaseButtonFilter class="me-4" @click="toggleFilter" />
-      <BaseButton icon="mdi-plus" @click="goToCreate">New Purchase</BaseButton>
+      <BaseButtonFilter  @click="toggleFilter" />
+      <BaseButton class="ms-4" icon="mdi-plus" @click="goToCreate" v-if="isAdmin && isManager">New Purchase</BaseButton>
     </template>
   </custom-title>
 
@@ -141,7 +141,7 @@
     <template #item.actions="{ item }">
       <!-- {{ canEditPurchase(i) }} -->
       <v-btn
-        v-if="canEditPurchase(item)"
+        v-if="canEditPurchase(item) && isAdmin"
         icon="mdi-pencil"
         size="small"
         variant="text"

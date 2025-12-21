@@ -37,7 +37,7 @@ class PurchaseController extends Controller
         $roleStatusMap = [
             3 => ['draft', 'request', 'pending', 'approved', 'rejected', 'completed'],
             2 => ['request', 'pending', 'approved', 'rejected', 'completed'],
-            1 => ['draft', 'pending', 'rejected',  'completed', 'return'],
+            1 => ['draft','request', 'pending', 'rejected',  'completed', 'return','approved'],
         ];
 
         if (isset($roleStatusMap[$userRole])) {
@@ -218,7 +218,7 @@ class PurchaseController extends Controller
                 if ($user->telegram_chat_id) {
                     $title = 'New Purchase Request';
                     $message = "Purchase #{$purchase->purchase_number} requires your approval";
-                    
+
                     $notificationService->sendTelegram($user->telegram_chat_id, $title, $message);
                 }
             }
