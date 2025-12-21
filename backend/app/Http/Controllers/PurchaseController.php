@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Purchase;
 use App\Models\PurchaseStatus;
+use App\Models\Role;
+use App\Models\User;
+use App\Services\NotificationService;
 use App\Services\StockService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -33,7 +36,7 @@ class PurchaseController extends Controller
 
         $roleStatusMap = [
             3 => ['draft', 'request', 'pending', 'approved', 'rejected', 'completed'],
-            2 => ['request','pending', 'approved', 'rejected', 'completed'],
+            2 => ['request', 'pending', 'approved', 'rejected', 'completed'],
             1 => ['draft', 'pending', 'rejected',  'completed', 'return'],
         ];
 
@@ -128,9 +131,10 @@ class PurchaseController extends Controller
             $purchaseSubtotal = 0;
             $totalDiscount = 0;
             $totalTax = 0;
-
+            $user = Auth::user();
             // create purchase first without totals
             $purchase = Purchase::create([
+                'purchase_by' => $user->id,
                 'supplier_id'     => $data['supplier_id'],
                 'purchase_date'   => $data['purchase_date'],
                 'purchase_status_code'  => $data['purchase_status_code'],
@@ -191,6 +195,27 @@ class PurchaseController extends Controller
                 'tax'          => $totalTax,
                 'total_amount' => $finalTotal,
             ]);
+
+            /// Send notification
+            if ($purchase->purchase_status_code === 'request') {
+                $approvers = User::where('role_id', Role::where('name', 'manager')->first()->id)->get();
+                $notificationService = new NotificationService();
+                foreach ($approvers as $approver) {
+                    $notificationService->create(
+                        $approver,
+                        'New Purchase Request',
+                        "Purchase #{$purchase->purchase_number} requires your approval",
+                        [
+                            'icon' => 'mdi-cart',
+                            'color' => 'primary',
+                            'action_url' => "/purchases/{$purchase->id}",
+                            'channel' => 'system',
+                        ]
+                    );
+                }
+            }
+
+
 
             return response()->json($purchase->load('items.product', 'supplier'), 201);
         });
@@ -292,6 +317,27 @@ class PurchaseController extends Controller
                 'note'         => $data['note'] ?? null,
             ]);
 
+            /// Send notification
+            if ($purchase->purchase_status_code === 'request') {
+                $user = Auth::user();
+                $approvers = User::where('role_id', Role::where('name', 'manager')->first()->id)->get();
+                $notificationService = new NotificationService();
+
+                foreach ($approvers as $approver) {
+                    $notificationService->create(
+                        $approver,
+                        'New Purchase Request',
+                        "Purchase #{$user->name} requires approval",
+                        [
+                            'icon' => 'mdi-cart',
+                            'color' => 'primary',
+                            'action_url' => "/purchases/{$purchase->id}",
+                            'channel' => 'system',
+                        ]
+                    );
+                }
+            }
+
             return response()->json($purchase->load('items.product', 'supplier'));
         });
     }
@@ -322,8 +368,8 @@ class PurchaseController extends Controller
         $roleCode = $user->role->id ?? null;
         $roleStatusMap = [
             3 => ['draft', 'request', 'pending', 'approved', 'rejected', 'completed'],
-            2 => ['request', 'approved', 'rejected','completed'],
-            1 => ['draft', 'request', 'approved', 'rejected','completed', 'return'],
+            2 => ['request', 'approved', 'rejected', 'completed'],
+            1 => ['draft', 'request', 'approved', 'rejected', 'completed', 'return'],
         ];
 
         $allowedStatuses = $roleStatusMap[$roleCode] ?? [];
@@ -354,6 +400,22 @@ class PurchaseController extends Controller
         }
 
         $purchase->save();
+
+        // Notify only the purchaser
+        $purchaser = $purchase->createdBy;
+        if ($purchaser) {
+            $notificationService = new NotificationService();
+            $notificationService->create(
+                $purchaser,
+                'Purchase Status Updated',
+                "Purchase #{$purchase->purchase_number} has been {$status->label} by manager",
+                [
+                    'icon' => 'mdi-update',
+                    'color' => $status->code === 'approved' ? 'success' : 'error',
+                    'action_url' => "/purchases/{$purchase->id}",
+                ]
+            );
+        }
 
         return response()->json([
             'message' => 'Purchase status updated successfully',

@@ -38,8 +38,6 @@ export default {
   },
 
   async updateStatus(purchaseId, status) {
-    console.log(status);
-    
     return http.put(`/purchases/${purchaseId}/status`, { status })
   }
 }

@@ -141,6 +141,12 @@ const routes = [
         name: 'Sales',
         component: () => import('@/views/stocks/SalesManagement.vue'),
         meta: { requiresAuth: true }
+      },
+      {
+        path: '/notifications',
+        name: 'Notifications',
+        component: () => import('@/views/Notification.vue'),
+        meta: { requiresAuth: true }
       }
     ]
   }

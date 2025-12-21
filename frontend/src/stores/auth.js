@@ -5,6 +5,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
     me: {},
+    unread_notifications_count: 0,
     token: localStorage.getItem('token') || null
   }),
   actions: {
@@ -29,7 +30,8 @@ export const useAuthStore = defineStore('auth', {
     },
     async fetchMe() {
       const res = await authService.me().catch(() => {})
-      this.me = res.data
+      this.me = res.data.user
+      this.unread_notifications_count = res.data.unread_notifications_count
     }
   }
 })

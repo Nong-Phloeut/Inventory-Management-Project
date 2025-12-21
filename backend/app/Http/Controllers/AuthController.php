@@ -48,7 +48,11 @@ class AuthController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            return response()->json($user);
+            $unreadCount = $user->notifications()->where('is_read', false)->count();
+            return response()->json([
+                'user' => $user,
+                'unread_notifications_count' => $unreadCount,
+            ]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Token invalid or expired'], 401);
         }

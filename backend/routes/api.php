@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LossController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\PurchaseReportController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\TelegramController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -71,6 +73,10 @@ Route::middleware('jwt.auth')->group(function () {
     Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::get('/purchase-statuses', [PurchaseController::class, 'statuses']);
     Route::put('/purchases/{purchase}/status', [PurchaseController::class, 'updateStatus']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
 });
 
 Route::get('/units', [UnitController::class, 'index']);
@@ -80,3 +86,4 @@ Route::delete('/units/{id}', [UnitController::class, 'destroy']);
 
 Route::get('/reports/purchases', [PurchaseReportController::class, 'index']);
 Route::get('/reports/inventory', [PurchaseReportController::class, 'inventoryReport']);
+Route::post('/telegram/link', [TelegramController::class, 'generateLinkToken']);

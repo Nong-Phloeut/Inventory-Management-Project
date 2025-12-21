@@ -1,6 +1,6 @@
 <template>
   <sidebar :rail="rail" :user="user" @update:rail="rail = $event" />
-  <app-bar :user="user" @toggle="toggleRail" />
+  <app-bar :user="user" @toggle="toggleRail" :notifications_count="notifications_count"/>
   <v-main>
     <v-container class="px-4" fluid>
       <router-view />
@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, onMounted ,computed} from 'vue'
   import Sidebar from './Sidebar.vue'
   import AppBar from './AppBar.vue'
   import { useAuthStore } from '@/stores/auth'
@@ -20,7 +20,7 @@
 
   const authStore = useAuthStore()
   const router = useRouter()
-  
+  const notifications_count = computed(() => authStore.unread_notifications_count)
   // Fetch logged-in user
   onMounted(async () => {
     try {

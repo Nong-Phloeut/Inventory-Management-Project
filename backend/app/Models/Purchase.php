@@ -10,6 +10,7 @@ class Purchase extends Model
     use Auditable;
 
     protected $fillable = [
+        'purchase_by',
         'supplier_id',
         'purchase_date',
         'total_amount',
@@ -37,5 +38,10 @@ class Purchase extends Model
     public function purchaseStatus()
     {
         return $this->belongsTo(PurchaseStatus::class, 'purchase_status_code', 'code');
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'purchase_by'); // 'purchase_by' is the user_id column
     }
 }
