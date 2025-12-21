@@ -201,6 +201,7 @@
           </v-col>
 
           <v-col class="text-end">
+            {{ !isValid }}
             <v-btn
               v-if="hasRole(3)"
               color="primary"
@@ -217,7 +218,7 @@
               @click="savePurchase(true)"
               :disabled="purchase.items.length <= 0 || !isValid"
             >
-              Request Approval
+              Submit Request
             </v-btn>
 
             <!-- Manager buttons -->
@@ -285,7 +286,7 @@
     note: '',
     tax: 0,
     discount: 0,
-    items: [{ product_id: null, quantity: 1, cost_price: 0 }]
+    items: []
   })
   // today's date in YYYY-MM-DD format
   const today = new Date().toISOString().split('T')[0]

@@ -14,16 +14,24 @@ class PurchaseReportController extends Controller
 {
     public function index(Request $request)
     {
-        $from = $request->from;
-        $to   = $request->to;
-        $categoryId = $request->category;
 
-        // Base query on purchase items
+        $fromDate = $request->from ? Carbon::parse($request->from)->format('Y-m-d') : null;
+        $toDate   = $request->to   ? Carbon::parse($request->to)->format('Y-m-d') : null;
+        $categoryId = $request->category;
         $query = PurchaseItem::with(['purchase', 'product.category', 'purchase.supplier'])
-            ->whereHas('purchase', function ($q) use ($from, $to) {
-                $q->whereBetween('purchase_date', [$from, $to])
-                    ->where('purchase_status_code', '!=', 'cancelled');
+            ->whereHas('purchase', function ($q) use ($fromDate, $toDate) {
+
+                if ($fromDate) {
+                    $q->where('purchase_date', '>=', $fromDate);
+                }
+
+                if ($toDate) {
+                    $q->where('purchase_date', '<=', $toDate);
+                }
+
+                $q->whereIn('purchase_status_code', ['approved', 'complete']);
             });
+
 
         if ($categoryId) {
             $query->whereHas('product', function ($q) use ($categoryId) {

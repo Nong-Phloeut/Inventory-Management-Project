@@ -118,6 +118,9 @@
       class="elevation-0"
     >
       <!-- v-model:items-per-page="reportItems.per_page" -->
+      <template #item.purchase_date="{ item }">
+        {{ formatDate(item.purchase_date) }}
+      </template>
       <template v-slot:top>
         <v-toolbar text class="bg-white">
           <v-toolbar-title>
@@ -128,7 +131,7 @@
               start
             ></v-icon>
 
-            Popular books
+            Purchase Report List
           </v-toolbar-title>
         </v-toolbar>
         <v-divider></v-divider>
@@ -143,10 +146,12 @@
   import { useCategoryStore } from '@/stores/categoryStore'
   import { useReportStore } from '@/stores/reportStore'
   import { useCurrency } from '@/composables/useCurrency'
+  import { useDate } from '@/composables/useDate'
 
   const categoryStore = useCategoryStore()
   const reportStore = useReportStore()
   const { formatCurrency } = useCurrency()
+  const { formatDate } = useDate()
 
   const filters = ref({
     from: null, // 1st day of current month
@@ -164,10 +169,7 @@
 
       kpis.value = newKpis.map(item => {
         let value = item.value
-        if (
-          item.key == 'total_purchases' ||
-          item.key == 'avg_purchase_cost'
-        ) {
+        if (item.key == 'total_purchases' || item.key == 'avg_purchase_cost') {
           value = formatCurrency(Number(item.value))
         }
 
@@ -214,7 +216,7 @@
   }
 
   const tableHeaders = [
-    { title: 'Date', value: 'purchase.purchase_date' },
+    { title: 'Date', value: 'purchase.purchase_date', key: 'purchase_date' },
     { title: 'Purchase No', value: 'purchase.invoice_number' },
     { title: 'Supplier', value: 'purchase.supplier.name' },
     { title: 'Category', value: 'product.category.name' },
