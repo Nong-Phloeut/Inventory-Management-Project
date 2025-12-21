@@ -290,12 +290,21 @@
   const deleteProduct = product => {
     confirm({
       title: 'Delete Product',
-      message: 'Are you sure you want to delete this product?',
-      options: { type: 'error' ,width: 500},
+      message: `Are you sure you want to delete ${product.name || 'this product'}?`,
+      options: { type: 'error', width: 500 },
       agree: async () => {
-        await productStore.deleteProduct(product.id)
-        notif(t('messages.deleted_success'), { type: 'success' })
-        fetchData()
+        try {
+          await productStore.deleteProduct(product.id)
+
+          // Success handling
+          notif(t('messages.deleted_success'), { type: 'success' })
+          fetchData()
+        } catch (error) {
+          // Dynamic error handling
+          const errorMessage =
+            error.response?.data?.message || 'An unexpected error occurred.'
+          notif(errorMessage, { type: 'error' }) // Changed to error type for visibility
+        }
       }
     })
   }

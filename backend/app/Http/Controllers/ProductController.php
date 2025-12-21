@@ -103,22 +103,13 @@ class ProductController extends Controller
             'category_id' => 'nullable|exists:categories,id'
         ]);
 
-        // Get category code
-        // Get category
-        // $category = Category::find($request->category_id);
-        // $categoryCode = $category ? strtoupper(substr($category->name, 0, 3)) : 'GEN';
-
-        // // Generate product short code from name
-        // $productCode = strtoupper(substr($request->name, 0, 3));
-
-        // // Generate SKU
-        // $sku = $this->generateSku($categoryCode, $productCode);
-
-        // // Add SKU to data
-        // $validated['sku'] = $sku;
-
-
         $product = Product::create($validated);
+
+        // Automatically create stock record with qty 0 and draft_qty 0
+        $product->stock()->create([
+            'quantity' => 0,
+            'draft_qty' => 0,
+        ]);
 
         return response()->json($product, 201);
     }

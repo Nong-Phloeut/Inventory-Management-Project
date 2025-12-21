@@ -23,14 +23,23 @@ class StockService
     /**
      * Add stock and record movement
      */
-    public static function addStock(int $productId, float $quantity, float $cost = 0, string $movementType = 'purchase', int $relatedId = null, string $note = null)
+    public static function addStock(int $productId, float $quantity, float $cost = 0, string $movementType = 'purchase', int $relatedId = null, string $note = null, bool $isDraft = false)
     {
-        DB::transaction(function () use ($productId, $quantity, $cost, $movementType, $relatedId, $note) {
+        DB::transaction(function () use ($productId, $quantity, $cost, $movementType, $relatedId, $note, $isDraft) {
             // 1. Update or create stock
-            Stock::updateOrCreate(
-                ['product_id' => $productId],
-                ['quantity' => DB::raw("COALESCE(quantity,0) + {$quantity}")]
-            );
+            // Stock::updateOrCreate(
+            //     ['product_id' => $productId],
+            //     ['quantity' => DB::raw("COALESCE(quantity,0) + {$quantity}")]
+            // );
+            $stock = Stock::firstOrCreate(['product_id' => $productId]);
+
+            if ($isDraft) {
+                // Add to draft_qty only
+                $stock->increment('draft_qty', $quantity);
+            } else {
+                // Add to real stock
+                $stock->increment('quantity', $quantity);
+            }
             $user = Auth::user();
             // 2. Record stock movement
             StockMovement::create([

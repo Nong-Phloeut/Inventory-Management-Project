@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Purchase;
 use App\Models\PurchaseStatus;
 use App\Models\Role;
+use App\Models\Stock;
 use App\Models\User;
 use App\Services\NotificationService;
 use App\Services\StockService;
@@ -37,7 +38,7 @@ class PurchaseController extends Controller
         $roleStatusMap = [
             3 => ['draft', 'request', 'pending', 'approved', 'rejected', 'completed'],
             2 => ['request', 'pending', 'approved', 'rejected', 'completed'],
-            1 => ['draft','request', 'pending', 'rejected',  'completed', 'return','approved'],
+            1 => ['draft', 'request', 'pending', 'rejected',  'completed', 'return', 'approved'],
         ];
 
         if (isset($roleStatusMap[$userRole])) {
@@ -176,13 +177,16 @@ class PurchaseController extends Controller
                     'total'         => $total,
                 ]);
 
+                $isDraft = $data['purchase_status_code'] === 'draft' || $data['purchase_status_code'] === 'request';
+
                 StockService::addStock(
                     $reqItem['product_id'],
                     $quantity,
                     $costPrice,
                     'purchase',
                     $purchase->id,
-                    "Purchase #{$purchase->id}"
+                    "Purchase #{$purchase->id}",
+                    $isDraft
                 );
             }
 
@@ -259,21 +263,30 @@ class PurchaseController extends Controller
 
         return DB::transaction(function () use ($purchase, $data) {
 
-            // rollback stock
+            // Determine if the previous purchase was draft/request
+            $wasDraft = in_array($purchase->purchase_status_code, ['draft', 'request']);
+
+            // rollback old stock correctly
             foreach ($purchase->items as $old) {
-                DB::table('stocks')
-                    ->where('product_id', $old->product_id)
-                    ->decrement('quantity', $old->quantity);
+                $stock = Stock::firstOrCreate(['product_id' => $old->product_id]);
+
+                if ($wasDraft) {
+                    $stock->decrement('draft_qty', $old->quantity);
+                } else {
+                    $stock->decrement('quantity', $old->quantity);
+                }
             }
 
             // delete old items
             $purchase->items()->delete();
 
-            // calculate totals like Vue composable
             $purchaseSubtotal = 0;
             $totalDiscount = 0;
             $totalTax = 0;
 
+            $isDraft = in_array($data['purchase_status_code'], ['draft', 'request']);
+
+            // save new items
             foreach ($data['items'] as $reqItem) {
                 $quantity  = (float) $reqItem['quantity'];
                 $costPrice = (float) $reqItem['cost_price'];
@@ -289,34 +302,32 @@ class PurchaseController extends Controller
                 $totalDiscount   += $discountAmount;
                 $totalTax        += $taxAmount;
 
-                // save item
                 $purchase->items()->create([
                     'product_id'    => $reqItem['product_id'],
                     'quantity'      => $quantity,
                     'cost_price'    => $costPrice,
-                    'item_discount' => $discount,   // store percent
-                    'item_tax'      => $tax,        // store percent
+                    'item_discount' => $discount,
+                    'item_tax'      => $tax,
                     'total'         => $total,
                 ]);
 
-                // add stock
                 StockService::addStock(
                     $reqItem['product_id'],
                     $quantity,
                     $costPrice,
                     'purchase',
                     $purchase->id,
-                    "Purchase #{$purchase->id}"
+                    "Purchase #{$purchase->id}",
+                    $isDraft
                 );
             }
 
-            // update purchase totals
+            // update totals
             $finalTotal = $purchaseSubtotal - $totalDiscount + $totalTax;
-
             $purchase->update([
                 'supplier_id'  => $data['supplier_id'],
                 'purchase_date' => $data['purchase_date'],
-                'purchase_status_code'       => $data['purchase_status_code'],
+                'purchase_status_code' => $data['purchase_status_code'],
                 'payment_status' => $data['payment_status'],
                 'subtotal'     => $purchaseSubtotal,
                 'discount'     => $totalDiscount,
@@ -325,39 +336,79 @@ class PurchaseController extends Controller
                 'note'         => $data['note'] ?? null,
             ]);
 
-            /// Send notification
-            if ($purchase->purchase_status_code === 'request') {
-                $user = Auth::user();
-                $approvers = User::where('role_id', Role::where('name', 'manager')->first()->id)->get();
-                $notificationService = new NotificationService();
-
-                foreach ($approvers as $approver) {
-                    $notificationService->create(
-                        $approver,
-                        'New Purchase Request',
-                        "Purchase #{$purchase->purchase_number} requires your approval",
-                        [
-                            'icon' => 'mdi-cart',
-                            'color' => 'primary',
-                            'action_url' => "/purchases/{$purchase->id}",
-                            'channel' => 'system',
-                        ]
-                    );
-                }
-
-                // Send Telegram if linked
-                if ($user->telegram_chat_id) {
-                    $title = 'New Purchase Request';
-                    $message = "Purchase #{$purchase->purchase_number} requires your approval";
-
-                    $notificationService->sendTelegram($user->telegram_chat_id, $title, $message);
-                }
-            }
-
             return response()->json($purchase->load('items.product', 'supplier'));
         });
     }
 
+    // ** update status
+    public function updateStatus(Request $request, Purchase $purchase)
+    {
+        // Validate incoming code exists in purchase_statuses
+        $request->validate([
+            'status' => 'required|exists:purchase_statuses,code',
+        ]);
+
+        // Find the status record by code
+        $status = PurchaseStatus::where('code', $request->status)->first();
+
+        if (!$status) {
+            return response()->json(['message' => 'Invalid status code'], 400);
+        }
+
+        DB::transaction(function () use ($purchase, $status) {
+
+            // If approved, move draft_qty to actual quantity
+            if ($status->code === 'approved') {
+                foreach ($purchase->items as $item) {
+                    $stock = Stock::firstOrCreate(['product_id' => $item->product_id]);
+
+                    // Move draft_qty to quantity
+                    $stock->increment('quantity', $item->quantity);
+                    $stock->decrement('draft_qty', $item->quantity);
+                }
+            }
+
+            // Update the purchase status
+            $purchase->purchase_status_code = $status->code;
+
+            if ($status->code === 'completed') {
+                $purchase->completed_at = now();
+            }
+
+            $purchase->save();
+
+            // Notify only the purchaser
+            $purchaser = $purchase->createdBy;
+            if ($purchaser) {
+                $title = "Purchase Status Updated";
+                $message = "Purchase #{$purchase->purchase_number} has been {$status->label} by manager";
+
+                // Send system notification
+                $notificationService = new NotificationService();
+                $notificationService->create(
+                    $purchaser,
+                    'Purchase Status Updated',
+                    $message,
+                    [
+                        'icon' => 'mdi-update',
+                        'color' => $status->code === 'approved' ? 'success' : 'error',
+                        'action_url' => "/purchases/{$purchase->id}",
+                    ]
+                );
+
+                // Send Telegram if linked
+                if ($purchaser->telegram_chat_id) {
+                    $notificationService->sendTelegram($purchaser->telegram_chat_id, $title, $message);
+                }
+            }
+        });
+
+        return response()->json([
+            'message' => 'Purchase status updated successfully',
+            'purchase' => $purchase,
+            'status' => $status,
+        ]);
+    }
 
     /**
      * Display the specified resource.
@@ -392,60 +443,5 @@ class PurchaseController extends Controller
         $statuses = PurchaseStatus::whereIn('code', $allowedStatuses)->get();
 
         return response()->json($statuses);
-    }
-
-    public function updateStatus(Request $request, Purchase $purchase)
-    {
-        // Validate incoming code exists in purchase_statuses
-        $request->validate([
-            'status' => 'required|exists:purchase_statuses,code',
-        ]);
-
-        // Find the status record by code
-        $status = PurchaseStatus::where('code', $request->status)->first();
-
-        if (!$status) {
-            return response()->json(['message' => 'Invalid status code'], 400);
-        }
-
-        // Update the purchase with status ID and completed_at if necessary
-        $purchase->purchase_status_code = $status->code;
-
-        if ($status->code === 'completed') {
-            $purchase->completed_at = now();
-        }
-
-        $purchase->save();
-
-        // Notify only the purchaser
-        $purchaser = $purchase->createdBy;
-        if ($purchaser) {
-            $title = "Purchase Status Updated";
-            $message = "Purchase #{$purchase->purchase_number} has been {$status->label} by manager";
-
-            // Send system notification
-            $notificationService = new NotificationService();
-            $notificationService->create(
-                $purchaser,
-                'Purchase Status Updated',
-                "Purchase #{$purchase->purchase_number} has been {$status->label} by manager",
-                [
-                    'icon' => 'mdi-update',
-                    'color' => $status->code === 'approved' ? 'success' : 'error',
-                    'action_url' => "/purchases/{$purchase->id}",
-                ]
-            );
-
-            // Send Telegram if linked
-            if ($purchaser->telegram_chat_id) {
-                $notificationService->sendTelegram($purchaser->telegram_chat_id, $title, $message);
-            }
-        }
-
-        return response()->json([
-            'message' => 'Purchase status updated successfully',
-            'purchase' => $purchase,
-            'status' => $status,
-        ]);
     }
 }
