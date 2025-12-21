@@ -275,16 +275,31 @@
   }
 
   const saveProduct = async product => {
-    if (product.id) {
-      await productStore.updateProduct(product)
-      notif(t('messages.updated_success'), { type: 'success' })
-    } else {
-      await productStore.addProduct(product)
-      notif(t('messages.saved_success'), { type: 'success' })
-    }
+    try {
+      // Call store action for update or create
+      if (product.id) {
+        await productStore.updateProduct(product)
+        notif(t('messages.updated_success'), { type: 'success' })
+      } else {
+        await productStore.addProduct(product)
+        notif(t('messages.saved_success'), { type: 'success' })
+      }
 
-    isDialogOpen.value = false
-    fetchData()
+      // Close dialog and refresh table/list
+      isDialogOpen.value = false
+      fetchData()
+    } catch (error) {
+      // Handle backend validation errors
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        notif(error.response.data.message, { type: 'error' })
+      } else {
+        notif(t('messages.general_error'), { type: 'error' })
+      }
+    }
   }
 
   const deleteProduct = product => {

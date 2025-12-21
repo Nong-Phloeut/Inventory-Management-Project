@@ -148,7 +148,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'status' => 'required|in:active,inactive',
-            'barcode' => 'nullable|string|max:100|unique:products,barcode',
+            'barcode' => 'nullable|string|max:100|unique:products,barcode,' . $product->id,
             'unit_id' => 'nullable|exists:units,id',
             'low_stock_threshold' => 'nullable|integer|min:0',
             'description' => 'nullable|string',
@@ -157,10 +157,21 @@ class ProductController extends Controller
             'category_id' => 'nullable|exists:categories,id',
         ]);
 
+        // Check if user tries to set inactive while stock exists
+        if (isset($validated['status']) && $validated['status'] === 'inactive') {
+            $stockQty = $product->stock()->sum('quantity'); // assuming relationship 'stock' exists
+            if ($stockQty > 0) {
+                return response()->json([
+                    'message' => 'Cannot set product as inactive while stock is available.'
+                ], 400);
+            }
+        }
+
         $product->update($validated);
 
         return $product;
     }
+
 
     /**
      * Remove the specified resource from storage.

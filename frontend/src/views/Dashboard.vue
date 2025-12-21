@@ -271,7 +271,7 @@
         trend: 12
       },
       {
-        title: 'In Stock',
+        title: 'Total Stock',
         value: dashboardStore.stats.inStock,
         icon: 'mdi-warehouse',
         color: 'success'
@@ -285,7 +285,7 @@
       },
       {
         title: 'Out-of-Stock',
-        value: dashboardStore.stats.suppliers,
+        value: dashboardStore.stats.outOfStock,
         icon: 'mdi-cube-off-outline',
         color: 'red'
       }

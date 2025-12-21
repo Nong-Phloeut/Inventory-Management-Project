@@ -39,6 +39,20 @@ class DashboardController extends Controller
 
         $lowStock = $lowStockProducts->count();
 
+        $outOfStockProducts = Product::with('category')
+            ->select('products.*')
+            ->selectSub(function ($query) {
+                $query->from('stocks')
+                    ->selectRaw('COALESCE(SUM(quantity), 0)')
+                    ->whereColumn('stocks.product_id', 'products.id');
+            }, 'total_quantity') // alias for the subquery
+            ->get();
+
+        // Filter products with zero total quantity
+        $outOfStock = $outOfStockProducts->filter(function ($product) {
+            return $product->total_quantity <= 0;
+        })->count();
+
         // 4. Supplier count
         $suppliers = DB::table('suppliers')->count() ?? 0;
         $suppliersLast = DB::table('suppliers')
@@ -104,6 +118,7 @@ class DashboardController extends Controller
             'inStock' => $inStock,
             'lowStock' => $lowStock,
             'suppliers' => $suppliers,
+            'outOfStock' => $outOfStock,
             'inventoryValue'  => $inventoryValue,
             'lowStockItems' => $lowStockProducts->map(fn($p) => [
                 'name' => $p->name,
