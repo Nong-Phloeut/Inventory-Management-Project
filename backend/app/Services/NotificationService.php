@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Notification;
 use App\Models\User;
-
+use Illuminate\Support\Facades\Http;
 class NotificationService
 {
     /**
@@ -37,18 +37,21 @@ class NotificationService
     }
 
     /**
-     * Mark a notification as read
+     * Optionally send to Telegram (if linked)
      */
-    public function markAsRead(Notification $notification)
+    public function sendTelegram(string $telegram_chat_id, string $title, string $message)
     {
-        $notification->update(['is_read' => true]);
-    }
+        // if (!$user->telegram_chat_id) return false;
 
-    /**
-     * Mark all notifications as read for a user
-     */
-    public function markAllAsRead(User $user)
-    {
-        $user->notifications()->where('is_read', false)->update(['is_read' => true]);
+        $botToken = '8580655335:AAG2XhuPJjW7zQMjikd8ZFpqkqPvjSeTBD8';
+        // $chatId = $user->telegram_chat_id;
+
+        $text = "*{$title}*\n{$message}";
+
+        return Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+            'chat_id' => $telegram_chat_id,
+            'text'    => $text,
+            'parse_mode' => 'Markdown',
+        ]);
     }
 }

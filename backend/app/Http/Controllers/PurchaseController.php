@@ -213,6 +213,14 @@ class PurchaseController extends Controller
                         ]
                     );
                 }
+
+                // Send Telegram if linked
+                if ($user->telegram_chat_id) {
+                    $title = 'New Purchase Request';
+                    $message = "Purchase #{$purchase->purchase_number} requires your approval";
+                    
+                    $notificationService->sendTelegram($user->telegram_chat_id, $title, $message);
+                }
             }
 
 
@@ -327,7 +335,7 @@ class PurchaseController extends Controller
                     $notificationService->create(
                         $approver,
                         'New Purchase Request',
-                        "Purchase #{$user->name} requires approval",
+                        "Purchase #{$purchase->purchase_number} requires your approval",
                         [
                             'icon' => 'mdi-cart',
                             'color' => 'primary',
@@ -335,6 +343,14 @@ class PurchaseController extends Controller
                             'channel' => 'system',
                         ]
                     );
+                }
+
+                // Send Telegram if linked
+                if ($user->telegram_chat_id) {
+                    $title = 'New Purchase Request';
+                    $message = "Purchase #{$purchase->purchase_number} requires your approval";
+
+                    $notificationService->sendTelegram($user->telegram_chat_id, $title, $message);
                 }
             }
 
@@ -404,6 +420,10 @@ class PurchaseController extends Controller
         // Notify only the purchaser
         $purchaser = $purchase->createdBy;
         if ($purchaser) {
+            $title = "Purchase Status Updated";
+            $message = "Purchase #{$purchase->purchase_number} has been {$status->label} by manager";
+
+            // Send system notification
             $notificationService = new NotificationService();
             $notificationService->create(
                 $purchaser,
@@ -415,6 +435,11 @@ class PurchaseController extends Controller
                     'action_url' => "/purchases/{$purchase->id}",
                 ]
             );
+
+            // Send Telegram if linked
+            if ($purchaser->telegram_chat_id) {
+                $notificationService->sendTelegram($purchaser->telegram_chat_id, $title, $message);
+            }
         }
 
         return response()->json([
