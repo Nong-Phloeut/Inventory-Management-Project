@@ -37,6 +37,7 @@
               v-model="purchase.purchase_date"
               label="Purchase Date"
               :rules="[v => !!v || 'Date is required']"
+              :min="today"
             />
           </v-col>
           <!-- <v-col cols="12" sm="6" md="3">
@@ -297,6 +298,8 @@
     discount: 0,
     items: []
   })
+  // today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().split('T')[0]
 
   const { itemTotals, subtotal, totalDiscount, totalTax, totalAmount } =
     usePurchaseCalculator(purchase)
