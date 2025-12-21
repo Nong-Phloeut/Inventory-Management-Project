@@ -1,49 +1,31 @@
 import { defineStore } from 'pinia'
-import aiService from '@/api/aiAssistant'
+import inventoryService from '@/api/inventoryAI'
 
 export const useInventoryAIStore = defineStore('inventoryAI', {
   state: () => ({
-    lowStock: '',
-    purchase: '',
-    movement: '',
-    loading: {
-      lowStock: false,
-      purchase: false,
-      movement: false
-    }
+    products: [],
+    forecast: null,
+    reorderSuggestion: null,
+    loading: false
   }),
+
   actions: {
-    async fetchLowStock() {
-      this.loading.lowStock = true
-      try {
-        const { data } = await aiService.getLowStockAI()
-        this.lowStock = data.recommendations
-      } catch (error) {
-        console.error(error)
-      } finally {
-        this.loading.lowStock = false
-      }
+    async fetchProducts() {
+      this.products = (await inventoryService.getProducts()).data
     },
-    async fetchPurchase(params = {}) {
-      this.loading.purchase = true
+
+    async fetchAIData(productId) {
+      this.loading = true
       try {
-        const { data } = await aiService.getPurchaseAI(params)
-        this.purchase = data.insights
-      } catch (error) {
-        console.error(error)
+        const [forecast, reorder] = await Promise.all([
+          inventoryService.getForecast(productId),
+          inventoryService.getReorderSuggestion(productId)
+        ])
+
+        this.forecast = forecast.data
+        this.reorderSuggestion = reorder.data
       } finally {
-        this.loading.purchase = false
-      }
-    },
-    async fetchMovement(params = {}) {
-      this.loading.movement = true
-      try {
-        const { data } = await aiService.getStockMovementAI(params)
-        this.movement = data.insights
-      } catch (error) {
-        console.error(error)
-      } finally {
-        this.loading.movement = false
+        this.loading = false
       }
     }
   }
