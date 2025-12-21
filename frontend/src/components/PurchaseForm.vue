@@ -77,7 +77,7 @@
             >
               <v-col cols="12" md="2">
                 <v-select
-                  :items="productStore.products.data"
+                  :items="filteredProducts"
                   v-model="item.product_id"
                   item-title="name"
                   item-value="id"
@@ -298,6 +298,12 @@
   // ------------------------------
   const isEdit = computed(() => !!purchase.id)
 
+  const filteredProducts = computed(() => {
+    if (!purchase.supplier_id) return []
+    return productStore.products.data.filter(
+      p => p.supplier_id === purchase.supplier_id
+    )
+  })
   // ------------------------------
   // Watchers
   // ------------------------------
@@ -316,6 +322,15 @@
     { deep: true }
   )
 
+  watch(
+    () => purchase.supplier_id,
+    () => {
+      purchase.items.forEach(item => {
+        item.product_id = null
+      })
+    }
+  )
+
   // ------------------------------
   // Lifecycle Hooks
   // ------------------------------
@@ -328,6 +343,7 @@
   // ------------------------------
   // Methods
   // ------------------------------
+
   async function loadInitialData() {
     await supplierStore.fetchSuppliers({ status: 1, per_page: -1 })
     await productStore.fetchProducts({ status: 'active', per_page: -1 })

@@ -86,4 +86,10 @@ Route::delete('/units/{id}', [UnitController::class, 'destroy']);
 
 Route::get('/reports/purchases', [PurchaseReportController::class, 'index']);
 Route::get('/reports/inventory', [PurchaseReportController::class, 'inventoryReport']);
-Route::post('/telegram/link', [TelegramController::class, 'generateLinkToken']);
+// Route::post('/telegram/link', [TelegramController::class, 'generateLinkToken']);
+
+// Webhook from Telegram (no auth needed)
+Route::post('/telegram/webhook', [TelegramController::class, 'webhook']);
+
+// Link Telegram to logged-in user (JWT auth required)
+Route::middleware('jwt.auth')->post('/telegram/link', [TelegramController::class, 'linkTelegram']);

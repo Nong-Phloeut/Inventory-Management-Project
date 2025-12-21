@@ -11,7 +11,17 @@
       <v-card-text class="mt-4">
         <v-form ref="formRef" v-model="isValid">
           <v-row>
-            <v-col cols="12" sm="6">
+            <v-col cols="12" sm="4" md="4">
+              <v-select
+                label="Supplier"
+                :items="supplierStore.suppliers.data"
+                v-model="form.supplier_id"
+                item-title="name"
+                item-value="id"
+                :rules="[rules.required]"
+              />
+            </v-col>
+            <v-col cols="12" sm="4">
               <v-text-field
                 v-model="form.name"
                 label="Name"
@@ -19,7 +29,7 @@
                 required
               />
             </v-col>
-            <v-col cols="12" sm="6">
+            <v-col cols="12" sm="4">
               <v-select
                 v-model="form.category_id"
                 :items="categoryStore.categories.data"
@@ -75,9 +85,11 @@
   import { ref, watch, onMounted } from 'vue'
   import { useCategoryStore } from '@/stores/categoryStore'
   import { useUnitStore } from '@/stores/unitStore'
-  const unitStore = useUnitStore()
+  import { useSupplierStore } from '@/stores/supplierStore'
 
+  const unitStore = useUnitStore()
   const categoryStore = useCategoryStore()
+  const supplierStore = useSupplierStore()
 
   const props = defineProps({
     isOpen: Boolean,
@@ -150,6 +162,7 @@
       per_page: -1
     })
     unitStore.fetchUnits()
+    supplierStore.fetchSuppliers({ status: 1, per_page: -1 })
   }
   onMounted(() => loadData())
 </script>

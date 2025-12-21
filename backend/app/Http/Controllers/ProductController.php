@@ -100,7 +100,8 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'sku' => 'required',
-            'category_id' => 'nullable|exists:categories,id'
+            'category_id' => 'nullable|exists:categories,id',
+            'supplier_id' => 'nullable|exists:categories,id'
         ]);
 
         $product = Product::create($validated);
@@ -155,6 +156,7 @@ class ProductController extends Controller
             'price' => 'sometimes|required|numeric|min:0',
             'sku' => 'sometimes|required|string|max:100|unique:products,sku,' . $product->id,
             'category_id' => 'nullable|exists:categories,id',
+            'supplier_id' => 'nullable|exists:suppliers,id'
         ]);
 
         // Check if user tries to set inactive while stock exists

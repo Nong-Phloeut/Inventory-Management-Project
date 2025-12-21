@@ -99,16 +99,16 @@
     },
     { path: '/units', title: 'Units', icon: 'mdi-counter', roles: [1] },
     {
-      path: '/products',
-      title: 'Products',
-      icon: 'mdi-package-variant',
-      roles: [1, 2]
-    },
-    {
       path: '/suppliers',
       title: 'Suppliers',
       icon: 'mdi-truck-delivery',
       roles: [1]
+    },
+    {
+      path: '/products',
+      title: 'Products',
+      icon: 'mdi-package-variant',
+      roles: [1, 2]
     },
     {
       path: '/stocks',

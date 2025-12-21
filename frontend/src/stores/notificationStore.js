@@ -10,6 +10,9 @@ export const useNotificationStore = defineStore('notification', {
     async notificationsLink(userID) {
       await notificationService.linkTelegram(userID)
     },
+    async confirmTelegram() {
+      await notificationService.confirmTelegram()
+    },
     async fetchNotifications() {
       const res = await notificationService.notifications()
       this.notifications = res.data

@@ -20,11 +20,9 @@
     <v-card
       v-if="!authStore.me.telegram_chat_id"
       class="mx-auto overflow-hidden rounded-xl"
-      max-width="500"
       elevation="0"
     >
-      <v-sheet color="blue-darken-1" height="6"></v-sheet>
-      <v-card-text class="pa-8">
+      <v-card-text class="pa-8 text-center">
         <v-row align="start" no-gutters>
           <v-col cols="12" class="text-center mb-4">
             <v-avatar color="blue-lighten-5" size="80" class="mb-2">
@@ -43,16 +41,24 @@
         </v-row>
 
         <v-btn
-          block
           size="large"
           color="blue-darken-1"
           class="mt-6 text-none font-weight-bold rounded-lg"
-          elevation="2"
           prepend-icon="mdi-send"
           @click="linkTelegram"
         >
           Connect Telegram Bot
         </v-btn>
+<!-- 
+        <v-btn
+          size="large"
+          color="blue-darken-1"
+          class="mt-6 text-none font-weight-bold rounded-lg"
+          prepend-icon="mdi-send"
+          @click="confirmTelegram"
+        >
+          confirm Telegram
+        </v-btn> -->
       </v-card-text>
     </v-card>
 
@@ -114,29 +120,22 @@
       </v-card>
 
       <!-- No notifications -->
-      <v-card
+      <div
         v-else
         class="mx-auto overflow-hidden rounded-xl"
         max-width="500"
         elevation="0"
       >
-        <v-sheet color="blue-darken-1" height="6"></v-sheet>
-        <v-card-text class="pa-8">
+        <div class="pa-8">
           <v-row align="start" no-gutters>
-            <v-col cols="12" class="text-center mb-4">
-              <v-avatar color="blue-lighten-5" size="80" class="mb-2">
-                <v-icon color="blue-darken-1" size="40">mdi-send</v-icon>
-              </v-avatar>
-              <h2 class="font-weight-bold grey-darken-3">No Notifications</h2>
-            </v-col>
             <v-col cols="12">
               <p class="text-center text-grey-darken-1 px-2">
                 You have no notifications at this time.
               </p>
             </v-col>
           </v-row>
-        </v-card-text>
-      </v-card>
+        </div>
+      </div>
     </template>
   </v-container>
 </template>
@@ -154,32 +153,19 @@
   const notifications = computed(() => notificationStore.notifications)
 
   const linkTelegram = async () => {
-    if (!authStore.me) return
-    // Call your API to generate Telegram link token
-    notificationStore
-      .notificationsLink(authStore.me.id)
-      .then(response => {
-        console.log(response)
-
-        // const data = response.data
-        // showAlert(data)
-      })
-      .catch(error => {
-        console.error('Error linking Telegram:', error)
-      })
-    // alert(`Send this token to your Telegram bot: ${data.token}`)
+    const botUsername = 'IVMAlertBot'
+    const token = authStore.me.name
+    window.open(`https://t.me/${botUsername}?start=${token}`, '_blank')
   }
 
-  // const linkTelegram = async () => {
-  //   try {
-  //     const { data } = await notificationStore.notificationsLink()
-
-  //     // Open Telegram automatically
-  //     window.open(data.telegram_link, '_blank')
-  //   } catch (e) {
-  //     console.error(e)
-  //   }
-  // }
+  async function confirmTelegram() {
+    try {
+      notificationStore.confirmTelegram()
+      console.log(res.data.message)
+    } catch (err) {
+      console.error(err.response.data)
+    }
+  }
 
   const makeAsRead = id => {
     notificationStore.makeAsRead(id)

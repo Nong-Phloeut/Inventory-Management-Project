@@ -219,11 +219,11 @@ class PurchaseController extends Controller
                 }
 
                 // Send Telegram if linked
-                if ($user->telegram_chat_id) {
+                if ($approver->telegram_chat_id) {
                     $title = 'New Purchase Request';
                     $message = "Purchase #{$purchase->purchase_number} requires your approval";
 
-                    $notificationService->sendTelegram($user->telegram_chat_id, $title, $message);
+                    $notificationService->sendTelegram($approver->telegram_chat_id, $title, $message);
                 }
             }
 

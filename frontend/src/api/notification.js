@@ -8,9 +8,6 @@ export default {
   linkTelegram(userId) {
     return http.post('/telegram/link', { user_id: userId })
   },
-  linkTelegram(userId) {
-    return http.post('/telegram/link', { user_id: userId })
-  },
   notifications() {
     return http.get(`/notifications`)
   },
@@ -22,5 +19,8 @@ export default {
   },
   makeAsReadAll() {
     return http.post(`/notifications/read-all`)
+  },
+  confirmTelegram() {
+    return http.post(`/telegram/link`)
   },
 }

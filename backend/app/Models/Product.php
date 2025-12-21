@@ -21,7 +21,8 @@ class Product extends Model
         'status',
         'low_stock_threshold',
         'category_id',
-        'unit_id'
+        'unit_id',
+        'supplier_id'
     ];
 
     public function category()
@@ -41,5 +42,9 @@ class Product extends Model
     public function purchaseItems()
     {
         return $this->hasMany(PurchaseItem::class);
+    }
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class);
     }
 }

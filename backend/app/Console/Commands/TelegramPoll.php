@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache; // for storing last offset
+use Illuminate\Support\Facades\DB;
 
 class TelegramPoll extends Command
 {
@@ -14,7 +15,7 @@ class TelegramPoll extends Command
      *
      * @var string
      */
-    protected $signature = 'app:telegram-poll';
+    protected $signature = 'telegram:fetch-updates';
 
     /**
      * The console command description.
@@ -32,57 +33,31 @@ class TelegramPoll extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+     public function handle()
     {
-        // Retrieve last offset from cache to avoid processing same update
-        $lastOffset = Cache::get('telegram_offset', 0);
+        $token = '8580655335:AAG2XhuPJjW7zQMjikd8ZFpqkqPvjSeTBD8'; // or hardcode
+        $response = Http::get("https://api.telegram.org/bot{$token}/getUpdates");
+        $data = $response->json();
 
-        $url = "https://api.telegram.org/bot{$this->botToken}/getUpdates";
-        $response = Http::get($url, [
-            'offset' => $lastOffset + 1, // fetch updates after last processed
-            'timeout' => 10,
-        ]);
+        if (!isset($data['result'])) {
+            $this->info('No updates found.');
+            return;
+        }
 
-        $updates = $response->json()['result'] ?? [];
-
-        foreach ($updates as $update) {
-            $updateId = $update['update_id'] ?? null;
-            if (!$updateId) continue;
-
-            Cache::put('telegram_offset', $updateId, 3600);
-
-            if (!isset($update['message'])) continue;
-
-            $chatId = $update['message']['chat']['id'];
+        foreach ($data['result'] as $update) {
+            $chatId = $update['message']['chat']['id'] ?? null;
             $text   = $update['message']['text'] ?? '';
 
-            $this->info("Received Telegram message: $text from chat_id $chatId");
-
-            if (str_starts_with($text, '/start')) {
-                $parts = explode(' ', $text);
-                $token = $parts[1] ?? null;
-
-                if ($token) {
-                    $user = User::where('telegram_link_token', $token)->first();
-
-                    if ($user) {
-                        $user->telegram_chat_id = $chatId;
-                        $user->save();
-
-                        $this->info("✅ Telegram linked for {$user->name} (chat_id: $chatId)");
-                        $this->sendMessage($chatId, "✅ Telegram linked successfully for {$user->name}!");
-                    } else {
-                        $this->info("❌ Invalid token: $token from chat_id $chatId");
-                        $this->sendMessage($chatId, "❌ Invalid token. Please generate a valid token in your profile.");
-                    }
-                } else {
-                    $this->sendMessage($chatId, "Send /start <YOUR_TOKEN> to link your account.");
-                }
+            if ($text === '/start' && $chatId) {
+                DB::table('telegram_pending_links')->updateOrInsert(
+                    ['chat_id' => $chatId],
+                    ['created_at' => now()]
+                );
+                $this->info("Saved chat_id: {$chatId}");
             }
         }
 
-
-        $this->info("✅ Telegram poll executed. Updates processed: " . count($updates));
+        $this->info('Done fetching Telegram updates.');
     }
 
     private function sendMessage($chatId, $text)
