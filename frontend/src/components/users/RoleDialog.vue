@@ -48,9 +48,7 @@
         <v-spacer></v-spacer>
         <v-btn variant="text" @click="closeDialog">Cancel</v-btn>
 
-        <v-btn color="primary" @click="submitForm">
-          {{ isEdit ? 'Update' : 'Create' }}
-        </v-btn>
+        <v-btn color="primary" @click="submitForm">Save</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -100,12 +98,15 @@
     required: v => !!v || 'This field is required'
   }
 
-  function submitForm() {
-    formRef.value?.validate().then(success => {
-      if (!success) return
-      emit('save', { ...role.value })
-      closeDialog()
-    })
+  async function submitForm() {
+    if (!formRef.value) return
+
+    const { valid } = await formRef.value.validate()
+
+    if (!valid) return
+
+    emit('save', { ...role.value })
+    closeDialog()
   }
 
   function closeDialog() {

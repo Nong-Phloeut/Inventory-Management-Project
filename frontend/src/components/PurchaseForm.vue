@@ -119,6 +119,7 @@
                   label="Tax"
                   density="compact"
                   min="0"
+                  :rules="[v => v === null || v >= 0 || 'Tax must be ≥ 0']"
                 />
               </v-col>
 
@@ -130,6 +131,7 @@
                   suffix="%"
                   density="compact"
                   min="0"
+                  :rules="[v => v === null || v >= 0 || 'Discount must be ≥ 0']"
                 />
               </v-col>
               <v-col cols="12" md="2">
@@ -198,25 +200,12 @@
             <v-btn text color="primary" @click="addItem">+ Add Product</v-btn>
           </v-col>
 
-          <!-- <v-btn variant="tonal" class="me-2" @click="goBack">Cancel</v-btn> -->
-          <!-- <v-btn
-            color="primary"
-            @click="save"
-            :disabled="purchase.items.length <= 0"
-          >
-            {{ isEdit ? 'Update Purchase' : 'Save Purchase' }}
-          </v-btn>
-          v-if="hasRole(1, 2)" -->
-
           <v-col class="text-end">
-            <!-- <v-btn variant="tonal" class="me-2" @click="goBack">Cancel</v-btn> -->
-
-            <!-- Purchaser buttons -->
             <v-btn
               v-if="hasRole(3)"
               color="primary"
               @click="savePurchase(false)"
-              :disabled="purchase.items.length <= 0"
+              :disabled="purchase.items.length <= 0 || !isValid"
               class="me-2"
             >
               {{ isEdit ? 'Update Draft' : 'Save Draft' }}
@@ -226,7 +215,7 @@
               v-if="hasRole(3)"
               color="success"
               @click="savePurchase(true)"
-              :disabled="purchase.items.length <= 0"
+              :disabled="purchase.items.length <= 0 || !isValid"
             >
               Request Approval
             </v-btn>

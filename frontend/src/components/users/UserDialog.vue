@@ -88,9 +88,7 @@
       <v-card-actions class="px-4 pb-4">
         <v-spacer />
         <v-btn variant="text" @click="closeDialog">Cancel</v-btn>
-        <v-btn color="primary" @click="submitForm">
-          {{ isEdit ? 'Update' : 'Create' }}
-        </v-btn>
+        <v-btn color="primary" @click="submitForm">Save</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
