@@ -285,7 +285,7 @@
     note: '',
     tax: 0,
     discount: 0,
-    items: []
+    items: [{ product_id: null, quantity: 1, cost_price: 0 }]
   })
   // today's date in YYYY-MM-DD format
   const today = new Date().toISOString().split('T')[0]
@@ -300,10 +300,16 @@
 
   const filteredProducts = computed(() => {
     if (!purchase.supplier_id) return []
-    return productStore.products.data.filter(
-      p => p.supplier_id === purchase.supplier_id
-    )
+
+    return productStore.products.data.filter(p => {
+      // include product if it belongs to selected supplier
+      if (p.supplier_id === purchase.supplier_id) return true
+
+      // or include if product is already selected in any item
+      return purchase.items.some(item => item.product_id === p.id)
+    })
   })
+
   // ------------------------------
   // Watchers
   // ------------------------------
@@ -324,10 +330,18 @@
 
   watch(
     () => purchase.supplier_id,
-    () => {
-      purchase.items.forEach(item => {
-        item.product_id = null
-      })
+    (newVal, oldVal) => {
+      if (oldVal && newVal !== oldVal) {
+        purchase.items.forEach(item => {
+          // only reset if the product is not from the new supplier
+          const product = productStore.products.data.find(
+            p => p.id === item.product_id
+          )
+          if (product && product.supplier_id !== newVal) {
+            item.product_id = null
+          }
+        })
+      }
     }
   )
 
