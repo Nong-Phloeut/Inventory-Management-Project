@@ -2,7 +2,7 @@
   <v-container fluid class="pa-0">
     <custom-title icon="mdi-file-chart">
       Purchase Reports
-      <template #right>
+      <!-- <template #right>
         <v-btn variant="outlined" prepend-icon="mdi-file-pdf-box">
           Export PDF
         </v-btn>
@@ -15,7 +15,7 @@
         >
           Export Excel
         </v-btn>
-      </template>
+      </template> -->
     </custom-title>
 
     <!-- Filters -->

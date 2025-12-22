@@ -2,7 +2,7 @@
   <!-- PAGE TITLE -->
   <custom-title icon="mdi-warehouse">
     Inventory Report
-    <template #right>
+    <!-- <template #right>
       <v-btn variant="outlined" prepend-icon="mdi-file-pdf-box">
         Export PDF
       </v-btn>
@@ -14,7 +14,7 @@
       >
         Export Excel
       </v-btn>
-    </template>
+    </template> -->
   </custom-title>
 
   <!-- FILTERS -->
