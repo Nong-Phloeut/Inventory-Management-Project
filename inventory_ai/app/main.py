@@ -1,12 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import stock_ai_api, purchase_recommendation_api  # import from app.api
+from app.api.stock_ai_api import router as stock_ai_router
+from app.api.purchase_recommendation_api import router as purchase_router
 
 app = FastAPI(title="Inventory Stock AI")
 
 # Mount routers under /api
-app.include_router(stock_ai_api.router, prefix="/api")
-app.include_router(purchase_recommendation_api.router, prefix="/api")
+app.include_router(stock_ai_router)
+app.include_router(purchase_router)
 
 # CORS
 app.add_middleware(
