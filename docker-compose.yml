@@ -38,14 +38,14 @@ services:
     networks:
       - app-network
 
-    # FastAPI AI Service
+  # FastAPI AI Service
   ai:
     build:
       context: ./inventory_ai
       dockerfile: Dockerfile
     image: nongdev/inventory-ai:latest
-    ports:
-      - "8080:8080"
+    # ports:
+    #   - "8080:8080"
     restart: unless-stopped
     networks:
       - app-network
