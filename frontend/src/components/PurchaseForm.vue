@@ -11,15 +11,26 @@
     <strong>{{ isEdit ? 'Edit Purchase' : 'Add Purchase' }}</strong>
     <template #right>
       <v-switch
-        label="Use AI Suggestions"
+        v-model="aiEnabled"
         inset
-        width="230"
+        width="250"
         hide-details
         :false-value="false"
         :true-value="true"
         @change="onToggleAI"
-      ></v-switch>
-      <!-- v-model="aiEnabled" -->
+        color="primary"
+        density="compact"
+      >
+        <template v-slot:label>
+          Use AI Suggestions
+          <v-progress-circular
+            :indeterminate="isLoading"
+            class="ms-2"
+            size="24"
+            color="primary"
+          ></v-progress-circular>
+        </template>
+      </v-switch>
     </template>
   </custom-title>
 
@@ -96,7 +107,7 @@
               >
                 <v-col cols="12" md="2">
                   <v-select
-                    :items="productStore.products.data"
+                    :items="filteredProducts"
                     v-model="item.product_id"
                     item-title="name"
                     item-value="id"
@@ -105,7 +116,7 @@
                     :rules="[v => !!v || 'Product is required']"
                   />
                 </v-col>
-  
+
                 <v-col cols="12" md="1">
                   <v-text-field
                     v-model.number="item.quantity"
@@ -116,7 +127,7 @@
                     :rules="[v => v > 0 || 'Quantity must be > 0']"
                   />
                 </v-col>
-  
+
                 <v-col cols="12" md="2">
                   <v-text-field
                     v-model.number="item.cost_price"
@@ -140,7 +151,7 @@
                     min="0"
                   />
                 </v-col>
-  
+
                 <v-col cols="12" md="2">
                   <v-text-field
                     v-model.number="item.item_discount"
@@ -163,7 +174,7 @@
                     :disabled="!item.product_id"
                   />
                 </v-col>
-  
+
                 <v-col cols="12" md="1">
                   <v-btn
                     icon="mdi-delete"
@@ -183,24 +194,24 @@
             <v-col cols="12" sm="8" md="4">
               <v-sheet border rounded="lg" class="pa-4">
                 <div class="mb-2">Summary</div>
-  
+
                 <div class="d-flex justify-space-between mb-1">
                   <span>Subtotal:</span>
                   <strong>{{ formatCurrency(subtotal) }}</strong>
                 </div>
-  
+
                 <div class="d-flex justify-space-between mb-1">
                   <span>Total Discount Amount:</span>
                   <strong>{{ formatCurrency(totalDiscount) }}</strong>
                 </div>
-  
+
                 <div class="d-flex justify-space-between mb-1">
                   <span>Total Tax Amount:</span>
                   <strong>{{ formatCurrency(totalTax) }}</strong>
                 </div>
-  
+
                 <v-divider class="my-2" />
-  
+
                 <div class="d-flex justify-space-between">
                   <h3 class="font-weight-bold">Total Amount:</h3>
                   <h3>{{ formatCurrency(totalAmount) }}</h3>
@@ -296,6 +307,7 @@
   const formRef = ref(null)
   const isValid = ref(false)
   const isLoading = ref(false)
+  const aiEnabled = ref(false)
 
   const purchase = reactive({
     id: null,
@@ -483,15 +495,16 @@
       isLoading.value = true
       const res = await AIStore.fetchPurchaseRecommendation()
       aiSuggestions = await res.data
-      isLoading.value = false
     } catch (error) {
       console.error('Failed to fetch AI suggestions:', error)
+    } finally {
+      isLoading.value = false
     }
   }
 
   // Watch AI switch
-  function onToggleAI(enabled) {
-    if (enabled) {
+  function onToggleAI() {
+    if (aiEnabled.value) {
       // Fetch AI suggestions
       fetchAISuggestions().then(() => {
         // Fill items for current supplier if available
@@ -500,6 +513,7 @@
     } else {
       // Optionally clear AI items
       purchase.items = []
+      addItem()
     }
   }
 
