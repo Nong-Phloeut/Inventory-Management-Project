@@ -1,13 +1,19 @@
 
-import { aiApi } from './aiApi'
+import aiApi  from './aiApi'
 
 export default {
-  // AI
-  getForecast(productId) {
-    return aiApi.get(`/forecast/${productId}`)
+  // Get Low Stock AI recommendations
+  getLowStockAI() {
+    return aiApi.get('/ai/low-stock')
   },
 
-  getReorderSuggestion(productId) {
-    return aiApi.get(`/reorder-suggestion/${productId}`)
+  // Get Purchase AI insights
+  purchaseRecommendation() {
+    return aiApi.get('/purchase-recommendation')
+  },
+
+  // Get Stock Movement AI insights
+  getStockMovementAI(params = {}) {
+    return aiApi.get('/ai/stock-movement', { params })
   }
 }

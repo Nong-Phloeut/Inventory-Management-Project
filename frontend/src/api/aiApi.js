@@ -1,13 +1,15 @@
-import { useLoadingStore } from '@/stores/loading'
+// import { useLoadingStore } from '@/stores/loading'
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_APP_API_BASE_AI_URL || 'http://127.0.0.1:8080/',
+  baseURL: import.meta.env.VITE_APP_API_BASE_AI_URL || 'http://34.41.208.245:82/ai/api/',
   headers: {
     'Access-Control-Allow-Origin': '*',
     'Content-type': 'application/json'
   }
 })
+
+export default api
 
 // // Get store instance
 // const loadingStore = useLoadingStore()
@@ -39,5 +41,3 @@ const api = axios.create({
 //     return Promise.reject(error)
 //   }
 // )
-
-export default api

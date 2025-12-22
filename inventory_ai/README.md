@@ -20,3 +20,4 @@ DB_NAME=inventory
 
 5️⃣ Run the API Server
 uvicorn app.main:app --reload
+uvicorn app.main:app --host 0.0.0.0 --port 8080
