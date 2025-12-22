@@ -12,6 +12,7 @@ jobs:
       IMAGE_BACKEND: ${{ secrets.DOCKER_USERNAME }}/inventory-backend
       IMAGE_FRONTEND: ${{ secrets.DOCKER_USERNAME }}/inventory-frontend
       IMAGE_WEBSERVER: ${{ secrets.DOCKER_USERNAME }}/inventory-webserver
+      IMAGE_AI: ${{ secrets.DOCKER_USERNAME }}/inventory-ai
       IMAGE_TAG: ${{ github.sha }}
 
     steps:
@@ -52,6 +53,15 @@ jobs:
           docker build -t $IMAGE_WEBSERVER:latest -t $IMAGE_WEBSERVER:$IMAGE_TAG ./backend/nginx
           docker push $IMAGE_WEBSERVER:latest
           docker push $IMAGE_WEBSERVER:$IMAGE_TAG
+
+      # -------------------
+      # Build & Push AI
+      # -------------------
+      - name: Build and push AI
+        run: |
+          docker build -t $IMAGE_AI:latest -t $IMAGE_AI:$IMAGE_TAG ./inventory_ai
+          docker push $IMAGE_AI:latest
+          docker push $IMAGE_AI:$IMAGE_TAG
 
   deploy:
     runs-on: ubuntu-latest
@@ -103,6 +113,7 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/inventory-backend:latest
             docker pull ${{ secrets.DOCKER_USERNAME }}/inventory-frontend:latest
             docker pull ${{ secrets.DOCKER_USERNAME }}/inventory-webserver:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/inventory-ai:latest
 
             # Stop containers but KEEP volumes (no -v)
             docker-compose down --remove-orphans || true
