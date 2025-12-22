@@ -43,7 +43,7 @@ services:
     build:
       context: ./inventory_ai
       dockerfile: Dockerfile
-    container_name: inventory_ai
+    image: nongdev/inventory-ai:latest
     ports:
       - "8080:8080"
     restart: unless-stopped
