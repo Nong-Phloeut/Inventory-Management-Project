@@ -309,7 +309,7 @@
     return item => {
       if (!item?.purchase_status?.code) return false
 
-      const finalStatuses = ['received', 'completed', 'cancelled']
+      const finalStatuses = ['approved', 'completed', 'cancelled']
 
       // Nobody can edit final statuses
       if (finalStatuses.includes(item.purchase_status.code)) return false
@@ -322,11 +322,11 @@
         return item.purchase_status.code === 'request'
       }
 
-      if (isAdmin.value) {
-        return ['draft', 'request', 'approved', 'ordered'].includes(
-          item.purchase_status.code
-        )
-      }
+      // if (isAdmin.value) {
+      //   return ['draft', 'request', 'approved', 'ordered'].includes(
+      //     item.purchase_status.code
+      //   )
+      // }
 
       return false
     }

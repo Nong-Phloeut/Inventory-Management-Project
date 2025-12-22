@@ -118,6 +118,9 @@
       class="elevation-0"
     >
       <!-- v-model:items-per-page="reportItems.per_page" -->
+      <template #item.total="{ item }">
+        {{ formatCurrency(item.total) }}
+      </template>
       <template #item.purchase_date="{ item }">
         {{ formatDate(item.purchase_date) }}
       </template>
@@ -221,7 +224,7 @@
     { title: 'Supplier', value: 'purchase.supplier.name' },
     { title: 'Category', value: 'product.category.name' },
     { title: 'Quantity', value: 'quantity' },
-    { title: 'Total Cost ($)', value: 'total' }
+    { title: 'Total Cost ($)', value: 'total', key: 'total' }
   ]
 
   watch(

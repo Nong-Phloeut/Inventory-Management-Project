@@ -201,7 +201,6 @@
           </v-col>
 
           <v-col class="text-end">
-            {{ !isValid }}
             <v-btn
               v-if="hasRole(3)"
               color="primary"
