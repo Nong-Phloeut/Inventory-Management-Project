@@ -1,4 +1,4 @@
-ENV = "dev"  # change to "prod" for deployment
+ENV = "prod"  # change to "prod" for deployment
 
 CONFIG = {
     "dev": {
