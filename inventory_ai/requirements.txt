@@ -1,7 +1,9 @@
 fastapi
 uvicorn
-pandas
-prophet
-pymysql
+sqlalchemy
+psycopg[binary]
+alembic
 pydantic
 python-dotenv
+pandas
+prophet
