@@ -149,6 +149,11 @@ const routes = [
         meta: { requiresAuth: true }
       }
     ]
+  },
+  {
+    path: '/pos',
+    name: 'POS',
+    component: () => import('@/views/sale/POSView.vue')
   }
 ]
 

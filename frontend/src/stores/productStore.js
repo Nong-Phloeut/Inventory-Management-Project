@@ -15,8 +15,8 @@ export const useProductStore = defineStore('product', {
       await productService.create(product)
     },
 
-    async updateProduct(product) {
-      await productService.update(product.id, product)
+    async updateProduct(product,id) {
+      await productService.update(product, id)
     },
 
     async deleteProduct(id) {

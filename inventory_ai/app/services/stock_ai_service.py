@@ -1,22 +1,32 @@
-from app.database.db import get_connection
+from sqlalchemy.orm import Session
+from app.models.stock import Stock
+from app.models.product import Product
 
-def analyze_stock(threshold=10):
+
+def analyze_stock(
+    db: Session,
+    threshold: int = 10
+):
     """
     Analyze current stock and return low-stock items.
-    threshold: minimum quantity before alert
     """
 
-    conn = get_connection()
-    try:
-        with conn.cursor() as cursor:
-            # Fetch products where current stock <= threshold
-            cursor.execute("""
-                SELECT s.product_id, p.name as product_name, s.quantity as stock
-                FROM stocks s
-                JOIN products p ON s.product_id = p.id
-                WHERE s.quantity <= %s
-            """, (threshold,))
-            result = cursor.fetchall()
-        return result
-    finally:
-        conn.close()
+    results = (
+        db.query(
+            Stock.product_id,
+            Product.name.label("product_name"),
+            Stock.qty.label("stock")
+        )
+        .join(Product, Stock.product_id == Product.id)
+        .filter(Stock.qty <= threshold)
+        .all()
+    )
+
+    return [
+        {
+            "product_id": r.product_id,
+            "product_name": r.product_name,
+            "stock": r.stock
+        }
+        for r in results
+    ]

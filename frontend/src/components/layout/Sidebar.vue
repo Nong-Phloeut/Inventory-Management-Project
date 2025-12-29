@@ -13,48 +13,48 @@
       v-model:opened="open"
       v-for="(link, i) in filteredMenu"
       :key="link.title"
-      dense
+      density="compact"
       class="pa-0"
     >
+      <!-- MAIN LINK -->
       <v-list-item
         v-if="!link.subLinks"
-        :key="i"
-        :to="link.path"
+        :to="!link.newTab ? link.path : undefined"
+        :href="link.newTab ? link.path : undefined"
+        :target="link.newTab ? '_blank' : undefined"
         class="v-list-item"
         exact
       >
-        <template v-slot:prepend>
-          <v-icon :icon="link.icon"></v-icon>
+        <template #prepend>
+          <v-icon :icon="link.icon" />
         </template>
-        <v-list-item-title>
-          {{ link.title }}
-        </v-list-item-title>
+        <v-list-item-title>{{ link.title }}</v-list-item-title>
       </v-list-item>
 
-      <v-list-group v-else :key="link.title" no-action class="pa-0">
-        <template v-slot:activator="{ props }">
+      <!-- GROUP -->
+      <v-list-group v-else no-action>
+        <template #activator="{ props }">
           <v-list-item v-bind="props">
-            <template v-slot:prepend>
-              <v-icon :icon="link.icon"></v-icon>
+            <template #prepend>
+              <v-icon :icon="link.icon" />
             </template>
-            <v-list-item-title class="back-title">
-              {{ link.title }}
-            </v-list-item-title>
+            <v-list-item-title>{{ link.title }}</v-list-item-title>
           </v-list-item>
         </template>
 
+        <!-- SUB LINKS -->
         <v-list-item
           v-for="sublink in link.subLinks"
-          :to="sublink.path"
           :key="sublink.title"
+          :to="!sublink.newTab ? sublink.path : undefined"
+          :href="sublink.newTab ? sublink.path : undefined"
+          :target="sublink.newTab ? '_blank' : undefined"
           exact
         >
-          <template v-slot:prepend>
-            <v-icon :icon="sublink.icon"></v-icon>
+          <template #prepend>
+            <v-icon :icon="sublink.icon" />
           </template>
-          <v-list-item-title>
-            {{ sublink.title }}
-          </v-list-item-title>
+          <v-list-item-title>{{ sublink.title }}</v-list-item-title>
         </v-list-item>
       </v-list-group>
     </v-list>
@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-  import { ref, computed, watch  } from 'vue'
+  import { ref, computed, watch } from 'vue'
 
   const props = defineProps({
     user: Object // user will be passed from parent (Layout.vue)
@@ -123,6 +123,26 @@
       roles: [1, 2, 3]
     },
     {
+      title: 'Sale',
+      icon: 'mdi-cash-register',
+      roles: [1],
+      subLinks: [
+        {
+          path: '/pos',
+          title: 'POS Sale',
+          icon: 'mdi-sale',
+          roles: [1],
+          newTab: true
+        },
+        {
+          path: '/#',
+          title: 'Users',
+          icon: 'mdi-account',
+          roles: [1]
+        }
+      ]
+    },
+    {
       title: 'Administration',
       icon: 'mdi-account-cog',
       roles: [1],
@@ -157,6 +177,32 @@
           title: 'Purchase',
           icon: 'mdi-cart-arrow-down',
           roles: [1, 2, 3]
+        },
+        {
+          path: '/purchase-reports',
+          title: 'Sale',
+          icon: 'mdi-cash-register',
+          roles: [1, 2, 3]
+        }
+      ]
+    },
+    {
+      path: '/setting',
+      title: 'Setting',
+      icon: 'mdi-cog',
+      roles: [1],
+      subLinks: [
+        {
+          path: '/settings/tax',
+          title: 'Tax Settings',
+          icon: 'mdi-percent',
+          roles: [1]
+        },
+        {
+          path: '/settings/payment-methods',
+          title: 'Payment Types',
+          icon: 'mdi-credit-card-multiple',
+          roles: [1]
         }
       ]
     },

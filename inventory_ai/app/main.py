@@ -5,6 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 # Import routers
 from app.api.stock_ai_api import router as stock_ai_router
 from app.api.purchase_recommendation_api import router as purchase_router
+from app.api.product_api import router as product_router
+from app.api.sale_api import router as sale_router
+
 
 # Import database engine and Base (models use this Base)
 from app.database.db import engine, Base
@@ -18,6 +21,8 @@ app = FastAPI(title="Inventory Stock AI")
 # Mount routers
 app.include_router(stock_ai_router, prefix="/api")
 app.include_router(purchase_router, prefix="/api")
+app.include_router(product_router, prefix="/api")
+app.include_router(sale_router, prefix="/api")
 
 # Enable CORS
 app.add_middleware(

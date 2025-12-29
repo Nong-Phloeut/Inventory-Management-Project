@@ -10,11 +10,15 @@ export const productService = {
     return res.data
   },
   async create(product) {
-    const res = await http.post('/products', product)
+    const res = await http.post('/products', product, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
     return res.data
   },
-  async update(id, product) {
-    const res = await http.put(`/products/${id}`, product)
+  async update(product, id) {
+    const res = await http.put(`/products/${id}`, product, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
     return res.data
   },
   async remove(id) {

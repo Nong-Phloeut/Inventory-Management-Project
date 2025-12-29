@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->date('sale_date');
             $table->decimal('total_amount', 10, 2);
+            $table->enum('payment_method', ['Cash', 'Card', 'QR Payment'])->nullable();
             $table->timestamps();
         });
     }

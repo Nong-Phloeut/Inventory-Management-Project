@@ -23,6 +23,7 @@ return new class extends Migration
             $table->integer('low_stock_threshold')
                 ->default(5);
             $table->unsignedBigInteger('category_id')->nullable();
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }

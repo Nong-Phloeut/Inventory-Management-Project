@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ProductResource;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -13,77 +15,42 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::with([
-            'category:id,name',
-            'unit:id,name,abbreviation'
-        ]);
-
-        /* =====================
-       FILTERS
-    ===================== */
-
-        if ($request->filled('is_active')) {
-            $query->where('is_active', $request->is_active);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('category_id')) {
-            $categories = explode(',', $request->category_id);
-            $query->whereIn('category_id', $categories);
-        }
-
-        if ($request->filled('keyword')) {
-            $keyword = $request->keyword;
-            $query->where(function ($q) use ($keyword) {
-                $q->where('name', 'like', "%{$keyword}%")
-                    ->orWhere('sku', 'like', "%{$keyword}%")
-                    ->orWhere('barcode', 'like', "%{$keyword}%");
-            });
-        }
-
-        if ($request->filled('min_price')) {
-            $query->where('price', '>=', $request->min_price);
-        }
-
-        if ($request->filled('max_price')) {
-            $query->where('price', '<=', $request->max_price);
-        }
-
-        /* =====================
-        PAGINATION
-        ===================== */
+        $query = Product::with(['category:id,name', 'unit:id,name,abbreviation'])
+            ->status($request->status)
+            ->category($request->category_id)
+            ->keyword($request->keyword)
+            ->priceRange($request->min_price, $request->max_price);
 
         $perPage = (int) $request->query('per_page', 10);
 
         if ($perPage === -1) {
-            // get all but keep pagination structure
-            $items = $query->orderBy('id', 'desc')->get();
-
+            $items = $query->orderByDesc('id')->get();
             return response()->json([
                 'success' => true,
                 'message' => 'Products retrieved successfully.',
                 'data' => [
                     'current_page' => 1,
-                    'data' => $items,
+                    'data' => ProductResource::collection($items),
                     'per_page' => $items->count(),
                     'total' => $items->count(),
                     'last_page' => 1
                 ]
-            ], 200);
+            ]);
         }
 
-        $products = $query
-            ->orderBy('id', 'desc')
-            ->paginate($perPage);
+        $products = $query->orderByDesc('id')->paginate($perPage);
 
         return response()->json([
             'success' => true,
             'message' => 'Products retrieved successfully.',
-            'data' => $products
-        ], 200);
+            'data' => [
+                'current_page' => $products->currentPage(),
+                'data' => ProductResource::collection($products),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+                'last_page' => $products->lastPage(),
+            ]
+        ]);
     }
 
     /**
@@ -101,8 +68,13 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'sku' => 'required',
             'category_id' => 'nullable|exists:categories,id',
-            'supplier_id' => 'nullable|exists:categories,id'
+            'supplier_id' => 'nullable|exists:suppliers,id',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')
+                ->store('products', 'public');
+        }
 
         $product = Product::create($validated);
 
@@ -156,7 +128,8 @@ class ProductController extends Controller
             'price' => 'sometimes|required|numeric|min:0',
             'sku' => 'sometimes|required|string|max:100|unique:products,sku,' . $product->id,
             'category_id' => 'nullable|exists:categories,id',
-            'supplier_id' => 'nullable|exists:suppliers,id'
+            'supplier_id' => 'nullable|exists:suppliers,id',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         // Check if user tries to set inactive while stock exists
@@ -167,6 +140,18 @@ class ProductController extends Controller
                     'message' => 'Cannot set product as inactive while stock is available.'
                 ], 400);
             }
+        }
+
+        // ✅ Handle image replacement
+        if ($request->hasFile('image')) {
+
+            // Delete old image if exists
+            if ($product->image) {
+                Storage::disk('public')->delete($product->image);
+            }
+
+            $validated['image'] = $request->file('image')
+                ->store('products', 'public');
         }
 
         $product->update($validated);

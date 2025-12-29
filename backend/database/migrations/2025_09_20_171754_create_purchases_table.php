@@ -27,6 +27,7 @@ return new class extends Migration
             $table->decimal('tax', 12, 2)->default(0);
             $table->decimal('discount', 12, 2)->default(0);
             $table->decimal('total_amount', 12, 2)->default(0);
+            $table->text('note')->nullable();
             $table->timestamps();
         });
     }

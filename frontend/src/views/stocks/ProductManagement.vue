@@ -92,6 +92,18 @@
     item-value="id"
     hover
   >
+    <template #item.image="{ item }">
+      <v-img
+        v-if="item.image_url"
+        :src="item.image_url"
+        max-width="40"
+        max-height="40"
+        class="rounded"
+        cover
+        aspect-ratio="1"
+      />
+      <span v-else>No image</span>
+    </template>
     <template #item.no="{ index }">
       {{ index + 1 + (tableOptions.page - 1) * tableOptions.itemsPerPage }}
     </template>
@@ -156,8 +168,8 @@
   const { t } = useI18n()
 
   /* =====================
-   TABLE + FILTER STATE
-===================== */
+     TABLE + FILTER STATE
+  ===================== */
 
   const tableOptions = reactive({
     page: 1,
@@ -183,11 +195,12 @@
   const selectedProduct = ref(null)
 
   /* =====================
-   HEADERS
-===================== */
+     HEADERS
+  ===================== */
 
   const headers = [
     { title: 'No', key: 'no' },
+    { title: 'Image', key: 'image' },
     { title: 'Name', key: 'name' },
     { title: 'Unit', key: 'unit.abbreviation' },
     { title: 'Category', key: 'category.name' },
@@ -198,8 +211,8 @@
   ]
 
   /* =====================
-   FETCH DATA (ONE SOURCE)
-===================== */
+     FETCH DATA (ONE SOURCE)
+  ===================== */
 
   const fetchData = () => {
     productStore.fetchProducts({
@@ -215,8 +228,8 @@
   }
 
   /* =====================
-   EVENTS
-===================== */
+     EVENTS
+  ===================== */
 
   const loadItems = ({ page, itemsPerPage }) => {
     tableOptions.page = page
@@ -261,8 +274,8 @@
   }
 
   /* =====================
-   CRUD
-===================== */
+     CRUD
+  ===================== */
 
   const openAddDialog = () => {
     selectedProduct.value = null
@@ -276,12 +289,27 @@
 
   const saveProduct = async product => {
     try {
+      // Create FormData to handle image file
+      const formData = new FormData()
+
+      // Append all fields
+      for (const key in product) {
+        if (product[key] !== null && product[key] !== undefined) {
+          // Handle File separately
+          if (key === 'image' && product[key] instanceof File) {
+            formData.append('image', product[key])
+          } else {
+            formData.append(key, product[key])
+          }
+        }
+      }
+
       // Call store action for update or create
       if (product.id) {
-        await productStore.updateProduct(product)
+        await productStore.updateProduct(formData, product.id) // pass FormData
         notif(t('messages.updated_success'), { type: 'success' })
       } else {
-        await productStore.addProduct(product)
+        await productStore.addProduct(formData) // pass FormData
         notif(t('messages.saved_success'), { type: 'success' })
       }
 
@@ -290,11 +318,7 @@
       fetchData()
     } catch (error) {
       // Handle backend validation errors
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
+      if (error.response?.data?.message) {
         notif(error.response.data.message, { type: 'error' })
       } else {
         notif(t('messages.general_error'), { type: 'error' })
@@ -325,8 +349,8 @@
   }
 
   /* =====================
-   INIT
-===================== */
+     INIT
+  ===================== */
 
   onMounted(() => {
     fetchData()

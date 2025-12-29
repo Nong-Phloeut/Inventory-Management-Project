@@ -22,32 +22,39 @@ class SaleController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'sale_date' => 'required|date',
+            // 'sale_date' => 'required|date',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.qty' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric|min:0',
         ]);
 
         return DB::transaction(function () use ($data) {
             // total = sum of items
-            $total = collect($data['items'])->sum(fn($i) => $i['quantity'] * $i['price']);
+            $total = collect($data['items'])->sum(fn($i) => $i['qty'] * $i['price']);
 
             $sale = Sale::create([
-                'sale_date' => $data['sale_date'],
+                'sale_date' => now(),
                 'total_amount' => $total,
             ]);
 
             foreach ($data['items'] as $item) {
-                $sale->items()->create($item);
+                $sale->items()->create([
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['qty'],
+                    'price' => $item['price'],
+                ]);
 
                 // reduce stock
                 DB::table('stocks')
                     ->where('product_id', $item['product_id'])
-                    ->decrement('quantity', $item['quantity']);
+                    ->decrement('quantity', $item['qty']);
             }
 
-            return response()->json($sale->load('items.product'), 201);
+            return response()->json([
+                'success' => true,
+                'message' => 'Sale completed successfully.',
+            ], 201);
         });
     }
 

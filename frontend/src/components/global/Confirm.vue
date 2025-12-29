@@ -1,8 +1,8 @@
 <template>
   <v-dialog v-model="dialog" :max-width="options.width" @keydown.esc="cancel">
     <v-card :width="options.width" rounded="lg">
-      <v-card-title class="bg-red d-flex">
-        <strong>Confirm Deletion</strong>
+      <v-card-title :class="`bg-${options.type}`">
+        <strong>{{ title }}</strong>
       </v-card-title>
       <v-card-text
         v-show="!!message"
@@ -11,12 +11,7 @@
       />
       <v-card-actions class="pa-4">
         <v-spacer />
-        <v-btn
-          elevation="0"
-          ref="btnNo"
-          @click.native="cancel"
-          variant="tonal"
-        >
+        <v-btn elevation="0" ref="btnNo" @click.native="cancel" variant="tonal">
           {{ $t('btn.cancel') }}
         </v-btn>
         <v-btn elevation="0" class="bg-red" @click.native="agree">

@@ -70,6 +70,32 @@
               />
             </v-col>
           </v-row>
+          <v-row>
+            <v-col cols="12" md="6">
+              <v-file-input
+                v-model="image"
+                label="Product Image"
+                density="comfortable"
+                accept="image/*"
+                prepend-icon=""
+                append-inner-icon="mdi-camera"
+                show-size
+                :multiple="false"
+                @update:modelValue="previewImage"
+                variant="outlined"
+              />
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-img
+                v-if="preview"
+                :src="preview"
+                max-width="150"
+                class="mt-2 rounded"
+                aspect-ratio="1"
+                cover
+              />
+            </v-col>
+          </v-row>
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -110,6 +136,28 @@
     // category_id: null,
     price: 0
   })
+
+  const image = ref(null)
+  const preview = ref(props.product?.image_url || null)
+
+  const previewImage = value => {
+    // Clear preview
+    if (!value) {
+      preview.value = null
+      return
+    }
+
+    // Vuetify may return File OR File[]
+    const file = Array.isArray(value) ? value[0] : value
+
+    // Extra safety
+    if (!(file instanceof File)) {
+      preview.value = null
+      return
+    }
+
+    preview.value = URL.createObjectURL(file)
+  }
 
   const statusOptions = ref([
     { id: 'active', name: 'Active' },
@@ -153,7 +201,7 @@
   const submit = async () => {
     const ok = await formRef.value?.validate()
     if (ok) {
-      emit('save', { ...form.value })
+      emit('save', { ...form.value, image: image.value })
       close() // close & reset after successful save
     }
   }

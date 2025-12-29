@@ -96,7 +96,7 @@
               >
                 <v-col cols="12" md="2">
                   <v-select
-                    :items="productStore.products.data"
+                    :items="filteredProducts"
                     v-model="item.product_id"
                     item-title="name"
                     item-value="id"
@@ -105,7 +105,7 @@
                     :rules="[v => !!v || 'Product is required']"
                   />
                 </v-col>
-  
+
                 <v-col cols="12" md="1">
                   <v-text-field
                     v-model.number="item.quantity"
@@ -116,7 +116,7 @@
                     :rules="[v => v > 0 || 'Quantity must be > 0']"
                   />
                 </v-col>
-  
+
                 <v-col cols="12" md="2">
                   <v-text-field
                     v-model.number="item.cost_price"
@@ -140,7 +140,7 @@
                     min="0"
                   />
                 </v-col>
-  
+
                 <v-col cols="12" md="2">
                   <v-text-field
                     v-model.number="item.item_discount"
@@ -163,7 +163,7 @@
                     :disabled="!item.product_id"
                   />
                 </v-col>
-  
+
                 <v-col cols="12" md="1">
                   <v-btn
                     icon="mdi-delete"
@@ -183,24 +183,24 @@
             <v-col cols="12" sm="8" md="4">
               <v-sheet border rounded="lg" class="pa-4">
                 <div class="mb-2">Summary</div>
-  
+
                 <div class="d-flex justify-space-between mb-1">
                   <span>Subtotal:</span>
                   <strong>{{ formatCurrency(subtotal) }}</strong>
                 </div>
-  
+
                 <div class="d-flex justify-space-between mb-1">
                   <span>Total Discount Amount:</span>
                   <strong>{{ formatCurrency(totalDiscount) }}</strong>
                 </div>
-  
+
                 <div class="d-flex justify-space-between mb-1">
                   <span>Total Tax Amount:</span>
                   <strong>{{ formatCurrency(totalTax) }}</strong>
                 </div>
-  
+
                 <v-divider class="my-2" />
-  
+
                 <div class="d-flex justify-space-between">
                   <h3 class="font-weight-bold">Total Amount:</h3>
                   <h3>{{ formatCurrency(totalAmount) }}</h3>
@@ -335,12 +335,31 @@
   watch(
     () => purchase.items,
     items => {
-      items.forEach(item => {
-        if (item.product_id) {
-          const product = productStore.products.data.find(
-            p => p.id === item.product_id
-          )
-          if (product) item.cost_price = product.price
+      const seen = new Set()
+      items.forEach((item, index) => {
+        if (!item.product_id) return
+
+        const product = productStore.products.data.find(
+          p => p.id === item.product_id
+        )
+        if (product) item.cost_price = product.price
+
+        if (seen.has(item.product_id)) {
+          // Duplicate detected: show confirmation
+          confirm({
+            title: 'Duplicate Product',
+            message: `Product "${product.name}" is already added! Do you want to remove this duplicate?`,
+            options: { type: 'warning', width: 500 },
+            agree: () => {
+              removeItem(index) // remove the duplicate
+            },
+            cancel: () => {
+              // optionally reset product selection to null
+              // item.product_id = null
+            }
+          })
+        } else {
+          seen.add(item.product_id)
         }
       })
     },
